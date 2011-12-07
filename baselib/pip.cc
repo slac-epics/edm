@@ -554,6 +554,7 @@ static int displaySourceEnum[3] = {
   tag.loadW( "replaceSymbols", replaceSymbols, numDsps, &zero );
   tag.loadW( "propagateMacros", propagateMacros, numDsps, &one );
   tag.loadBoolW( "noScroll", &noScroll, &zero );
+  tag.loadW( unknownTags );
   tag.loadW( "endObjectProperties" );
   tag.loadW( "" );
 
@@ -634,6 +635,7 @@ static int displaySourceEnum[3] = {
   // read file and process each "object" tag
   tag.init();
   tag.loadR( "beginObjectProperties" );
+  tag.loadR( unknownTags );
   tag.loadR( "major", &major );
   tag.loadR( "minor", &minor );
   tag.loadR( "release", &release );
@@ -744,10 +746,14 @@ int i;
   buf = new bufType;
 
   ptr = actWin->obj.getNameFromClass( "activePipClass" );
-  if ( ptr )
+  if ( ptr ) {
     strncpy( title, ptr, 31 );
-  else
+    title[31] = 0;
+  }
+  else {
     strncpy( title, activePipClass_str4, 31 );
+    title[31] = 0;
+  }
 
   Strncat( title, activePipClass_str5, 31 );
 
@@ -761,22 +767,32 @@ int i;
   buf->bufTopShadowColor = topShadowColor.pixelIndex();
   buf->bufBotShadowColor = botShadowColor.pixelIndex();
 
-  if ( readPvExpStr.getRaw() )
+  if ( readPvExpStr.getRaw() ) {
     strncpy( buf->bufReadPvName, readPvExpStr.getRaw(),
      PV_Factory::MAX_PV_NAME );
-  else
+    buf->bufReadPvName[PV_Factory::MAX_PV_NAME] = 0;
+  }
+  else {
     strcpy( buf->bufReadPvName, "" );
+    buf->bufReadPvName[PV_Factory::MAX_PV_NAME] = 0;
+  }
 
-  if ( labelPvExpStr.getRaw() )
+  if ( labelPvExpStr.getRaw() ) {
     strncpy( buf->bufLabelPvName, labelPvExpStr.getRaw(),
      PV_Factory::MAX_PV_NAME );
-  else
+    buf->bufLabelPvName[PV_Factory::MAX_PV_NAME] = 0;
+  }
+  else {
     strcpy( buf->bufLabelPvName, "" );
+  }
 
-  if ( fileNameExpStr.getRaw() )
+  if ( fileNameExpStr.getRaw() ) {
     strncpy( buf->bufFileName, fileNameExpStr.getRaw(), 127 );
-  else
+    buf->bufFileName[127] = 0;
+  }
+  else {
     strcpy( buf->bufFileName, "" );
+  }
 
   buf->bufDisplaySource = displaySource;
 
@@ -787,18 +803,25 @@ int i;
 
   for ( i=0; i<maxDsps; i++ ) {
 
-    if ( displayFileName[i].getRaw() )
+    if ( displayFileName[i].getRaw() ) {
       strncpy( buf->bufDisplayFileName[i], displayFileName[i].getRaw(), 127 );
-    else
+      buf->bufDisplayFileName[i][127] = 0;
+    }
+    else {
       strncpy( buf->bufDisplayFileName[i], "", 127 );
+    }
 
-    if ( label[i].getRaw() )
+    if ( label[i].getRaw() ) {
       strncpy( buf->bufLabel[i], label[i].getRaw(), 127 );
-    else
+      buf->bufLabel[i][127] = 0;
+    }
+    else {
       strncpy( buf->bufLabel[i], "", 127 );
+    }
 
     if ( symbolsExpStr[i].getRaw() ) {
       strncpy( buf->bufSymbols[i], symbolsExpStr[i].getRaw(), 255 );
+      buf->bufSymbols[i][255] = 0;
     }
     else {
       strncpy( buf->bufSymbols[i], "", 255 );
@@ -1063,7 +1086,7 @@ XmString str;
              this );
 	  }
 	  else {
-            printf( activePipClass_str22 );
+            fprintf( stderr, activePipClass_str22 );
           }
 
         }
@@ -1099,7 +1122,7 @@ XmString str;
              this );
 	  }
 	  else {
-            printf( activePipClass_str22 );
+            fprintf( stderr, activePipClass_str22 );
           }
 
           if ( labelExists ) {
@@ -1109,7 +1132,7 @@ XmString str;
                pip_monitor_label_connect_state, this );
 	    }
 	    else {
-              printf( activePipClass_str22 );
+              fprintf( stderr, activePipClass_str22 );
             }
 	  }
 
@@ -1427,7 +1450,7 @@ XmString str;
              this );
 	  }
 	  else {
-            printf( activePipClass_str22 );
+            fprintf( stderr, activePipClass_str22 );
           }
 
         }
@@ -1463,7 +1486,7 @@ XmString str;
              this );
 	  }
 	  else {
-            printf( activePipClass_str22 );
+            fprintf( stderr, activePipClass_str22 );
           }
 
           if ( labelExists ) {
@@ -1473,7 +1496,7 @@ XmString str;
                pip_monitor_label_connect_state, this );
 	    }
 	    else {
-              printf( activePipClass_str22 );
+              fprintf( stderr, activePipClass_str22 );
             }
 	  }
 
@@ -1537,6 +1560,110 @@ XmString str;
   }
 
   return 1;
+
+}
+
+// This widget is like a related display, but it can operate in 3 modes.
+//
+// Mode 1 gets the display name from a string pv and thus it is impossible
+// to know what the value might be so num displays will be reported as 0.
+//
+// Mode 2 gets the display name from the form - one name with no macros
+//
+// Mode 3 gets the display name from a menu of entries with macros and with
+// the propagate attribute
+
+int activePipClass::isRelatedDisplay ( void ) {
+
+  return 1;
+
+}
+
+int activePipClass::getNumRelatedDisplays ( void ) {
+
+  if ( displaySource == displayFromPV ) {
+    return 0;
+  }
+  else if ( displaySource == displayFromForm ) {
+    return 1;
+  }
+  else if ( displaySource == displayFromMenu ) {
+    return numDsps;
+  }
+
+  return 0;
+
+}
+
+int activePipClass::getRelatedDisplayProperty (
+  int index,
+  char *key
+) {
+
+  if ( displaySource == displayFromMenu ) {
+
+    if ( strcmp( key, "propagate" ) == 0 ) {
+      return propagateMacros[index];
+    }
+    else if ( strcmp( key, "replace" ) == 0 ) {
+      return replaceSymbols[index];
+    }
+
+  }
+  else {
+
+    if ( strcmp( key, "propagate" ) == 0 ) {
+      return 1;
+    }
+    else if ( strcmp( key, "replace" ) == 0 ) {
+      return 0;
+    }
+
+  }
+
+  return 0;
+
+}
+
+char *activePipClass::getRelatedDisplayName (
+  int index
+) {
+
+  if ( displaySource == displayFromPV ) {
+
+    return NULL;
+
+  }
+  else if ( displaySource == displayFromForm ) {
+
+    if ( index != 0 ) return NULL;
+
+    return fileNameExpStr.getExpanded();
+
+  }
+  else if ( displaySource == displayFromMenu ) {
+
+    if ( ( index < 0 ) || ( index >= numDsps ) ) {
+      return NULL;
+    }
+
+    return displayFileName[index].getExpanded();
+
+  }
+
+  return NULL;
+
+}
+
+char *activePipClass::getRelatedDisplayMacros (
+  int index
+) {
+
+  if ( ( index < 0 ) || ( index >= numDsps ) ) {
+    return NULL;
+  }
+
+  return symbolsExpStr[index].getExpanded();
 
 }
 
@@ -1644,7 +1771,7 @@ int activePipClass::createPipWidgets ( void ) {
      NULL );
 
     if ( !(*frameWidget) ) {
-      printf( activePipClass_str24 );
+      fprintf( stderr, activePipClass_str24 );
       frameWidget = NULL;
       return 0;
     }
@@ -1672,7 +1799,7 @@ int activePipClass::createPipWidgets ( void ) {
      NULL );
 
     if ( !(*frameWidget) ) {
-      printf( activePipClass_str24 );
+      fprintf( stderr, activePipClass_str24 );
       frameWidget = NULL;
       return 0;
     }
@@ -2071,6 +2198,7 @@ XButtonEvent be;
   nmap = needMap; needMap = 0;
   nunmap = needUnmap; needUnmap = 0;
   strncpy( v, curReadV, 39 );
+  v[39] = 0;
   iv = curReadIV;
   actWin->remDefExeNode( aglPtr );
   actWin->appCtx->proc->unlock();
@@ -2120,7 +2248,8 @@ XButtonEvent be;
   if ( nu ) {
 
     strncpy( readV, v, 39 );
-    //printf( "readV = [%s]\n", readV );
+    readV[39] = 0;
+    //fprintf( stderr, "readV = [%s]\n", readV );
 
     if ( enabled && !blank( readV ) ) {
 
@@ -2172,10 +2301,10 @@ XButtonEvent be;
 
         if ( !aw ) {
 
-          //printf( "Open file %s\n", readV );
+          //fprintf( stderr, "Open file %s\n", readV );
 
-          strncpy( curFileName, readV, 127 );
-          curFileName[127] = 0;
+          strncpy( curFileName, readV, 39 );
+          curFileName[39] = 0;
 
           cur = new activeWindowListType;
           actWin->appCtx->addActiveWindow( cur );
@@ -2214,8 +2343,8 @@ XButtonEvent be;
     }
 
     if ( !enabled ) { // copy filename to be used when enabled becomes true
-      strncpy( curFileName, readV, 127 );
-      curFileName[127] = 0;
+      strncpy( curFileName, readV, 39 );
+      curFileName[39] = 0;
     }
 
   }
@@ -2294,7 +2423,7 @@ XButtonEvent be;
 
               if ( !aw ) {
 
-                //printf( "Open file %s\n", readV );
+                //fprintf( stderr, "Open file %s\n", readV );
 
                 strncpy( curFileName, displayFileName[i].getExpanded(), 127 );
                 curFileName[127] = 0;
@@ -2353,7 +2482,7 @@ XButtonEvent be;
 
     if ( enabled && fileExists ) {
 
-      //printf( "Open file %s\n", fileNameExpStr.getExpanded() );
+      //fprintf( stderr, "Open file %s\n", fileNameExpStr.getExpanded() );
 
       strncpy( curFileName, fileNameExpStr.getExpanded(), 127 );
       curFileName[127] = 0;

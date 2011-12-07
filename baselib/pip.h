@@ -98,7 +98,7 @@ class activePipClass : public activeGraphicClass {
 
 public:
 
-static const int maxDsps = 64;
+static const int maxDsps = 100;
 static const int displayFromPV = 0;
 static const int displayFromForm = 1;
 static const int displayFromMenu = 2;
@@ -309,6 +309,23 @@ int preReactivate (
 int reactivate (
   int pass,
   void *ptr );
+
+int isRelatedDisplay ( void );
+
+int getNumRelatedDisplays ( void );
+
+int getRelatedDisplayProperty (
+  int index,
+  char *key
+);
+
+char *getRelatedDisplayName (
+  int index
+);
+
+char *getRelatedDisplayMacros (
+  int index
+);
 
 int expand1st (
   int numMacros,

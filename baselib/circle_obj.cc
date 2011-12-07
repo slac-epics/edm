@@ -382,7 +382,7 @@ int activeCircleClass::createInteractive (
   int _w,
   int _h ) {
 
-//   printf( "In activeCircleClass::createInteractive\n" );
+//   fprintf( stderr, "In activeCircleClass::createInteractive\n" );
 
   actWin = (activeWindowClass *) aw_obj;
   x = _x;
@@ -530,6 +530,7 @@ static int styleEnum[2] = {
   // read file and process each "object" tag
   tag.init();
   tag.loadR( "beginObjectProperties" );
+  tag.loadR( unknownTags );
   tag.loadR( "major", &major );
   tag.loadR( "minor", &minor );
   tag.loadR( "release", &release );
@@ -977,6 +978,7 @@ static int styleEnum[2] = {
   tag.loadBoolW( "visInvert", &visInverted, &zero );
   tag.loadW( "visMin", minVisString, emptyStr );
   tag.loadW( "visMax", maxVisString, emptyStr );
+  tag.loadW( unknownTags );
 
   tag.loadW( "endObjectProperties" );
   tag.loadW( "" );
@@ -1808,6 +1810,22 @@ void activeCircleClass::getPvs (
   *n = 2;
   pvs[0] = alarmPvId;
   pvs[1] = visPvId;
+
+}
+
+// crawler functions may return blank pv names
+char *activeCircleClass::crawlerGetFirstPv ( void ) {
+
+  crawlerPvIndex = 0;
+  return alarmPvExpStr.getExpanded();
+
+}
+
+char *activeCircleClass::crawlerGetNextPv ( void ) {
+
+  if ( crawlerPvIndex >= 1 ) return NULL;
+  crawlerPvIndex++;
+  return visPvExpStr.getExpanded();
 
 }
 

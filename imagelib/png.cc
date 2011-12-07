@@ -97,7 +97,10 @@ int status;
   apngo->initSelectBox();
 
   if ( !( status & 1 ) ) {
-    apngo->actWin->appCtx->postMessage( activePngClass_str1 );
+    char msg[255+1];
+    snprintf( msg, 255, activePngClass_str1, apngo->actWin->fileName,
+     apngo->pngFileName );
+    apngo->actWin->appCtx->postMessage( msg );
   }
 
 }
@@ -296,7 +299,7 @@ int status;
 
 activePngClass::~activePngClass ( void ) {
 
-//   printf( "In activePngClass::~activePngClass\n" );
+//   fprintf( stderr, "In activePngClass::~activePngClass\n" );
 
   if ( name ) delete[] name;
 
@@ -464,7 +467,7 @@ unsigned short r, g, b;
     }
 
     if ( !colorAllocFailure ) {
-      //printf( "num colors = %-d, mask = %-x\n", num,
+      //fprintf( stderr, "num colors = %-d, mask = %-x\n", num,
       // (unsigned int) colorStrippingMask );
       goto success_return;
     }
@@ -1152,6 +1155,7 @@ static char *emptyStr = "";
   tag.loadBoolW( "uniformSize", &uniformSize, &zero );
   tag.loadBoolW( "fastErase", &fastErase, &zero );
   tag.loadBoolW( "noErase", &noErase, &zero );
+  tag.loadW( unknownTags );
   tag.loadW( "endObjectProperties" );
   tag.loadW( "" );
 
@@ -1207,6 +1211,7 @@ static char *emptyStr = "";
   // read file and process each "object" tag
   tag.init();
   tag.loadR( "beginObjectProperties" );
+  tag.loadR( unknownTags );
   tag.loadR( "major", &major );
   tag.loadR( "minor", &minor );
   tag.loadR( "release", &release );
@@ -1241,7 +1246,10 @@ static char *emptyStr = "";
 
   status = readPngFile();
   if ( !( status & 1 ) ) {
-    actWin->appCtx->postMessage( "Cannot read png file" );
+    char msg[255+1];
+    snprintf( msg, 255, activePngClass_str1, actWin->fileName,
+     pngFileName );
+    actWin->appCtx->postMessage( msg );
   }
 
   return stat;
@@ -1293,7 +1301,10 @@ int major, minor, release;
 
   status = readPngFile();
   if ( !( status & 1 ) ) {
-    actWin->appCtx->postMessage( "Cannot read png file" );
+    char msg[255+1];
+    snprintf( msg, 255, activePngClass_str1, actWin->fileName,
+     pngFileName );
+    actWin->appCtx->postMessage( msg );
   }
 
   this->initSelectBox();

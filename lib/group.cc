@@ -598,6 +598,7 @@ char *emptyStr = "";
   tag.loadW( "y", &y );
   tag.loadW( "w", &w );
   tag.loadW( "h", &h );
+  tag.loadW( unknownTags );
   tag.loadW( "" );
   tag.loadW( "beginGroup" );
   tag.loadW( "" );
@@ -726,6 +727,7 @@ char *emptyStr = "";
   // read file and process each "object" tag
   tag.init();
   tag.loadR( "beginObjectProperties" );
+  tag.loadR( unknownTags );
   tag.loadR( "major", &major );
   tag.loadR( "minor", &minor );
   tag.loadR( "release", &release );
@@ -764,7 +766,7 @@ char *emptyStr = "";
 
     while ( gotOne ) {
 
-      //printf( "name = [%s]\n", tagName );
+      //fprintf( stderr, "name = [%s]\n", tagName );
 
       if ( strcmp( tagName, "object" ) == 0 ) {
 
@@ -774,12 +776,12 @@ char *emptyStr = "";
         // ==============================================================
         // Create sub-object
 
-        //printf( "objName = [%s]\n", itemName );
+        //fprintf( stderr, "objName = [%s]\n", itemName );
 
         cur = new activeGraphicListType;
         if ( !cur ) {
           fclose( f );
-          printf( activeGroupClass_str1 );
+          fprintf( stderr, activeGroupClass_str1 );
           return 0;
         }
 
@@ -799,7 +801,7 @@ char *emptyStr = "";
         else {
 
           fclose( f );
-          printf( activeGroupClass_str1 );
+          fprintf( stderr, activeGroupClass_str1 );
           return 0;
 
         }
@@ -967,7 +969,7 @@ char oneName[PV_Factory::MAX_PV_NAME+1];
       cur = new activeGraphicListType;
       if ( !cur ) {
         fclose( f );
-        printf( activeGroupClass_str1 );
+        fprintf( stderr, activeGroupClass_str1 );
         return 0;
       }
 
@@ -988,7 +990,7 @@ char oneName[PV_Factory::MAX_PV_NAME+1];
       }
       else {
         fclose( f );
-        printf( activeGroupClass_str1 );
+        fprintf( stderr, activeGroupClass_str1 );
         return 0;
       }
 
@@ -1235,7 +1237,7 @@ activeGraphicListPtr cur;
   cur = head->flink;
   while ( cur != head ) {
 
-    //printf( "group ... " );
+    //fprintf( stderr, "group ... " );
     cur->node->drawActiveIfIntersects( x0, y0, x1, y1 );
 
     cur = cur->flink;

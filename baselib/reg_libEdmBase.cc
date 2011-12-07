@@ -48,12 +48,14 @@ static libRecType libRec[] = {
   { "activeRadioButtonClass", global_str5, reg_str23 },
   { "activeMessageButtonClass", global_str5, reg_str16 },
   { "activeUpdownButtonClass", global_str5, reg_str21 },
+  { "activeRampButtonClass", global_str5, reg_str28 },
   { "activeExitButtonClass", global_str5, reg_str17 },
   { "menuMuxClass", global_str5, reg_str18 },
   { "relatedDisplayClass", global_str5, reg_str19 },
   { "shellCmdClass", global_str5, reg_str20 },
   { "pvInspectorClass", global_str2, reg_str26 },
   { "activeTableClass", global_str2, reg_str27 },
+  { "activeCoefTableClass", global_str2, reg_str29 }
 };
 
 #ifdef __cplusplus

@@ -35,7 +35,7 @@ activeDynSymbolClass *dso;
 undoDynSymbolOpClass ()
 {
 
-  printf( "undoDynSymbolOpClass::undoDynSymbolOpClass\n" );
+  fprintf( stderr, "undoDynSymbolOpClass::undoDynSymbolOpClass\n" );
   dso = NULL;
 
 }
@@ -47,7 +47,7 @@ undoDynSymbolOpClass (
 int i;
 activeGraphicListPtr head, cur, next, sourceHead, curSource;
 
-  // printf( "undoDynSymbolOpClass::undoDynSymbolOpClass\n" );
+  // fprintf( stderr, "undoDynSymbolOpClass::undoDynSymbolOpClass\n" );
 
   // copy display list and editable attributes from current symbol
   dso = new activeDynSymbolClass;
@@ -337,7 +337,7 @@ static void dynSymbol_gateUpUpdate (
 
 activeDynSymbolClass *dso = (activeDynSymbolClass *) userarg;
 
-  //printf( "dynSymbol_gateUpUpdate, value = %-d\n", pv->get_int() );
+  //fprintf( stderr, "dynSymbol_gateUpUpdate, value = %-d\n", pv->get_int() );
 
   if ( pv->get_int() == dso->gateUpValue ) {
 
@@ -595,7 +595,7 @@ int i;
 
 activeDynSymbolClass::~activeDynSymbolClass ( void ) {
 
-//   printf( "In activeDynSymbolClass::~activeDynSymbolClass\n" );
+//   fprintf( stderr, "In activeDynSymbolClass::~activeDynSymbolClass\n" );
 
 activeGraphicListPtr head;
 activeGraphicListPtr cur, next;
@@ -1001,7 +1001,7 @@ int visInverted;
     // for forward compatibility
     stat = actWin->readUntilEndOfData( f, winMajor, winMinor, winRelease );
     if ( !( stat & 1 ) ) {
-      fclose( f );
+      fileClose( f );
       actWin->setLine( saveLine );
       tagClass::popLevel();
       return stat;
@@ -1019,7 +1019,7 @@ int visInverted;
       if ( !gotOne ) {
         if ( i == 0 ) {
           numStates = 0;
-          fclose( f );
+          fileClose( f );
           actWin->setLine( saveLine );
 	  tagClass::popLevel();
           return 0;
@@ -1032,7 +1032,7 @@ int visInverted;
       tk = strtok( itemName, " \t\n" );
       if ( strcmp( tk, "activeGroupClass" ) != 0 ) {
         numStates = 0;
-        fclose( f );
+        fileClose( f );
         actWin->setLine( saveLine );
 	tagClass::popLevel();
         return 0;
@@ -1058,7 +1058,7 @@ int visInverted;
         gotOne = fgets( itemName, 127, f );
         if ( !gotOne ) {
           numStates = 0;
-          fclose( f );
+          fileClose( f );
           actWin->setLine( saveLine );
 	  tagClass::popLevel();
           return 0;
@@ -1077,10 +1077,10 @@ int visInverted;
 
           cur = new activeGraphicListType;
           if ( !cur ) {
-            fclose( f );
-            printf( "Insufficient virtual memory - abort\n" );
+            fileClose( f );
+            fprintf( stderr, "Insufficient virtual memory - abort\n" );
             numStates = 0;
-            fclose( f );
+            fileClose( f );
             actWin->setLine( saveLine );
 	    tagClass::popLevel();
             return 0;
@@ -1096,7 +1096,7 @@ int visInverted;
             stat = actWin->readUntilEndOfData( f, winMajor, winMinor,
              winRelease );
             if ( !( stat & 1 ) ) {
-              fclose( f );
+              fileClose( f );
               actWin->setLine( saveLine );
 	      tagClass::popLevel();
               return stat;
@@ -1112,8 +1112,8 @@ int visInverted;
 
           }
           else {
-            fclose( f );
-            printf( "Insufficient virtual memory - abort\n" );
+            fileClose( f );
+            fprintf( stderr, "Insufficient virtual memory - abort\n" );
             numStates = 0;
             actWin->setLine( saveLine );
 	    tagClass::popLevel();
@@ -1127,7 +1127,7 @@ int visInverted;
       // for forward compatibility
       stat = actWin->readUntilEndOfData( f, winMajor, winMinor, winRelease );
       if ( !( stat & 1 ) ) {
-        fclose( f );
+        fileClose( f );
         actWin->setLine( saveLine );
 	tagClass::popLevel();
         return stat;
@@ -1153,7 +1153,7 @@ int visInverted;
 
       if ( gotOne ) {
 
-        //printf( "name = [%s]\n", tagName );
+        //fprintf( stderr, "name = [%s]\n", tagName );
 
         if ( strcmp( tagName, "object" ) == 0 ) {
 
@@ -1162,7 +1162,7 @@ int visInverted;
 
           if ( strcmp( itemName, "activeGroupClass" ) != 0 ) {
             numStates = 0;
-            fclose( f );
+            fileClose( f );
             tag.setLine( saveLine );
 	    tagClass::popLevel();
             return 0;
@@ -1172,7 +1172,7 @@ int visInverted;
         }
         else {
           numStates = 0;
-          fclose( f );
+          fileClose( f );
           tag.setLine( saveLine );
 	  tagClass::popLevel();
           return 0;
@@ -1184,7 +1184,7 @@ int visInverted;
 
         if ( i == 0 ) {
           numStates = 0;
-          fclose( f );
+          fileClose( f );
           tag.setLine( saveLine );
 	  tagClass::popLevel();
           return 0;
@@ -1199,6 +1199,7 @@ int visInverted;
       // read in group properties
       tag.init();
       tag.loadR( "beginObjectProperties" );
+      tag.loadR( unknownTags );
       tag.loadR( "major", &major );
       tag.loadR( "minor", &minor );
       tag.loadR( "release", &release );
@@ -1241,7 +1242,7 @@ int visInverted;
         gotOne = tag.getName( tagName, 255, f );
         if ( !gotOne ) {
           numStates = 0;
-          fclose( f );
+          fileClose( f );
           tag.setLine( saveLine );
 	  tagClass::popLevel();
           return 0;
@@ -1249,7 +1250,7 @@ int visInverted;
 
         if ( gotOne ) {
 
-          //printf( "name = [%s]\n", tagName );
+          //fprintf( stderr, "name = [%s]\n", tagName );
 
           if ( strcmp( tagName, "object" ) == 0 ) {
 
@@ -1259,16 +1260,16 @@ int visInverted;
             // =======================================================
             // Create object
 
-            //printf( "objName = [%s]\n", itemName );
+            //fprintf( stderr, "objName = [%s]\n", itemName );
 
             more = 1;
 
             cur = new activeGraphicListType;
             if ( !cur ) {
-              fclose( f );
-              printf( "Insufficient virtual memory - abort\n" );
+              fileClose( f );
+              fprintf( stderr, "Insufficient virtual memory - abort\n" );
               numStates = 0;
-              fclose( f );
+              fileClose( f );
               tag.setLine( saveLine );
 	      tagClass::popLevel();
               return 0;
@@ -1291,8 +1292,8 @@ int visInverted;
             }
             else {
 
-              fclose( f );
-              printf( "Insufficient virtual memory - abort\n" );
+              fileClose( f );
+              fprintf( stderr, "Insufficient virtual memory - abort\n" );
               numStates = 0;
               tag.setLine( saveLine );
 	      tagClass::popLevel();
@@ -1308,7 +1309,7 @@ int visInverted;
           }
           else {
             numStates = 0;
-            fclose( f );
+            fileClose( f );
             tag.setLine( saveLine );
 	    tagClass::popLevel();
             return 0;
@@ -1337,7 +1338,7 @@ int visInverted;
 
   }
 
-  fclose( f );
+  fileClose( f );
 
   w = maxW;
   sboxW = w;
@@ -1405,7 +1406,7 @@ expStringClass expStr;
   // for forward compatibility
   stat = actWin->readUntilEndOfData( f, winMajor, winMinor, winRelease );
   if ( !( stat & 1 ) ) {
-    fclose( f );
+    fileClose( f );
     actWin->setLine( saveLine );
     return stat;
   }
@@ -1422,7 +1423,7 @@ expStringClass expStr;
     if ( !gotOne ) {
       if ( i == 0 ) {
         numStates = 0;
-        fclose( f );
+        fileClose( f );
         actWin->setLine( saveLine );
         return 0;
       }
@@ -1434,7 +1435,7 @@ expStringClass expStr;
     tk = strtok( itemName, " \t\n" );
     if ( strcmp( tk, "activeGroupClass" ) != 0 ) {
       numStates = 0;
-      fclose( f );
+      fileClose( f );
       actWin->setLine( saveLine );
       return 0;
     }
@@ -1459,7 +1460,7 @@ expStringClass expStr;
       gotOne = fgets( itemName, 127, f );
       if ( !gotOne ) {
         numStates = 0;
-        fclose( f );
+        fileClose( f );
         actWin->setLine( saveLine );
         return 0;
       }
@@ -1477,10 +1478,10 @@ expStringClass expStr;
 
         cur = new activeGraphicListType;
         if ( !cur ) {
-          fclose( f );
-          printf( "Insufficient virtual memory - abort\n" );
+          fileClose( f );
+          fprintf( stderr, "Insufficient virtual memory - abort\n" );
           numStates = 0;
-          fclose( f );
+          fileClose( f );
           actWin->setLine( saveLine );
           return 0;
         }
@@ -1495,7 +1496,7 @@ expStringClass expStr;
           stat = actWin->readUntilEndOfData( f, winMajor, winMinor,
            winRelease );
           if ( !( stat & 1 ) ) {
-            fclose( f );
+            fileClose( f );
             actWin->setLine( saveLine );
             return stat;
           }
@@ -1510,8 +1511,8 @@ expStringClass expStr;
 
         }
         else {
-          fclose( f );
-          printf( "Insufficient virtual memory - abort\n" );
+          fileClose( f );
+          fprintf( stderr, "Insufficient virtual memory - abort\n" );
           numStates = 0;
           actWin->setLine( saveLine );
           return 0;
@@ -1524,14 +1525,14 @@ expStringClass expStr;
     // for forward compatibility
     stat = actWin->readUntilEndOfData( f, winMajor, winMinor, winRelease );
     if ( !( stat & 1 ) ) {
-      fclose( f );
+      fileClose( f );
       actWin->setLine( saveLine );
       return stat;
     }
 
   }
 
-  fclose( f );
+  fileClose( f );
 
   w = maxW;
   sboxW = w;
@@ -1586,6 +1587,7 @@ char *emptyStr = "";
   tag.loadW( "bgColor", actWin->ci, &bgColor );
   tag.loadBoolW( "showOOBState", &showOOBState, &zero );
   tag.loadBoolW( "gateOnMouseOver", &gateOnMouseOver, &zero );
+  tag.loadW( unknownTags );
   tag.loadW( "endObjectProperties" );
   tag.loadW( "" );
 
@@ -1683,6 +1685,7 @@ char *emptyStr = "";
   // read file and process each "object" tag
   tag.init();
   tag.loadR( "beginObjectProperties" );
+  tag.loadR( unknownTags );
   tag.loadR( "major", &major );
   tag.loadR( "minor", &minor );
   tag.loadR( "release", &release );
@@ -2333,7 +2336,7 @@ int num;
            dynSymbol_monitor_gateUp_connect_state, this );
 	}
 	else {
-          printf( activeDynSymbolClass_str25 );
+          fprintf( stderr, activeDynSymbolClass_str25 );
           opStat = 0;
         }
       }
@@ -2346,7 +2349,7 @@ int num;
            dynSymbol_monitor_gateDown_connect_state, this );
 	}
 	else {
-          printf( activeDynSymbolClass_str25 );
+          fprintf( stderr, activeDynSymbolClass_str25 );
           opStat = 0;
         }
       }
@@ -2359,7 +2362,7 @@ int num;
            dynSymbol_monitor_color_connect_state, this );
 	}
 	else {
-          printf( activeDynSymbolClass_str25 );
+          fprintf( stderr, activeDynSymbolClass_str25 );
           opStat = 0;
         }
       }
@@ -3290,7 +3293,7 @@ int stat, i, nguc, ngdc, ngu, ngd, nr, ne, nd, ncolori, ncr;
 
   if ( ngu ) {
 
-    //printf( "ngu, up = %-d, down = %-d\n", up, down );
+    //fprintf( stderr, "ngu, up = %-d, down = %-d\n", up, down );
 
     if ( !init ) {
       curCount = numStates-1;
@@ -3302,7 +3305,7 @@ int stat, i, nguc, ngdc, ngu, ngd, nr, ne, nd, ncolori, ncr;
 
     if ( !up || down ) {
 
-      //printf( "ngu, do up\n" );
+      //fprintf( stderr, "ngu, do up\n" );
 
       up = 1;
       down = 0;
@@ -3320,7 +3323,7 @@ int stat, i, nguc, ngdc, ngu, ngd, nr, ne, nd, ncolori, ncr;
 
   if ( ngd ) {
 
-    //printf( "ngd, up = %-d, down = %-d\n", up, down );
+    //fprintf( stderr, "ngd, up = %-d, down = %-d\n", up, down );
 
     if ( !init ) {
       if ( showOOBState ) {
@@ -3337,7 +3340,7 @@ int stat, i, nguc, ngdc, ngu, ngd, nr, ne, nd, ncolori, ncr;
 
     if ( up || !down ) {
 
-      //printf( "ngd, do down\n" );
+      //fprintf( stderr, "ngd, do down\n" );
 
       up = 0;
       down = 1;
@@ -4241,7 +4244,7 @@ int activeDynSymbolClass::undoRotate (
   int h )
 {
 
-  //printf( "activeDynSymbolClass::undoRotate - not implemented\n" );
+  //fprintf( stderr, "activeDynSymbolClass::undoRotate - not implemented\n" );
 
   return 1;
 
@@ -4255,7 +4258,7 @@ int activeDynSymbolClass::undoFlip (
   int h )
 {
 
-  //printf( "activeDynSymbolClass::undoFlip - not implemented\n" );
+  //fprintf( stderr, "activeDynSymbolClass::undoFlip - not implemented\n" );
 
   return 1;
 
@@ -4275,5 +4278,29 @@ void activeDynSymbolClass::getPvs (
   pvs[0] = gateUpPvId;
   pvs[1] = gateDownPvId;
   pvs[2] = colorPvId;
+
+}
+
+// crawler functions may return blank pv names
+char *activeDynSymbolClass::crawlerGetFirstPv ( void ) {
+
+  crawlerPvIndex = 0;
+  return gateUpPvExpStr.getExpanded();
+
+}
+
+char *activeDynSymbolClass::crawlerGetNextPv ( void ) {
+
+  crawlerPvIndex++;
+
+  if ( crawlerPvIndex == 1 ) {
+    return gateDownPvExpStr.getExpanded();
+  }
+  else if ( crawlerPvIndex == 2 ) {
+    return colorPvExpStr.getExpanded();
+  }
+  else {
+    return NULL;
+  }
 
 }

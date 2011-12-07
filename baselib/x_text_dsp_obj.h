@@ -51,7 +51,7 @@
 #define XTDC_K_FILE_NAME 2
 
 #define XTDC_MAJOR_VERSION 4
-#define XTDC_MINOR_VERSION 1
+#define XTDC_MINOR_VERSION 2
 #define XTDC_RELEASE 0
 
 #ifdef __x_text_dsp_obj_cc
@@ -126,6 +126,12 @@ static void xtdoSetKpIntValue (
   XtPointer client,
   XtPointer call );
 
+static void dummy (
+   Widget w,
+   XEvent *e,
+   String *params,
+   Cardinal numParams );
+
 static void drag (
    Widget w,
    XEvent *e,
@@ -133,6 +139,12 @@ static void drag (
    Cardinal numParams );
 
 static void selectDrag (
+   Widget w,
+   XEvent *e,
+   String *params,
+   Cardinal numParams );
+
+static void selectActions (
    Widget w,
    XEvent *e,
    String *params,
@@ -322,6 +334,12 @@ friend void xtdoSetKpIntValue (
   XtPointer client,
   XtPointer call );
 
+friend void dummy (
+   Widget w,
+   XEvent *e,
+   String *params,
+   Cardinal numParams );
+
 friend void drag (
    Widget w,
    XEvent *e,
@@ -329,6 +347,12 @@ friend void drag (
    Cardinal numParams );
 
 friend void selectDrag (
+   Widget w,
+   XEvent *e,
+   String *params,
+   Cardinal numParams );
+
+friend void selectActions (
    Widget w,
    XEvent *e,
    String *params,
@@ -474,6 +498,7 @@ typedef struct editBufTag {
   int bufUpdatePvOnDrop;
   int bufUseHexPrefix;
   efInt bufEfPrecision;
+  char bufFieldLenInfo[7+1];
   int bufClipToDspLimits;
   int bufBgColor;
   int bufFgColor;
@@ -522,6 +547,7 @@ int updatePvOnDrop;
 int useHexPrefix;
 int precision;
 efInt efPrecision;
+char fieldLenInfo[7+1];
 int clipToDspLimits;
 double upperLim, lowerLim;
 int bgColor;
@@ -543,6 +569,7 @@ int nullDetectMode;
 
 ProcessVariable *pvId, *svalPvId, *fgPvId;
 
+int pvIndex;
 expStringClass pvExpStr, svalPvExpStr, fgPvExpStr;
 char pvName[PV_Factory::MAX_PV_NAME+1];
 
@@ -758,6 +785,10 @@ void getPvs (
   int max,
   ProcessVariable *pvs[],
   int *n );
+
+char *crawlerGetFirstPv ( void );
+
+char *crawlerGetNextPv ( void );
 
 };
 

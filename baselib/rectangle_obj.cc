@@ -532,6 +532,7 @@ static int styleEnum[2] = {
 
   tag.init();
   tag.loadR( "beginObjectProperties" );
+  tag.loadR( unknownTags );
   tag.loadR( "major", &major );
   tag.loadR( "minor", &minor );
   tag.loadR( "release", &release );
@@ -987,6 +988,7 @@ static int styleEnum[2] = {
   tag.loadBoolW( "visInvert", &visInverted, &zero );
   tag.loadW( "visMin", minVisString, emptyStr );
   tag.loadW( "visMax", maxVisString, emptyStr );
+  tag.loadW( unknownTags );
   tag.loadW( "endObjectProperties" );
   tag.loadW( "" );
 
@@ -1818,6 +1820,22 @@ void activeRectangleClass::getPvs (
   *n = 2;
   pvs[0] = alarmPvId;
   pvs[1] = visPvId;
+
+}
+
+// crawler functions may return blank pv names
+char *activeRectangleClass::crawlerGetFirstPv ( void ) {
+
+  crawlerPvIndex = 0;
+  return alarmPvExpStr.getExpanded();
+
+}
+
+char *activeRectangleClass::crawlerGetNextPv ( void ) {
+
+  if ( crawlerPvIndex >= 1 ) return NULL;
+  crawlerPvIndex++;
+  return visPvExpStr.getExpanded();
 
 }
 

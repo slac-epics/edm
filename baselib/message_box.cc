@@ -283,22 +283,22 @@ int activeMessageBoxClass::rotateLogFile ( void ) {
 char newName[256];
 int stat;
 
-// printf( "in rotateLogFile\n" );
+// fprintf( stderr, "in rotateLogFile\n" );
 
   if ( logFileExists ) {
 
     strncpy( newName, logFileName.getExpanded(), 255 );
     Strncat( newName, "_2", 255 );
 
-    //printf( "unlink %s\n", newName );
+    //fprintf( stderr, "unlink %s\n", newName );
     stat = unlink( newName );
 
     fclose( logFile );
 
-    //printf( "rename %s to %s\n", logFileName.getExpanded(), newName );
+    //fprintf( stderr, "rename %s to %s\n", logFileName.getExpanded(), newName );
     stat = rename( logFileName.getExpanded(), newName );
     if ( stat < 0 ) {
-      printf( activeMessageBoxClass_str1, logFileName.getExpanded(), newName );
+      fprintf( stderr, activeMessageBoxClass_str1, logFileName.getExpanded(), newName );
     }
 
     logFile = fopen( logFileName.getExpanded(), "a" );
@@ -314,14 +314,14 @@ int stat;
     if ( logFileOpen ) {
       stat = lockFile( logFile );
       if ( !( stat & 1 ) ) {
-        printf( activeMessageBoxClass_str2 );
+        fprintf( stderr, activeMessageBoxClass_str2 );
         fclose( logFile );
         logFileExists = 0;
         logFileOpen = 0;
       }
     }
     else {
-      printf( activeMessageBoxClass_str3 );
+      fprintf( stderr, activeMessageBoxClass_str3 );
     }
 
   }
@@ -407,6 +407,7 @@ char *emptyStr = "";
   tag.loadW( "flushTimerValue", &flushTimerValue, &zero );
   tag.loadW( "logFileName", &logFileName, emptyStr );
   tag.loadBoolW( "readOnly", &fileIsReadOnly, &zero );
+  tag.loadW( unknownTags );
   tag.loadW( "endObjectProperties" );
   tag.loadW( "" );
 
@@ -492,6 +493,7 @@ char *emptyStr = "";
 
   tag.init();
   tag.loadR( "beginObjectProperties" );
+  tag.loadR( unknownTags );
   tag.loadR( "major", &major );
   tag.loadR( "minor", &minor );
   tag.loadR( "release", &release );
@@ -986,7 +988,7 @@ struct stat fileStat;
            messagebox_monitor_read_connect_state, this );
 	}
 	else {
-          printf( activeMessageBoxClass_str22 );
+          fprintf( stderr, activeMessageBoxClass_str22 );
           opStat = 0;
         }
       }
@@ -1136,7 +1138,7 @@ Widget widget;
    NULL );
 
   if ( !frameWidget ) {
-    printf( activeMessageBoxClass_str24 );
+    fprintf( stderr, activeMessageBoxClass_str24 );
     return 0;
   }
 
@@ -1434,6 +1436,20 @@ void activeMessageBoxClass::getPvs (
 
   *n = 1;
   pvs[0] = readPvId;
+
+}
+
+// crawler functions may return blank pv names
+char *activeMessageBoxClass::crawlerGetFirstPv ( void ) {
+
+  crawlerPvIndex = 0;
+  return readPvExpStr.getExpanded();
+
+}
+
+char *activeMessageBoxClass::crawlerGetNextPv ( void ) {
+
+  return NULL;
 
 }
 

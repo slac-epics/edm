@@ -152,6 +152,7 @@ static int endianEnum[2] = {
   tag.loadW( "endian", 2, endianEnumStr, endianEnum, &en, &bigEndian );
   tag.loadW( "numBits", &nobt, &sixteen );
   tag.loadW( "shift", &shft, &zero );
+  tag.loadW( unknownTags );
   tag.loadW( "endObjectProperties" );
   tag.loadW( "" );
 
@@ -232,6 +233,7 @@ static int endianEnum[2] = {
 
   tag.init();
   tag.loadR( "beginObjectProperties" );
+  tag.loadR( unknownTags );
   tag.loadR( "major", &major );
   tag.loadR( "minor", &minor );
   tag.loadR( "release", &release );
@@ -816,7 +818,7 @@ int edmByteClass::activate(int pass, void *ptr)
         case 2: // connect to pv
             initEnable();
             if (valuePvId)
-                printf("byte::activate: pv already set!\n");
+                fprintf( stderr,"byte::activate: pv already set!\n");
             if (is_pvname_valid)
             {
                 valuePvId = the_PV_Factory->create(getExpandedPVName());
@@ -1154,5 +1156,20 @@ char *edmByteClass::dragValue(int i)
       return (char *)getRawPVName();
 
    }
+
+}
+
+// crawler functions may return blank pv names
+char *edmByteClass::crawlerGetFirstPv ( void ) {
+
+  crawlerPvIndex = 0;
+
+  return pv_exp_str.getExpanded();
+
+}
+
+char *edmByteClass::crawlerGetNextPv ( void ) {
+
+  return NULL;
 
 }

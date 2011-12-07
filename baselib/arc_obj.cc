@@ -68,7 +68,7 @@ double angle;
 undoArcOpClass ()
 {
 
-  printf( "undoArcOpClass::undoArcOpClass\n" );
+  fprintf( stderr, "undoArcOpClass::undoArcOpClass\n" );
 
 }
 
@@ -451,7 +451,7 @@ int activeArcClass::createInteractive (
   int _w,
   int _h ) {
 
-//   printf( "In activeArcClass::createInteractive\n" );
+//   fprintf( stderr, "In activeArcClass::createInteractive\n" );
 
   actWin = (activeWindowClass *) aw_obj;
   x = _x;
@@ -618,6 +618,7 @@ static int fillModeEnum[2] = {
   // read file and process each "object" tag
   tag.init();
   tag.loadR( "beginObjectProperties" );
+  tag.loadR( unknownTags );
   tag.loadR( "major", &major );
   tag.loadR( "minor", &minor );
   tag.loadR( "release", &release );
@@ -1097,6 +1098,7 @@ static int fillModeEnum[2] = {
   tag.loadW( "totalAngle", &efTotalAngle );
   tag.loadW( "fillMode", 2, fillModeEnumStr, fillModeEnum, &fillMode,
    &fillModeChord );
+  tag.loadW( unknownTags );
   tag.loadW( "endObjectProperties" );
   tag.loadW( "" );
 
@@ -2109,6 +2111,22 @@ void activeArcClass::getPvs (
   *n = 2;
   pvs[0] = alarmPvId;
   pvs[1] = visPvId;
+
+}
+
+// crawler functions may return blank pv names
+char *activeArcClass::crawlerGetFirstPv ( void ) {
+
+  crawlerPvIndex = 0;
+  return alarmPvExpStr.getExpanded();
+
+}
+
+char *activeArcClass::crawlerGetNextPv ( void ) {
+
+  if ( crawlerPvIndex >= 1 ) return NULL;
+  crawlerPvIndex++;
+  return visPvExpStr.getExpanded();
 
 }
 

@@ -296,7 +296,7 @@ activeXRegTextClass *axrto = (activeXRegTextClass *) userarg;
 
 activeXRegTextClass::activeXRegTextClass ( void ) {
 
-//  printf("RegText constructor\n");
+//  fprintf( stderr,"RegText constructor\n");
   name = new char[strlen("activeXRegTextClass")+1];
   strcpy( name, "activeXRegTextClass" );
 
@@ -578,6 +578,7 @@ static int alignEnum[3] = {
 
   tag.init();
   tag.loadR( "beginObjectProperties" );
+  tag.loadR( unknownTags );
   tag.loadR( "major", &major );
   tag.loadR( "minor", &minor );
   tag.loadR( "release", &release );
@@ -674,7 +675,7 @@ unsigned int pixel;
 char oneValue[PV_Factory::MAX_PV_NAME+1];
 int stat = 1;
 
-//  printf("RegText old_createFromFile\n");
+//  fprintf( stderr,"RegText old_createFromFile\n");
 
   this->actWin = _actWin;
 
@@ -1137,6 +1138,7 @@ static int alignEnum[3] = {
   tag.loadComplexW( "value", &value, emptyStr );
   tag.loadBoolW( "autoSize", &autoSize, &zero );
   tag.loadW( "regExpr", regExpStr, emptyStr );
+  tag.loadW( unknownTags );
   tag.loadW( "endObjectProperties" );
   tag.loadW( "" );
 
@@ -1214,7 +1216,7 @@ int activeXRegTextClass::drawActive ( void ) {
 
 XRectangle xR = { x, y, w, h };
 int clipStat;
-//    printf("in drawActive\n");
+//    fprintf( stderr,"in drawActive\n");
 
   if ( !enabled || !activeMode || !visibility ) return 1;
 
@@ -1269,7 +1271,7 @@ int clipStat;
 
 char * activeXRegTextClass::getProcessedText(char *text) {
     size_t len = 80;
-//    printf("in getProcessedText\n");
+//    fprintf( stderr,"in getProcessedText\n");
     strncpy( text, value.getExpanded(), 79 );
     if (re_valid)
     {
@@ -1312,7 +1314,7 @@ XRectangle xR = { x, y, w, h };
 
   char text[80];
   getProcessedText(text);
-//    printf ("eraseUnconditional: text=%s\n", text);
+//    fprintf(stderr,"eraseUnconditional: text=%s\n", text);
 
 
   if ( useDisplayBg ) {
@@ -1320,7 +1322,7 @@ XRectangle xR = { x, y, w, h };
     XDrawStrings( actWin->d, XtWindow(actWin->executeWidget),
      actWin->executeGc.eraseGC(), stringX, stringY, fontHeight,
      text, stringLength );
-//    printf ("eraseUnconditional: useDisplayBg; text=%s\n", text);
+//    fprintf(stderr,"eraseUnconditional: useDisplayBg; text=%s\n", text);
 
   }
   else {
@@ -1328,7 +1330,7 @@ XRectangle xR = { x, y, w, h };
     XDrawImageStrings( actWin->d, XtWindow(actWin->executeWidget),
      actWin->executeGc.eraseGC(), stringX, stringY, fontHeight,
      text, stringLength );
-//    printf ("eraseUnconditional: !useDisplayBg; text=%s\n", text);
+//    fprintf(stderr,"eraseUnconditional: !useDisplayBg; text=%s\n", text);
 
   }
 
@@ -1365,7 +1367,7 @@ XRectangle xR = { x, y, w, h };
     XDrawStrings( actWin->d, XtWindow(actWin->executeWidget),
      actWin->executeGc.eraseGC(), stringX, stringY, fontHeight,
      text, stringLength );
-//    printf ("eraseActive: useDisplayBg; text=%s\n", text);
+//    fprintf(stderr,"eraseActive: useDisplayBg; text=%s\n", text);
 
     actWin->executeGc.removeEraseXClipRectangle();
 
@@ -1479,7 +1481,7 @@ int activeXRegTextClass::activate (
 	        // The compile failed, but memory was allocated (leak)
                 char buf[100];
                 regerror(res, &compiled_re, buf, sizeof buf);
-                // printf("Error in regular expression: %s\n", buf);
+                // fprintf( stderr,"Error in regular expression: %s\n", buf);
             }
             else {
                 re_valid = true;
@@ -1615,7 +1617,7 @@ int activeXRegTextClass::deactivate (
 
 // --------------------------------------------------------
     if ( re_valid ) {
-      printf( "regfree\n" );
+      fprintf( stderr, "regfree\n" );
       regfree(&compiled_re);
     }
 // --------------------------------------------------------
@@ -1708,7 +1710,7 @@ int clipStat;
   if ( clipStat & 1 )
     actWin->drawGc.removeNormXClipRectangle();
   //else
-  //  printf( "clipStat = %-d\n", clipStat );
+  //  fprintf( stderr, "clipStat = %-d\n", clipStat );
 
   actWin->drawGc.restoreFg();
   actWin->drawGc.restoreBg();
@@ -2226,6 +2228,28 @@ void activeXRegTextClass::getPvs (
   *n = 2;
   pvs[0] = alarmPvId;
   pvs[1] = visPvId;
+
+}
+
+// crawler functions may return blank pv names
+char *activeXRegTextClass::crawlerGetFirstPv ( void ) {
+
+  crawlerPvIndex = 0;
+  return alarmPvExpStr.getExpanded();
+
+}
+
+char *activeXRegTextClass::crawlerGetNextPv ( void ) {
+
+  if ( crawlerPvIndex >=1 ) return NULL;
+
+  crawlerPvIndex++;
+
+  if ( crawlerPvIndex == 1 ) {
+    return visPvExpStr.getExpanded();
+  }
+
+  return NULL;
 
 }
 

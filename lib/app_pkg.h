@@ -218,6 +218,11 @@ friend void viewFontMapping_cb (
   XtPointer client,
   XtPointer call );
 
+friend void viewEnv_cb (
+  Widget w,
+  XtPointer client,
+  XtPointer call );
+
 friend void view_pvList_cb (
   Widget w,
   XtPointer client,
@@ -276,10 +281,6 @@ int iconified;
 
 THREAD_HANDLE threadHandle;
 
-macroListPtr macroHead;
-int numFiles;
-fileListPtr fileHead;
-
 char ctlPV[127+1];
 char userLib[127+1];
 
@@ -294,7 +295,14 @@ msgDialogClass msgDialog;
 THREAD_LOCK_HANDLE actionsLock;
 actionsPtr actHead, actTail;
 
+int useStdErrFlag;
+char *errMsgPrefix;
+
 public:
+
+macroListPtr macroHead;
+int numFiles;
+fileListPtr fileHead;
 
 char displayName[127+1];
 
@@ -317,6 +325,8 @@ Widget renderImagesB;
 Widget checkpointPidB;
 
 Widget viewFontMappingB;
+
+Widget viewEnvB;
 
 ulBindingClass userLibObject;
 int exitFlag;
@@ -558,6 +568,14 @@ Widget fileSelectBoxWidgetId ( void );
 
 Widget importSelectBoxWidgetId ( void );
 
+void setErrMsgPrefix (
+  char *prefix
+);
+
+void useStdErr (
+  int flag
+);
+
 void postMessage (
   char *msg );
 
@@ -618,6 +636,8 @@ void addActions (
   XtActionsRec *actions, // actions must be a unique static address
   Cardinal n
 );
+
+void showEnv ( void );
 
 };
 

@@ -589,6 +589,7 @@ char *emptyStr = "";
   tag.loadW( "visMin", minVisString, emptyStr );
   tag.loadW( "visMax", maxVisString, emptyStr );
   tag.loadW( "colorPv", &colorPvExpString, emptyStr  );
+  tag.loadW( unknownTags );
   tag.loadW( "endObjectProperties" );
   tag.loadW( "" );
 
@@ -719,6 +720,7 @@ char *emptyStr = "";
 
   tag.init();
   tag.loadR( "beginObjectProperties" );
+  tag.loadR( unknownTags );
   tag.loadR( "major", &major );
   tag.loadR( "minor", &minor );
   tag.loadR( "release", &release );
@@ -1952,7 +1954,7 @@ char tmpPvName[PV_Factory::MAX_PV_NAME+1];
            this );
 	}
 	else {
-          printf( activeMessageButtonClass_str25 );
+          fprintf( stderr, activeMessageButtonClass_str25 );
           opStat = 0;
         }
 
@@ -1972,7 +1974,7 @@ char tmpPvName[PV_Factory::MAX_PV_NAME+1];
            this );
 	}
 	else {
-          printf( activeMessageButtonClass_str25 );
+          fprintf( stderr, activeMessageButtonClass_str25 );
           opStat = 0;
         }
 
@@ -1986,7 +1988,7 @@ char tmpPvName[PV_Factory::MAX_PV_NAME+1];
            msgbt_monitor_color_connect_state, this );
 	}
 	else {
-          printf( activeMessageButtonClass_str25 );
+          fprintf( stderr, activeMessageButtonClass_str25 );
           opStat = 0;
         }
 
@@ -2848,6 +2850,31 @@ void activeMessageButtonClass::getPvs (
 
   *n = 1;
   pvs[0] = destPvId;
+
+}
+
+// crawler functions may return blank pv names
+char *activeMessageButtonClass::crawlerGetFirstPv ( void ) {
+
+  crawlerPvIndex = 0;
+  return destPvExpString.getExpanded();
+
+}
+
+char *activeMessageButtonClass::crawlerGetNextPv ( void ) {
+
+  if ( crawlerPvIndex >=2 ) return NULL;
+
+  crawlerPvIndex++;
+
+  if ( crawlerPvIndex == 1 ) {
+    return colorPvExpString.getExpanded();
+  }
+  else if ( crawlerPvIndex == 2 ) {
+    return visPvExpString.getExpanded();
+  }
+
+  return NULL;
 
 }
 

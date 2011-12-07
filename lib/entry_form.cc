@@ -164,7 +164,7 @@ efSetItemCallbackDscPtr dsc;
   dsc = (efSetItemCallbackDscPtr) client;
   eo = (entryFormClass *) dsc->ef;
 
-//   printf( "ef_increment_num_items\n" );
+//   fprintf( stderr, "ef_increment_num_items\n" );
 
   if ( eo->numItems + 1 > eo->maxItems )
     eo->numItems = eo->maxItems;
@@ -194,7 +194,7 @@ efSetItemCallbackDscPtr dsc;
   dsc = (efSetItemCallbackDscPtr) client;
   eo = (entryFormClass *) dsc->ef;
 
-//   printf( "ef_decrement_num_items\n" );
+//   fprintf( stderr, "ef_decrement_num_items\n" );
 
   if ( eo->numItems - 1 < 1 )
     eo->numItems = 1;
@@ -225,7 +225,7 @@ Arg args[2];
   dsc = (efSetItemCallbackDscPtr) client;
   eo = (entryFormClass *) dsc->ef;
 
-//   printf( "ef_set_num_items\n" );
+//   fprintf( stderr, "ef_set_num_items\n" );
 
   ptr = XmTextGetString( w );
   if ( ptr[0] == 0 )
@@ -284,7 +284,7 @@ efSetItemCallbackDscPtr dsc;
   dsc = (efSetItemCallbackDscPtr) client;
   eo = (entryFormClass *) dsc->ef;
 
-// printf( "ef_increment_item_num\n" );
+// fprintf( stderr, "ef_increment_item_num\n" );
 
   if ( eo->index + 1 >= eo->numItems )
     eo->index = eo->numItems - 1;
@@ -314,7 +314,7 @@ efSetItemCallbackDscPtr dsc;
   dsc = (efSetItemCallbackDscPtr) client;
   eo = (entryFormClass *) dsc->ef;
 
-// printf( "ef_decrement_item_num\n" );
+// fprintf( stderr, "ef_decrement_item_num\n" );
 
   if ( eo->index - 1 < 0 )
     eo->index = 0;
@@ -345,7 +345,7 @@ Arg args[2];
   dsc = (efSetItemCallbackDscPtr) client;
   eo = (entryFormClass *) dsc->ef;
 
-// printf( "ef_set_item_num\n" );
+// fprintf( stderr, "ef_set_item_num\n" );
 
   updateOld = 0;
 
@@ -568,7 +568,7 @@ fontMenuEntry::~fontMenuEntry ( void )
 
 optionEntry::optionEntry ( void ) {
 
-//   printf( "optionEntry::optionEntry - new widgetListType\n" );
+//   fprintf( stderr, "optionEntry::optionEntry - new widgetListType\n" );
 
   head = new widgetListType;
   tail = head;
@@ -584,13 +584,13 @@ widgetListPtr cur, next;
   cur = head->flink;
   while ( cur ) {
     next = cur->flink;
-//     printf( "optionEntry::~optionEntry - delete node\n" );
+//     fprintf( stderr, "optionEntry::~optionEntry - delete node\n" );
     delete[] cur->value;
     delete cur;
     cur = next;
   }
 
-//   printf( "optionEntry::~optionEntry - delete head\n" );
+//   fprintf( stderr, "optionEntry::~optionEntry - delete head\n" );
   delete head;
 
 }
@@ -601,7 +601,7 @@ widgetListPtr curpb;
 int item, n;
 Arg args[2];
 
-//   printf( "In optionEntry::setValue, value = %-d\n", value );
+//   fprintf( stderr, "In optionEntry::setValue, value = %-d\n", value );
 
   item = 0;
   curpb = head->flink;
@@ -627,7 +627,7 @@ widgetListPtr curpb;
 int item, n;
 Arg args[2];
 
-//   printf( "In optionEntry::setValue, value = [%s]\n", value );
+//   fprintf( stderr, "In optionEntry::setValue, value = [%s]\n", value );
 
   curpb = head->flink;
   while ( curpb ) {
@@ -661,7 +661,7 @@ entryFormClass *eo;
 
 entryFormClass::entryFormClass ( void ) {
 
-  // printf( "In entryFormClass::entryFormClass - new entryListBase\n" );
+  // fprintf( stderr, "In entryFormClass::entryFormClass - new entryListBase\n" );
 
   itemHead = new entryListBase;
   itemTail = itemHead;
@@ -693,19 +693,19 @@ entryFormClass::~entryFormClass ( void ) {
 
 entryListBase *cur, *next;
 
-//  printf( "In entryFormClass::~entryFormClass\n" );
+//  fprintf( stderr, "In entryFormClass::~entryFormClass\n" );
 
   if ( itemHead ) {
 
     cur = itemHead->flink;
     while ( cur ) {
       next = cur->flink;
-//        printf( "entryFormClass::~entryFormClass - delete node\n" );
+//        fprintf( stderr, "entryFormClass::~entryFormClass - delete node\n" );
       delete cur;
       cur = next;
     }
 
-//      printf( "entryFormClass::~entryFormClass - delete itemHead\n" );
+//      fprintf( stderr, "entryFormClass::~entryFormClass - delete itemHead\n" );
     delete itemHead;
     itemHead = NULL;
 
@@ -717,7 +717,7 @@ int entryFormClass::destroy ( void ) {
 
 entryListBase *cur, *next;
 
-// printf( "entryFormClass::destroy\n" );
+// fprintf( stderr, "entryFormClass::destroy\n" );
 
   if ( entryFontList ) XmFontListFree( entryFontList );
   if ( actionFontList ) XmFontListFree( actionFontList );
@@ -725,12 +725,12 @@ entryListBase *cur, *next;
   if ( shell ) XtDestroyWidget( shell );
 
   if ( entryTag ) {
-//     printf( "entryFormClass::destroy - delete entryTag\n" );
+//     fprintf( stderr, "entryFormClass::destroy - delete entryTag\n" );
     delete[] entryTag;
   }
 
   if ( actionTag ) {
-//     printf( "entryFormClass::destroy - delete actionTag\n" );
+//     fprintf( stderr, "entryFormClass::destroy - delete actionTag\n" );
     delete[] actionTag;
   }
 
@@ -739,7 +739,7 @@ entryListBase *cur, *next;
     cur = itemHead->flink;
     while ( cur ) {
       next = cur->flink;
-//       printf( "entryFormClass::destroy - delete node\n" );
+//       fprintf( stderr, "entryFormClass::destroy - delete node\n" );
       delete cur;
       cur = next;
     }
@@ -838,7 +838,7 @@ XmString str;
   if ( fi ) {
 
     if ( entryFontTag ) {
-//       printf( "entryFormClass::create - new char[strlen(entryFontTag)+1]\n" );
+//       fprintf( stderr, "entryFormClass::create - new char[strlen(entryFontTag)+1]\n" );
       entryTag = new char[strlen(entryFontTag)+1];
       strcpy( entryTag, entryFontTag );
       fi->getTextFontList( entryTag, &entryFontList );
@@ -846,7 +846,7 @@ XmString str;
 }
 
     if ( actionFontTag ) {
-//       printf( "entryFormClass::create - new char[strlen(actionFontTag)+1]\n" );
+//       fprintf( stderr, "entryFormClass::create - new char[strlen(actionFontTag)+1]\n" );
       actionTag = new char[strlen(actionFontTag)+1];
       strcpy( actionTag, actionFontTag );
       fi->getTextFontList( actionTag, &actionFontList );
@@ -1045,14 +1045,14 @@ char buf[16];
   if ( fi ) {
 
     if ( entryFontTag ) {
-//       printf( "entryFormClass::create - new char[strlen(entryFontTag)+1]\n" );
+//       fprintf( stderr, "entryFormClass::create - new char[strlen(entryFontTag)+1]\n" );
       entryTag = new char[strlen(entryFontTag)+1];
       strcpy( entryTag, entryFontTag );
       fi->getTextFontList( entryTag, &entryFontList );
     }
 
     if ( actionFontTag ) {
-//       printf( "entryFormClass::create - new char[strlen(actionFontTag)+1]\n" );
+//       fprintf( stderr, "entryFormClass::create - new char[strlen(actionFontTag)+1]\n" );
       actionTag = new char[strlen(actionFontTag)+1];
       strcpy( actionTag, actionFontTag );
       fi->getTextFontList( actionTag, &actionFontList );
@@ -1538,14 +1538,28 @@ void TextFieldToInt (
   XtPointer call )
 {
 
+class textEntry *teo;
 char *buf;
 int *dest;
+XmTextPosition pos;
 
-  dest = (int *) client;
+  teo = (class textEntry *) client;
+  dest = teo->destPtrI;
 
   buf = XmTextGetString( w );
-  //*dest = atol( buf );
-  *dest = strtol( buf, NULL, 0 );
+
+  if ( blank(buf) || isLegalInteger( buf ) ) {
+    *dest = strtol( buf, NULL, 0 );
+    strncpy( teo->lastGoodNumeric, buf, 31 );
+    teo->lastGoodNumeric[31] = 0;
+  }
+  else {
+    pos = XmTextGetCursorPosition( w );
+    XmTextSetString( w, teo->lastGoodNumeric );
+    if ( pos > 0 ) pos -= 1;
+    XmTextSetCursorPosition( w, pos );
+  }
+
   XtFree( buf );
 
 }
@@ -1556,21 +1570,38 @@ void TextFieldToEfInt (
   XtPointer call )
 {
 
-char *buf, *tk;
+class textEntry *teo;
+char *buf, *tk, *ctx;
 efInt *dest;
 int i;
+XmTextPosition pos;
 
-  dest = (efInt *) client;
+  teo = (class textEntry *) client;
+  dest = teo->destPtrEfI;
 
   buf = XmTextGetString( w );
-  //i = atol( buf );
-  i = strtol( buf, NULL, 0 );
-  dest->setValue( i );
-  tk = strtok( buf, " \t\n" );
-  if ( tk )
-    dest->setNull( 0 );
-  else
-    dest->setNull( 1 );
+
+  if ( blank(buf) || isLegalInteger( buf ) ) {
+    strncpy( teo->lastGoodNumeric, buf, 31 );
+    teo->lastGoodNumeric[31] = 0;
+    i = strtol( buf, NULL, 0 );
+    dest->setValue( i );
+    ctx = NULL;
+    tk = strtok_r( buf, " \t\n", &ctx );
+    if ( tk ) {
+      dest->setNull( 0 );
+    }
+    else {
+      dest->setNull( 1 );
+    }
+  }
+  else {
+    pos = XmTextGetCursorPosition( w );
+    XmTextSetString( w, teo->lastGoodNumeric );
+    if ( pos > 0 ) pos -= 1;
+    XmTextSetCursorPosition( w, pos );
+  }
+
   XtFree( buf );
 
 }
@@ -1581,13 +1612,28 @@ void TextFieldToDouble (
   XtPointer call )
 {
 
+class textEntry *teo;
 char *buf;
 double *dest;
+XmTextPosition pos;
 
-  dest = (double *) client;
+  teo = (class textEntry *) client;
+  dest = teo->destPtrD;
 
   buf = XmTextGetString( w );
-  *dest = atof( buf );
+
+  if ( blank(buf) || isLegalFloat( buf ) ) {
+    *dest = atof( buf );
+    strncpy( teo->lastGoodNumeric, buf, 31 );
+    teo->lastGoodNumeric[31] = 0;
+  }
+  else {
+    pos = XmTextGetCursorPosition( w );
+    XmTextSetString( w, teo->lastGoodNumeric );
+    if ( pos > 0 ) pos -= 1;
+    XmTextSetCursorPosition( w, pos );
+  }
+
   XtFree( buf );
 
 }
@@ -1598,20 +1644,38 @@ void TextFieldToEfDouble (
   XtPointer call )
 {
 
-char *buf, *tk;
+class textEntry *teo;
+char *buf, *tk, *ctx;
 efDouble *dest;
 double d;
+XmTextPosition pos;
 
-  dest = (efDouble *) client;
+  teo = (class textEntry *) client;
+  dest = teo->destPtrEfD;
 
   buf = XmTextGetString( w );
-  d = atof( buf );
-  dest->setValue( d );
-  tk = strtok( buf, " \t\n" );
-  if ( tk )
-    dest->setNull( 0 );
-  else
-    dest->setNull( 1 );
+
+  if ( blank(buf) || isLegalFloat( buf ) ) {
+    strncpy( teo->lastGoodNumeric, buf, 31 );
+    teo->lastGoodNumeric[31] = 0;
+    d = atof( buf );
+    dest->setValue( d );
+    ctx = NULL;
+    tk = strtok_r( buf, " \t\n", &ctx );
+    if ( tk ) {
+      dest->setNull( 0 );
+    }
+    else {
+      dest->setNull( 1 );
+    }
+  }
+  else {
+    pos = XmTextGetCursorPosition( w );
+    XmTextSetString( w, teo->lastGoodNumeric );
+    if ( pos > 0 ) pos -= 1;
+    XmTextSetCursorPosition( w, pos );
+  }
+
   XtFree( buf );
 
 }
@@ -1631,7 +1695,7 @@ int i;
   destArray = (char **) dsc->destPtr;
   i = *(dsc->indexPtr);
 
-//   printf( "In TextFieldToStringArray, index = %-d\n", i );
+//   fprintf( stderr, "In TextFieldToStringArray, index = %-d\n", i );
 
   buf = XmTextGetString( w );
   strncpy( destArray[i], buf, dsc->size );
@@ -1645,17 +1709,19 @@ void TextFieldToIntArray (
   XtPointer call )
 {
 
+class textEntry *teo;
 efArrayCallbackDscPtr dsc;
 char *buf;
 int *destArray;
 int i, value;
 
-  dsc = (efArrayCallbackDscPtr) client;
+  teo = (class textEntry *) client;
+  dsc = &(teo->arrayDsc);
 
   destArray = (int *) dsc->destPtr;
   i = *(dsc->indexPtr);
 
-//   printf( "In TextFieldToIntArray, index = %-d\n", i );
+//   fprintf( stderr, "In TextFieldToIntArray, index = %-d\n", i );
 
   buf = XmTextGetString( w );
   //value = atol( buf );
@@ -1672,12 +1738,14 @@ void TextFieldToEfIntArray (
   XtPointer call )
 {
 
+class textEntry *teo;
 efArrayCallbackDscPtr dsc;
-char *buf, *tk;
+char *buf, *tk, *ctx;
 efInt *destArray;
 int i, value;
 
-  dsc = (efArrayCallbackDscPtr) client;
+  teo = (class textEntry *) client;
+  dsc = &(teo->arrayDsc);
 
   destArray = (efInt *) dsc->destPtr;
   i = *(dsc->indexPtr);
@@ -1685,7 +1753,8 @@ int i, value;
   buf = XmTextGetString( w );
   //value = atol( buf );
   value = strtol( buf, NULL, 0 );
-  tk = strtok( buf, " \t\n" );
+  ctx = NULL;
+  tk = strtok_r( buf, " \t\n", &ctx );
   if ( tk ) {
     destArray[i].setNull( 0 );
     destArray[i].setValue( value );
@@ -1703,18 +1772,20 @@ void TextFieldToDoubleArray (
   XtPointer call )
 {
 
+class textEntry *teo;
 efArrayCallbackDscPtr dsc;
 char *buf;
 double *destArray;
 int i;
 double value;
 
-  dsc = (efArrayCallbackDscPtr) client;
+  teo = (class textEntry *) client;
+  dsc = &(teo->arrayDsc);
 
   destArray = (double *) dsc->destPtr;
   i = *(dsc->indexPtr);
 
-//   printf( "In TextFieldToDoubleArray, index = %-d\n", i );
+//   fprintf( stderr, "In TextFieldToDoubleArray, index = %-d\n", i );
 
   buf = XmTextGetString( w );
   value = atof( buf );
@@ -1730,20 +1801,23 @@ void TextFieldToEfDoubleArray (
   XtPointer call )
 {
 
+class textEntry *teo;
 efArrayCallbackDscPtr dsc;
-char *buf, *tk;
+char *buf, *tk, *ctx;
 efDouble *destArray;
 int i;
 double value;
 
-  dsc = (efArrayCallbackDscPtr) client;
+  teo = (class textEntry *) client;
+  dsc = &(teo->arrayDsc);
 
   destArray = (efDouble *) dsc->destPtr;
   i = *(dsc->indexPtr);
 
   buf = XmTextGetString( w );
   value = atof( buf );
-  tk = strtok( buf, " \t\n" );
+  ctx = NULL;
+  tk = strtok_r( buf, " \t\n", &ctx );
   if ( tk ) {
     destArray[i].setNull( 0 );
     destArray[i].setValue( value );
@@ -1773,6 +1847,10 @@ char buf[127+1];
   cur = new textEntry;
 
   // textField widget
+
+  cur->destPtrI = dest;
+  strncpy( cur->lastGoodNumeric, buf, 31 );
+  cur->lastGoodNumeric[31] = 0;
 
   if ( curTopParent  == topForm ) {
 
@@ -1892,7 +1970,7 @@ char buf[127+1];
   }
 
   XtAddCallback( cur->activeW, XmNvalueChangedCallback, TextFieldToInt,
-   dest );
+   cur );
 
   itemTail->flink = cur;
   itemTail = cur;
@@ -1922,6 +2000,10 @@ char buf[127+1];
   cur = new textEntry;
 
   // textField widget
+
+  cur->destPtrEfI = dest;
+  strncpy( cur->lastGoodNumeric, buf, 31 );
+  cur->lastGoodNumeric[31] = 0;
 
   if ( curTopParent  == topForm ) {
 
@@ -2041,7 +2123,7 @@ char buf[127+1];
   }
 
   XtAddCallback( cur->activeW, XmNvalueChangedCallback, TextFieldToEfInt,
-   dest );
+   cur );
 
   itemTail->flink = cur;
   itemTail = cur;
@@ -2065,11 +2147,15 @@ char buf[127+1];
 
   sprintf( buf, "%-g", *dest );
 
-//   printf( "entryFormClass::addTextField - new textEntry\n" );
+//   fprintf( stderr, "entryFormClass::addTextField - new textEntry\n" );
 
   cur = new textEntry;
 
   // textField widget
+
+  cur->destPtrD = dest;
+  strncpy( cur->lastGoodNumeric, buf, 31 );
+  cur->lastGoodNumeric[31] = 0;
 
   if ( curTopParent  == topForm ) {
 
@@ -2189,7 +2275,7 @@ char buf[127+1];
   }
 
   XtAddCallback( cur->activeW, XmNvalueChangedCallback, TextFieldToDouble,
-   dest );
+   cur );
 
   itemTail->flink = cur;
   itemTail = cur;
@@ -2213,11 +2299,15 @@ char buf[127+1];
 
   sprintf( buf, "%-g", *dest );
 
-//   printf( "entryFormClass::addTextField - new textEntry\n" );
+  // fprintf( stderr, "entryFormClass::addTextField - new textEntry\n" );
 
   cur = new textEntry;
 
   // textField widget
+
+  cur->destPtrD = dest;
+  strncpy( cur->lastGoodNumeric, buf, 31 );
+  cur->lastGoodNumeric[31] = 0;
 
   if ( curTopParent  == topForm ) {
 
@@ -2337,7 +2427,7 @@ char buf[127+1];
   }
 
   XtAddCallback( cur->activeW, XmNvalueChangedCallback, TextFieldToDouble,
-   dest );
+   cur );
 
   itemTail->flink = cur;
   itemTail = cur;
@@ -2365,6 +2455,10 @@ char buf[127+1];
     sprintf( buf, "%-g", dest->value() );
 
   cur = new textEntry;
+
+  cur->destPtrEfD = dest;
+  strncpy( cur->lastGoodNumeric, buf, 31 );
+  cur->lastGoodNumeric[31] = 0;
 
   // textField widget
 
@@ -2486,7 +2580,7 @@ char buf[127+1];
   }
 
   XtAddCallback( cur->activeW, XmNvalueChangedCallback, TextFieldToEfDouble,
-   dest );
+   cur );
 
   itemTail->flink = cur;
   itemTail = cur;
@@ -3176,9 +3270,9 @@ int i;
   i = *(dsc->indexPtr);
   value = (char *) dsc->valuePtr;
 
-//   printf ( "In OptionToStringArray\n" );
-//   printf ( "i = %-d\n", i );
-//   printf( "value = [%s]\n", value );
+//   fprintf( stderr, "In OptionToStringArray\n" );
+//   fprintf( stderr, "i = %-d\n", i );
+//   fprintf( stderr, "value = [%s]\n", value );
 
   strncpy( destArray[i], value, dsc->size );
 
@@ -3201,10 +3295,10 @@ long value;
   i = *(dsc->indexPtr);
   value = (long) dsc->valuePtr;
 
-//   printf( "In OptionToIntArray\n" );
-//   printf ( "i = %-d\n", i );
-//   printf( "old value = %-d\n", destArray[i] );
-//   printf( "new value = %-d\n", value );
+//   fprintf( stderr, "In OptionToIntArray\n" );
+//   fprintf( stderr, "i = %-d\n", i );
+//   fprintf( stderr, "old value = %-d\n", destArray[i] );
+//   fprintf( stderr, "new value = %-d\n", value );
 
   destArray[i] = (int) value;
 
@@ -3228,7 +3322,7 @@ colorButtonEntry *cur;
 
   if ( curTopParent == topForm ) {
 
-  //printf( "using topForm\n" );
+  //fprintf( stderr, "using topForm\n" );
 
   if ( firstItem ) {
 
@@ -3342,13 +3436,13 @@ colorButtonEntry *cur;
   }
   else {
 
-  //printf( "using subForm\n" );
+  //fprintf( stderr, "using subForm\n" );
 
   if ( firstSubFormChild ) {
 
     firstSubFormChild = 0;
 
-    //printf( "first subFrom\n" );
+    //fprintf( stderr, "first subFrom\n" );
 
     fN = 0;
     XtSetArg( fArgs[fN], XmNtopAttachment, (XtArgVal) XmATTACH_FORM ); fN++;
@@ -3392,7 +3486,7 @@ colorButtonEntry *cur;
   }
   else {
 
-    //printf( "not first subFrom\n" );
+    //fprintf( stderr, "not first subFrom\n" );
 
     fN = 0;
     XtSetArg( fArgs[fN], XmNtopAttachment,
@@ -3946,7 +4040,7 @@ int entryFormClass::addOption (
   int stringSize )
 {
 
-char *buf, *tk;
+char *buf, *tk, *ctx;
 optionEntry *cur;
 XmString str;
 Arg args[10];
@@ -3969,7 +4063,8 @@ widgetListPtr curpb;
   // create all pushbuttons for the option menu
 
   n = 0;
-  tk = strtok( buf, "|" );
+  ctx = NULL;
+  tk = strtok_r( buf, "|", &ctx );
   while ( tk ) {
 
     curpb = new widgetListType;
@@ -4001,7 +4096,7 @@ widgetListPtr curpb;
     cur->tail = curpb;
     cur->tail->flink = NULL;
 
-    tk = strtok( NULL, "|" );
+    tk = strtok_r( NULL, "|", &ctx );
 
   }
 
@@ -4139,7 +4234,7 @@ int entryFormClass::addOption (
   int *dest )
 {
 
-char *buf, *tk;
+char *buf, *tk, *ctx;
 optionEntry *cur;
 XmString str;
 Arg args[10];
@@ -4162,7 +4257,8 @@ widgetListPtr curpb;
   // create all pushbuttons for the option menu
 
   n = 0;
-  tk = strtok( buf, "|" );
+  ctx = NULL;
+  tk = strtok_r( buf, "|", &ctx );
   while ( tk ) {
 
     curpb = new widgetListType;
@@ -4194,7 +4290,7 @@ widgetListPtr curpb;
     cur->tail = curpb;
     cur->tail->flink = NULL;
 
-    tk = strtok( NULL, "|" );
+    tk = strtok_r( NULL, "|", &ctx );
 
     n++;
 
@@ -4336,7 +4432,7 @@ int entryFormClass::addOptionArray (
   entryListBase **obj )
 {
 
-char *buf, *tk;
+char *buf, *tk, *ctx;
 optionEntry *cur;
 XmString str;
 Arg args[10];
@@ -4360,7 +4456,8 @@ widgetListPtr curpb;
   // create all pushbuttons for the option menu
 
   n = 0;
-  tk = strtok( buf, "|" );
+  ctx = NULL;
+  tk = strtok_r( buf, "|", &ctx );
   while ( tk ) {
 
     curpb = new widgetListType;
@@ -4397,7 +4494,7 @@ widgetListPtr curpb;
     cur->tail = curpb;
     cur->tail->flink = NULL;
 
-    tk = strtok( NULL, "|" );
+    tk = strtok_r( NULL, "|", &ctx );
 
   }
 
@@ -4477,7 +4574,7 @@ int entryFormClass::addOptionArray (
   entryListBase **obj )
 {
 
-char *buf, *tk;
+char *buf, *tk, *ctx;
 optionEntry *cur;
 XmString str;
 Arg args[10];
@@ -4501,7 +4598,8 @@ widgetListPtr curpb;
   // create all pushbuttons for the option menu
 
   n = 0;
-  tk = strtok( buf, "|" );
+  ctx = NULL;
+  tk = strtok_r( buf, "|", &ctx );
   while ( tk ) {
 
     curpb = new widgetListType;
@@ -4538,7 +4636,7 @@ widgetListPtr curpb;
     cur->tail = curpb;
     cur->tail->flink = NULL;
 
-    tk = strtok( NULL, "|" );
+    tk = strtok_r( NULL, "|", &ctx );
 
     n++;
 
@@ -5278,13 +5376,12 @@ char buf[127+1];
 
   sprintf( buf, "%-d", dest[0] );
 
-//   printf( "entryFormClass::addTextFieldArray - new textEntry\n" );
+//   fprintf( stderr, "entryFormClass::addTextFieldArray - new textEntry\n" );
 
   cur = new textEntry;
   *obj = cur;
 
   // textField widget
-
 
   if ( firstArrayItem ) {
 
@@ -5328,7 +5425,8 @@ char buf[127+1];
   cur->arrayDsc.size = sizeof(int);
 
   XtAddCallback( cur->activeW, XmNvalueChangedCallback, TextFieldToIntArray,
-   &(cur->arrayDsc) );
+   cur );
+   //&(cur->arrayDsc) );
 
   if ( entryTag )
     str = XmStringCreate( label, entryTag );
@@ -5372,13 +5470,12 @@ char buf[127+1];
   else
     sprintf( buf, "%-d", dest[0].value() );
 
-//   printf( "entryFormClass::addTextFieldArray - new textEntry\n" );
+//   fprintf( stderr, "entryFormClass::addTextFieldArray - new textEntry\n" );
 
   cur = new textEntry;
   *obj = cur;
 
   // textField widget
-
 
   if ( firstArrayItem ) {
 
@@ -5422,7 +5519,8 @@ char buf[127+1];
   cur->arrayDsc.size = sizeof(int);
 
   XtAddCallback( cur->activeW, XmNvalueChangedCallback, TextFieldToEfIntArray,
-   &(cur->arrayDsc) );
+   cur );
+   //&(cur->arrayDsc) );
 
   if ( entryTag )
     str = XmStringCreate( label, entryTag );
@@ -5463,13 +5561,12 @@ char buf[127+1];
 
   sprintf( buf, "%-g", dest[0] );
 
-//   printf( "entryFormClass::addTextFieldArray - new textEntry\n" );
+//   fprintf( stderr, "entryFormClass::addTextFieldArray - new textEntry\n" );
 
   cur = new textEntry;
   *obj = cur;
 
   // textField widget
-
 
   if ( firstArrayItem ) {
 
@@ -5513,7 +5610,8 @@ char buf[127+1];
   cur->arrayDsc.size = sizeof(double);
 
   XtAddCallback( cur->activeW, XmNvalueChangedCallback, TextFieldToDoubleArray,
-   &(cur->arrayDsc) );
+   cur );
+   //&(cur->arrayDsc) );
 
   if ( entryTag )
     str = XmStringCreate( label, entryTag );
@@ -5562,7 +5660,6 @@ char buf[127+1];
 
   // textField widget
 
-
   if ( firstArrayItem ) {
 
     firstArrayItem = 0;
@@ -5605,7 +5702,9 @@ char buf[127+1];
   cur->arrayDsc.size = sizeof(int);
 
   XtAddCallback( cur->activeW, XmNvalueChangedCallback,
-   TextFieldToEfDoubleArray, &(cur->arrayDsc) );
+   TextFieldToEfDoubleArray,
+   cur );
+   //&(cur->arrayDsc) );
 
   if ( entryTag )
     str = XmStringCreate( label, entryTag );

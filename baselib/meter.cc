@@ -81,16 +81,28 @@ activeMeterClass *metero = (activeMeterClass *) client;
   metero->meterAngle = metero->eBuf->bufMeterAngle;
 
   metero->scaleLimitsFromDb = metero->eBuf->bufScaleLimitsFromDb;
-  metero->scaleMin   = metero->eBuf->bufScaleMin;
-  metero->scaleMax   = metero->eBuf->bufScaleMax;
+
+  //metero->scaleMin   = metero->eBuf->bufScaleMin;
+  metero->scaleMinExpStr.setRaw( metero->eBuf->bufScaleMin );
+
+  //metero->scaleMax   = metero->eBuf->bufScaleMax;
+  metero->scaleMaxExpStr.setRaw( metero->eBuf->bufScaleMax );
+
   strncpy( metero->scaleFormat, metero->eBuf->bufScaleFormat, 15 );
-  metero->scalePrecision = metero->eBuf->bufScalePrecision;
+
+  //metero->scalePrecision = metero->eBuf->bufScalePrecision;
+  metero->scalePrecExpStr.setRaw( metero->eBuf->bufScalePrecision );
 
   metero->needleType = metero->eBuf->bufNeedleType;
 
-  metero->labelIntervals = metero->eBuf->bufLabelIntervals;
-  metero->majorIntervals = metero->eBuf->bufMajorIntervals;
-  metero->minorIntervals = metero->eBuf->bufMinorIntervals;
+  //metero->labelIntervals = metero->eBuf->bufLabelIntervals;
+  metero->labIntExpStr.setRaw( metero->eBuf->bufLabelIntervals );
+
+  //metero->majorIntervals = metero->eBuf->bufMajorIntervals;
+  metero->majorIntExpStr.setRaw( metero->eBuf->bufMajorIntervals );
+
+  //metero->minorIntervals = metero->eBuf->bufMinorIntervals;
+  metero->minorIntExpStr.setRaw( metero->eBuf->bufMinorIntervals );
 
   metero->bgColor.setColorIndex( metero->eBuf->bufBgColor, metero->actWin->ci );
 
@@ -100,11 +112,12 @@ activeMeterClass *metero = (activeMeterClass *) client;
   metero->scaleColor.setColorIndex( metero->eBuf->bufScaleColor, metero->actWin->ci );
   metero->labelColor.setColorIndex( metero->eBuf->bufLabelColor, metero->actWin->ci );
 
-  metero->controlPvExpStr.setRaw( metero->eBuf->bufControlPvName );
   metero->readPvExpStr.setRaw( metero->eBuf->bufReadPvName );
 
-  strncpy( metero->label, metero->eBuf->bufLabel, 39 );
-  strncpy( metero->literalLabel, metero->eBuf->bufLiteralLabel, 39 );
+  strncpy( metero->literalLabel, metero->eBuf->bufLiteralLabel,
+   PV_Factory::MAX_PV_NAME );
+
+  metero->readPvLabelExpStr.setRaw( metero->literalLabel );
 
   metero->labelType = metero->eBuf->bufLabelType;
 
@@ -117,6 +130,8 @@ activeMeterClass *metero = (activeMeterClass *) client;
 
   metero->actWin->fi->loadFontTag( metero->labelFontTag );
   metero->labelFs = metero->actWin->fi->getXFontStruct( metero->labelFontTag );
+
+  metero->trackDelta = metero->eBuf->bufTrackDelta;
 
   metero->showScale = metero->eBuf->bufShowScale;
 
@@ -199,28 +214,64 @@ static void meter_monitor_read_connect_state (
 
 activeMeterClass *metero = (activeMeterClass *) userarg;
 
+  metero->actWin->appCtx->proc->lock();
+
   if ( pv->is_valid() ) {
 
-    metero->needConnectInit = 1;
-    metero->actWin->appCtx->proc->lock();
-    metero->actWin->addDefExeNode( metero->aglPtr );
-    metero->actWin->appCtx->proc->unlock();
+    metero->connection.setPvConnected( (void *) metero->readPvConnection );
+
+    if ( metero->connection.pvsConnected() ) {
+      metero->needConnectInit = 1;
+      metero->actWin->addDefExeNode( metero->aglPtr );
+    }
 
   }
   else {
 
-    metero->readPvConnected = 0;
+    metero->connection.setPvDisconnected( (void *) metero->readPvConnection );
     metero->active = 0;
     metero->meterColor.setDisconnected();
     metero->fgColor.setDisconnected();
     metero->scaleColor.setDisconnected();
     metero->bufInvalidate();
     metero->needDraw = 1;
-    metero->actWin->appCtx->proc->lock();
     metero->actWin->addDefExeNode( metero->aglPtr );
-    metero->actWin->appCtx->proc->unlock();
 
   }
+
+  metero->actWin->appCtx->proc->unlock();
+
+}
+
+static void meter_monitor_read_label_connect_state (
+  ProcessVariable *pv,
+  void *userarg )
+{
+
+activeMeterClass *metero = (activeMeterClass *) userarg;
+
+  metero->actWin->appCtx->proc->lock();
+
+  if ( pv->is_valid() ) {
+
+    metero->connection.setPvConnected( (void *) metero->readPvLabelConnection );
+
+    if ( metero->connection.pvsConnected() ) {
+      metero->needConnectInit = 1;
+      metero->actWin->addDefExeNode( metero->aglPtr );
+    }
+
+  }
+  else {
+
+    metero->connection.setPvDisconnected( (void *) metero->readPvLabelConnection );
+    metero->bufInvalidate();
+    metero->needDraw = 1;
+    metero->actWin->addDefExeNode( metero->aglPtr );
+
+  }
+
+  metero->actWin->appCtx->proc->unlock();
 
 }
 
@@ -231,6 +282,8 @@ static void meter_readUpdate (
 
 activeMeterClass *metero = (activeMeterClass *) userarg;
 int st, sev;
+
+  metero->curReadV = pv->get_double() - metero->baseV;
 
   if ( metero->active ) {
 
@@ -245,13 +298,34 @@ int st, sev;
       metero->bufInvalidate();
     }
 
-    metero->curReadV = pv->get_double();
+    metero->curReadV = pv->get_double() - metero->baseV;
     metero->needErase = 1;
     metero->needDraw = 1;
     metero->actWin->appCtx->proc->lock();
     metero->actWin->addDefExeNode( metero->aglPtr );
     metero->actWin->appCtx->proc->unlock();
 
+  }
+
+}
+
+static void meter_readLabelUpdate (
+  ProcessVariable *pv,
+  void *userarg )
+{
+
+activeMeterClass *metero = (activeMeterClass *) userarg;
+
+  pv->get_string( metero->readPvLabel, PV_Factory::MAX_PV_NAME );
+  metero->readPvLabel[PV_Factory::MAX_PV_NAME] = 0;
+
+  if ( metero->active ) {
+    metero->bufInvalidate();
+    metero->needErase = 1;
+    metero->needDraw = 1;
+    metero->actWin->appCtx->proc->lock();
+    metero->actWin->addDefExeNode( metero->aglPtr );
+    metero->actWin->appCtx->proc->unlock();
   }
 
 }
@@ -286,6 +360,7 @@ activeMeterClass::activeMeterClass ( void ) {
   labelType = METERC_K_PV_LABEL;
   showScale = 1;
   useDisplayBg = 1;
+  trackDelta = 0;
 
   scaleLimitsFromDb = 1;
 
@@ -295,6 +370,12 @@ activeMeterClass::activeMeterClass ( void ) {
   eBuf = NULL;
 
   unconnectedTimer = 0;
+
+  baseV = 0;
+
+  strcpy( readPvLabel, "" );
+
+  connection.setMaxPvs( 2 );
 
 }
 
@@ -323,11 +404,10 @@ activeGraphicClass *metero = (activeGraphicClass *) this;
   scaleColor.copy(source->scaleColor);
   labelColor.copy(source->labelColor);
 
-  controlPvExpStr.copy( source->controlPvExpStr );
   readPvExpStr.copy( source->readPvExpStr );
 
-  strncpy( label, source->label, 39 );
-  strncpy( literalLabel, source->literalLabel, 39);
+  strncpy( label, source->label, PV_Factory::MAX_PV_NAME );
+  strncpy( literalLabel, source->literalLabel, PV_Factory::MAX_PV_NAME );
 
   meterColorMode = source->meterColorMode;
   scaleColorMode = source->scaleColorMode;
@@ -336,18 +416,27 @@ activeGraphicClass *metero = (activeGraphicClass *) this;
   scaleLimitsFromDb = source->scaleLimitsFromDb;
   needleType = source->needleType;
   scalePrecision = source->scalePrecision;
+  scalePrecExpStr.copy( source->scalePrecExpStr );
   strncpy( scaleFormat, source->scaleFormat, 15 );
   meterAngle = source->meterAngle;
   scaleMin = source->scaleMin;
+  scaleMinExpStr.copy( source->scaleMinExpStr );
   scaleMax = source->scaleMax;
+  scaleMaxExpStr.copy( source->scaleMaxExpStr );
   labelType = source->labelType;
+  trackDelta = source->trackDelta;
   showScale = source->showScale;
   useDisplayBg = source->useDisplayBg;
   drawStaticFlag = source->drawStaticFlag;
 
   labelIntervals = source->labelIntervals;
+  labIntExpStr.copy( source->labIntExpStr );
+
   majorIntervals = source->majorIntervals;
+  majorIntExpStr.copy( source->majorIntExpStr );
+
   minorIntervals = source->minorIntervals;
+  minorIntExpStr.copy( source->minorIntExpStr );
 
   readMin = scaleMin;
   readMax = scaleMax;
@@ -359,6 +448,12 @@ activeGraphicClass *metero = (activeGraphicClass *) this;
   unconnectedTimer = 0;
 
   eBuf = NULL;
+
+  baseV = 0;
+
+  connection.setMaxPvs( 2 );
+
+  strcpy( readPvLabel, "" );
 
   updateDimensions();
 
@@ -430,7 +525,6 @@ tagClass tag;
 
 int zero = 0;
 double a180 = 180;
-double dzero = 0;
 char *emptyStr = "";
 
 int lit = 2;
@@ -472,21 +566,23 @@ static int labelTypeEnum[3] = {
   tag.loadW( "label", literalLabel, emptyStr );
   tag.loadW( "labelType", 3, labelTypeEnumStr, labelTypeEnum,
    &labelType, &lit );
+  tag.loadBoolW( "trackDelta", &trackDelta, &zero );
   tag.loadBoolW( "showScale", &showScale, &zero );
   tag.loadW( "scaleFormat", scaleFormat );
-  tag.loadW( "scalePrecision", &scalePrecision, &zero );
+  tag.loadW( "scalePrecision", &scalePrecExpStr );
   tag.loadBoolW( "scaleLimitsFromDb", &scaleLimitsFromDb, &zero );
   tag.loadBoolW( "useDisplayBg", &useDisplayBg, &zero );
-  tag.loadW( "labelIntervals", &labelIntervals, &zero );
-  tag.loadW( "majorIntervals", &majorIntervals, &zero );
-  tag.loadW( "minorIntervals", &minorIntervals, &zero );
+  tag.loadW( "labelIntervals", &labIntExpStr, emptyStr );
+  tag.loadW( "majorIntervals", &majorIntExpStr, emptyStr );
+  tag.loadW( "minorIntervals", &minorIntExpStr, emptyStr );
   tag.loadBoolW( "complexNeedle", &needleType, &zero );
   tag.loadBoolW( "3d", &shadowMode, &zero );
-  tag.loadW( "scaleMin", &scaleMin, &dzero );
-  tag.loadW( "scaleMax", &scaleMax, &dzero );
+  tag.loadW( "scaleMin", &scaleMinExpStr, emptyStr );
+  tag.loadW( "scaleMax", &scaleMaxExpStr, emptyStr );
   tag.loadW( "labelFontTag", labelFontTag );
   tag.loadW( "scaleFontTag", scaleFontTag );
   tag.loadW( "meterAngle", &meterAngle, &a180 );
+  tag.loadW( unknownTags );
   tag.loadW( "endObjectProperties" );
   tag.loadW( "" );
 
@@ -544,10 +640,7 @@ int index;
   actWin->ci->writeColorIndex( f, index );
   //fprintf( f, "%-d\n", index );
 
-  if ( controlPvExpStr.getRaw() )
-    writeStringToFile( f, controlPvExpStr.getRaw() );
-  else
-    writeStringToFile( f, "" );
+  writeStringToFile( f, "" ); // use to be controlpv
 
   if ( readPvExpStr.getRaw() )
     writeStringToFile( f, readPvExpStr.getRaw() );
@@ -561,7 +654,12 @@ int index;
 
   fprintf( f, "%-d\n", showScale );
   writeStringToFile( f, scaleFormat );
-  fprintf( f, "%-d\n", scalePrecision);
+
+  if ( scalePrecExpStr.getRaw() )
+    writeStringToFile( f, scalePrecExpStr.getRaw() );
+  else
+    writeStringToFile( f, "" );
+
   fprintf( f, "%-d\n", scaleLimitsFromDb );
   fprintf( f, "%-d\n", useDisplayBg );
   fprintf( f, "%-d\n", majorIntervals );
@@ -569,9 +667,15 @@ int index;
   fprintf( f, "%-d\n", needleType );
   fprintf( f, "%-d\n", shadowMode );
 
-  fprintf( f, "%-g\n",scaleMin  );
-  fprintf( f, "%-g\n",scaleMax );
+  if ( scaleMinExpStr.getRaw() )
+    writeStringToFile( f, scaleMinExpStr.getRaw() );
+  else
+    writeStringToFile( f, "" );
 
+  if ( scaleMaxExpStr.getRaw() )
+    writeStringToFile( f, scaleMaxExpStr.getRaw() );
+  else
+    writeStringToFile( f, "" );
 
   writeStringToFile( f, labelFontTag );
 
@@ -595,7 +699,6 @@ tagClass tag;
 
 int zero = 0;
 double a180 = 180;
-double dzero = 0;
 char *emptyStr = "";
 
 int lit = 2;
@@ -614,6 +717,7 @@ static int labelTypeEnum[3] = {
 
   tag.init();
   tag.loadR( "beginObjectProperties" );
+  tag.loadR( unknownTags );
   tag.loadR( "major", &major );
   tag.loadR( "minor", &minor );
   tag.loadR( "release", &release );
@@ -632,21 +736,22 @@ static int labelTypeEnum[3] = {
   tag.loadR( "topShadowColor", actWin->ci, &tsColor );
   tag.loadR( "botShadowColor", actWin->ci, &bsColor );
   tag.loadR( "readPv", &readPvExpStr, emptyStr );
-  tag.loadR( "label", 39, literalLabel, emptyStr );
+  tag.loadR( "label", PV_Factory::MAX_PV_NAME, literalLabel, emptyStr );
   tag.loadR( "labelType", 3, labelTypeEnumStr, labelTypeEnum,
    &labelType, &lit );
+  tag.loadR( "trackDelta", &trackDelta, &zero );
   tag.loadR( "showScale", &showScale, &zero );
   tag.loadR( "scaleFormat", 15, scaleFormat );
-  tag.loadR( "scalePrecision", &scalePrecision, &zero );
+  tag.loadR( "scalePrecision", &scalePrecExpStr );
   tag.loadR( "scaleLimitsFromDb", &scaleLimitsFromDb, &zero );
   tag.loadR( "useDisplayBg", &useDisplayBg, &zero );
-  tag.loadR( "labelIntervals", &labelIntervals, &zero );
-  tag.loadR( "majorIntervals", &majorIntervals, &zero );
-  tag.loadR( "minorIntervals", &minorIntervals, &zero );
+  tag.loadR( "labelIntervals", &labIntExpStr, emptyStr );
+  tag.loadR( "majorIntervals", &majorIntExpStr, emptyStr );
+  tag.loadR( "minorIntervals", &minorIntExpStr, emptyStr );
   tag.loadR( "complexNeedle", &needleType, &zero );
   tag.loadR( "3d", &shadowMode, &zero );
-  tag.loadR( "scaleMin", &scaleMin, &dzero );
-  tag.loadR( "scaleMax", &scaleMax, &dzero );
+  tag.loadR( "scaleMin", &scaleMinExpStr, emptyStr );
+  tag.loadR( "scaleMax", &scaleMaxExpStr, emptyStr );
   tag.loadR( "labelFontTag", 63, labelFontTag );
   tag.loadR( "scaleFontTag", 63, scaleFontTag );
   tag.loadR( "meterAngle", &meterAngle, &a180 );
@@ -666,6 +771,34 @@ static int labelTypeEnum[3] = {
   if ( major < 4 ) {
     postIncompatable();
     return 0;
+  }
+
+  if ( ( major == 4 ) && ( minor < 1 ) ) {
+
+    if ( blank(scaleMinExpStr.getRaw()) ) {
+      scaleMinExpStr.setRaw( "0" );
+    }
+
+    if ( blank(scaleMaxExpStr.getRaw()) ) {
+      scaleMaxExpStr.setRaw( "0" );
+    }
+
+    if ( blank(scalePrecExpStr.getRaw()) ) {
+      scalePrecExpStr.setRaw( "0" );
+    }
+
+    if ( blank(labIntExpStr.getRaw()) ) {
+      labIntExpStr.setRaw( "0" );
+    }
+
+    if ( blank(majorIntExpStr.getRaw()) ) {
+      majorIntExpStr.setRaw( "0" );
+    }
+
+    if ( blank(minorIntExpStr.getRaw()) ) {
+      minorIntExpStr.setRaw( "0" );
+    }
+
   }
 
   this->initSelectBox(); // call after getting x,y,w,h
@@ -688,8 +821,6 @@ static int labelTypeEnum[3] = {
 
   bgColor.setAlarmInsensitive();
 
-  controlPvExpStr.setRaw( "" );
-
   actWin->fi->loadFontTag( labelFontTag );
   labelFs = actWin->fi->getXFontStruct( labelFontTag );
   updateFont( labelFontTag, &labelFs, &labelFontAscent, &labelFontDescent,
@@ -699,6 +830,8 @@ static int labelTypeEnum[3] = {
   scaleFs = actWin->fi->getXFontStruct( scaleFontTag );
   updateFont( scaleFontTag, &scaleFs, &scaleFontAscent, &scaleFontDescent,
    &scaleFontHeight );
+
+  readPvLabelExpStr.setRaw( literalLabel );
 
   updateDimensions();
 
@@ -715,7 +848,7 @@ int activeMeterClass::old_createFromFile (
 int r, g, b, index;
 int major, minor, release;
 unsigned int pixel;
-char oneName[PV_Factory::MAX_PV_NAME+1];
+char oneName[PV_Factory::MAX_PV_NAME+1], str[15+1];
 
   this->actWin = _actWin;
 
@@ -888,15 +1021,16 @@ char oneName[PV_Factory::MAX_PV_NAME+1];
 
   readStringFromFile( oneName, PV_Factory::MAX_PV_NAME+1, f );
    actWin->incLine();
-  controlPvExpStr.setRaw( oneName );
+  //controlPvExpStr.setRaw( oneName );
 
   readStringFromFile( oneName, PV_Factory::MAX_PV_NAME+1, f );
    actWin->incLine();
   readPvExpStr.setRaw( oneName );
 
-  readStringFromFile( literalLabel, 39+1, f ); actWin->incLine();
+  readStringFromFile( literalLabel, PV_Factory::MAX_PV_NAME+1,
+   f ); actWin->incLine();
 
-  readStringFromFile( label, 39+1, f ); actWin->incLine();
+  readStringFromFile( label, PV_Factory::MAX_PV_NAME+1, f ); actWin->incLine();
 
   fscanf( f, "%d\n", &labelType ); actWin->incLine();
 
@@ -917,7 +1051,9 @@ char oneName[PV_Factory::MAX_PV_NAME+1];
     strcpy( scaleFormat, "Exponential" );
   }
 
-  fscanf( f, "%d\n", &scalePrecision ); actWin->incLine();
+  readStringFromFile( oneName, PV_Factory::MAX_PV_NAME+1, f );
+   actWin->incLine();
+  scalePrecExpStr.setRaw( oneName );
 
   fscanf( f, "%d\n", &scaleLimitsFromDb ); actWin->incLine();
 
@@ -936,11 +1072,25 @@ char oneName[PV_Factory::MAX_PV_NAME+1];
   majorIntervals = minorIntervals;
   minorIntervals = 1;
 
+  snprintf( str, 15, "%-d", labelIntervals );
+  labIntExpStr.setRaw( str );
+
+  snprintf( str, 15, "%-d", majorIntervals );
+  majorIntExpStr.setRaw( str );
+
+  snprintf( str, 15, "%-d", minorIntervals );
+  minorIntExpStr.setRaw( str );
+
   fscanf( f, "%d\n", &needleType ); actWin->incLine();
   fscanf( f, "%d\n", &shadowMode ); actWin->incLine();
 
-  fscanf( f, "%lg\n", &scaleMin ); actWin->incLine();
-  fscanf( f, "%lg\n", &scaleMax ); actWin->incLine();
+  readStringFromFile( oneName, PV_Factory::MAX_PV_NAME+1, f );
+   actWin->incLine();
+  scaleMinExpStr.setRaw( oneName );
+
+  readStringFromFile( oneName, PV_Factory::MAX_PV_NAME+1, f );
+   actWin->incLine();
+  scaleMaxExpStr.setRaw( oneName );
 
   readStringFromFile( labelFontTag, 63+1, f ); actWin->incLine();
   actWin->fi->loadFontTag( labelFontTag );
@@ -988,9 +1138,26 @@ char title[32], *ptr;
   eBuf->bufMeterColorMode = meterColorMode;
   eBuf->bufScaleColorMode = scaleColorMode;
 
-  eBuf->bufLabelIntervals = labelIntervals;
-  eBuf->bufMajorIntervals = majorIntervals;
-  eBuf->bufMinorIntervals = minorIntervals;
+  //eBuf->bufLabelIntervals = labelIntervals;
+  if ( labIntExpStr.getRaw() )
+    strncpy( eBuf->bufLabelIntervals, labIntExpStr.getRaw(),
+     15 );
+  else
+    strcpy( eBuf->bufLabelIntervals, "" );
+
+  //eBuf->bufMajorIntervals = majorIntervals;
+  if ( majorIntExpStr.getRaw() )
+    strncpy( eBuf->bufMajorIntervals, majorIntExpStr.getRaw(),
+     15 );
+  else
+    strcpy( eBuf->bufMajorIntervals, "" );
+
+  //eBuf->bufMinorIntervals = minorIntervals;
+  if ( minorIntExpStr.getRaw() )
+    strncpy( eBuf->bufMinorIntervals, minorIntExpStr.getRaw(),
+     15 );
+  else
+    strcpy( eBuf->bufMinorIntervals, "" );
 
   eBuf->bufFgColor = fgColor.pixelIndex();
   eBuf->bufFgColorMode = fgColorMode;
@@ -1010,22 +1177,35 @@ char title[32], *ptr;
   else
     strcpy( eBuf->bufReadPvName, "" );
 
-  if ( controlPvExpStr.getRaw() )
-    strncpy( eBuf->bufControlPvName, controlPvExpStr.getRaw(),
-     PV_Factory::MAX_PV_NAME );
-  else
-    strcpy( eBuf->bufControlPvName, "" );
-
-  strncpy( eBuf->bufLabel, label, 39 );
-  strncpy( eBuf->bufLiteralLabel, literalLabel, 39);
+  strncpy( eBuf->bufLiteralLabel, literalLabel, PV_Factory::MAX_PV_NAME );
 
   eBuf->bufLabelType = labelType;
   eBuf->bufScaleLimitsFromDb = scaleLimitsFromDb;
   eBuf->bufMeterAngle = meterAngle;
   eBuf->bufNeedleType = needleType;
-  eBuf->bufScalePrecision = scalePrecision;
-  eBuf->bufScaleMin = scaleMin;
-  eBuf->bufScaleMax = scaleMax;
+
+  //eBuf->bufScalePrecision = scalePrecision;
+  if ( scalePrecExpStr.getRaw() )
+    strncpy( eBuf->bufScalePrecision, scalePrecExpStr.getRaw(),
+     15 );
+  else
+    strcpy( eBuf->bufScalePrecision, "" );
+
+  //eBuf->bufScaleMin = scaleMin;
+  if ( scaleMinExpStr.getRaw() )
+    strncpy( eBuf->bufScaleMin, scaleMinExpStr.getRaw(),
+     15 );
+  else
+    strcpy( eBuf->bufScaleMin, "" );
+
+  //eBuf->bufScaleMax = scaleMax;
+  if ( scaleMaxExpStr.getRaw() )
+    strncpy( eBuf->bufScaleMax, scaleMaxExpStr.getRaw(),
+     15 );
+  else
+    strcpy( eBuf->bufScaleMax, "" );
+
+  eBuf->bufTrackDelta = trackDelta;
   eBuf->bufShowScale = showScale;
   eBuf->bufUseDisplayBg = useDisplayBg;
   strncpy( eBuf->bufScaleFormat, scaleFormat, 15 );
@@ -1040,26 +1220,29 @@ char title[32], *ptr;
   ef.addTextField( activeMeterClass_str5, 35, &eBuf->bufY );
   ef.addTextField( activeMeterClass_str6, 35, &eBuf->bufW );
   ef.addTextField( activeMeterClass_str7, 35, &eBuf->bufH );
-  //   ef.addTextField( activeMeterClass_str8, 35, eBuf->bufControlPvName,
-  //    PV_Factory::MAX_PV_NAME );
   ef.addTextField( activeMeterClass_str9, 35, eBuf->bufReadPvName,
    PV_Factory::MAX_PV_NAME );
   ef.addOption( activeMeterClass_str10, activeMeterClass_str11, &eBuf->bufLabelType );
-  ef.addTextField( activeMeterClass_str12, 35, eBuf->bufLiteralLabel, 39 );
+  ef.addTextField( activeMeterClass_str12, 35, eBuf->bufLiteralLabel,
+   PV_Factory::MAX_PV_NAME );
   ef.addColorButton( activeMeterClass_str14, actWin->ci,&eBuf->labelCb,&eBuf->bufLabelColor);
   ef.addTextField(activeMeterClass_str15, 35, &eBuf->bufMeterAngle);
+  ef.addToggle( activeMeterClass_str45, &eBuf->bufTrackDelta );
   ef.addToggle( activeMeterClass_str16, &eBuf->bufShowScale );
   ef.addOption( activeMeterClass_str17, activeMeterClass_str43,
    eBuf->bufScaleFormat, 15 );
-  ef.addTextField( activeMeterClass_str19, 35, &eBuf->bufScalePrecision);
+  //ef.addTextField( activeMeterClass_str19, 35, &eBuf->bufScalePrecision );
+  ef.addTextField(activeMeterClass_str19, 35, eBuf->bufScalePrecision, 15 );
   ef.addToggle( activeMeterClass_str20, &eBuf->bufScaleLimitsFromDb );
-  ef.addTextField(activeMeterClass_str21, 35, &eBuf->bufScaleMin);
-  ef.addTextField(activeMeterClass_str22, 35, &eBuf->bufScaleMax);
+  //ef.addTextField(activeMeterClass_str21, 35, &eBuf->bufScaleMin);
+  ef.addTextField(activeMeterClass_str21, 35, eBuf->bufScaleMin, 15 );
+  //ef.addTextField(activeMeterClass_str22, 35, &eBuf->bufScaleMax );
+  ef.addTextField(activeMeterClass_str22, 35, eBuf->bufScaleMax, 15 );
   ef.addColorButton( activeMeterClass_str24, actWin->ci,&eBuf->scaleCb,&eBuf->bufScaleColor);
   ef.addToggle( activeMeterClass_str25, &eBuf->bufScaleColorMode );
-  ef.addTextField(activeMeterClass_str44, 35, &eBuf->bufLabelIntervals);
-  ef.addTextField(activeMeterClass_str26, 35, &eBuf->bufMajorIntervals);
-  ef.addTextField(activeMeterClass_str27, 35, &eBuf->bufMinorIntervals);
+  ef.addTextField(activeMeterClass_str44, 35, eBuf->bufLabelIntervals, 15 );
+  ef.addTextField(activeMeterClass_str26, 35, eBuf->bufMajorIntervals, 15 );
+  ef.addTextField(activeMeterClass_str27, 35, eBuf->bufMinorIntervals, 15 );
   ef.addToggle(activeMeterClass_str28, &eBuf->bufNeedleType);  
   ef.addColorButton( activeMeterClass_str29, actWin->ci, &eBuf->fgCb, &eBuf->bufFgColor );
   ef.addToggle( activeMeterClass_str30, &eBuf->bufFgColorMode );
@@ -1157,6 +1340,7 @@ int activeMeterClass::draw ( void ) {
   double tickSize;
   int  farEndX, farEndY, nearEndX, nearEndY;
   char fmt[31+1];
+  XRectangle xR;
 
   if (meterAngle < 10)  meterAngle = 10;
   if (meterAngle > 360) meterAngle = 360;
@@ -1179,20 +1363,32 @@ int activeMeterClass::draw ( void ) {
  faceW = w - 2 * caseWidth;
  faceH = h - 2 * caseWidth;
 
-// if (labelType = 0 || !(strlen(literalLabel))) {
-//    fetch pv name ...
-//}
-// else if (labelType = 1) {
-//    fetch pv label ...
-//}
-// else if (labelType =2) {
- if (strlen(literalLabel)){
-   strncpy (label, literalLabel, 39);
-   faceH = faceH + caseWidth - 4 - labelFontHeight;
- }
- else strcpy (label,"");
-
-//}
+  if ( labelType == 0 ) {
+    strncpy( label, readPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
+    label[PV_Factory::MAX_PV_NAME] = 0;
+  }
+  else if ( labelType == 1 ) {
+    if ( strlen(literalLabel) ) {
+      strncpy ( label, literalLabel, PV_Factory::MAX_PV_NAME );
+      label[PV_Factory::MAX_PV_NAME] = 0;
+    }
+    else {
+      strcpy (label,"");
+    }
+  }
+  else if ( labelType == 2 ) {
+    if ( strlen(literalLabel) ) {
+      strncpy ( label, literalLabel, PV_Factory::MAX_PV_NAME );
+      label[PV_Factory::MAX_PV_NAME] = 0;
+    }
+    else {
+      strcpy (label,"");
+    }
+  }
+  else {
+    strcpy (label,"");
+  }
+  faceH = faceH + caseWidth - 4 - labelFontHeight;
 
  if(scalePrecision > 10 || scalePrecision < 0) scalePrecision = 1;
 
@@ -1309,9 +1505,15 @@ int activeMeterClass::draw ( void ) {
    }
 
    if (strlen (label)){
+     xR.x = faceX;
+     xR.y = faceY + faceH + 2;
+     xR.width  = faceW;
+     xR.height = h - faceH;
+     actWin->drawGc.addNormXClipRectangle( xR );
      drawText (actWin->drawWidget, &actWin->drawGc,
-	       labelFs, faceX + 2, faceY + faceH + 2,
-	       XmALIGNMENT_BEGINNING, label);
+	       labelFs, x+w/2, faceY + faceH + 2,
+	       XmALIGNMENT_CENTER, label);
+     actWin->drawGc.removeNormXClipRectangle();
    }
 
    if (shadowMode) {
@@ -1476,8 +1678,7 @@ int activeMeterClass::draw ( void ) {
 
 int activeMeterClass::drawActive ( void ) {
 
-  int i, ii, tX, tY;
-  //XRectangle xR = { x, y, w, h };
+ int i, ii, tX, tY;
  char scaleMinString[39+1],scaleMaxString[39+1],scaleString[39+1];
  double labelAngle, labelAngleIncr, majorAngleIncr, minorAngleIncr;
  double meterTotalAngle, beginAngle, endAngle;
@@ -1498,7 +1699,7 @@ int activeMeterClass::drawActive ( void ) {
 
 XPoint xpoints[6];
 
-  if ( !activeInitFlag ) {
+  if ( !activeInitFlag && !connection.pvsConnected() ) {
     if ( needToDrawUnconnected ) {
       actWin->executeGc.saveFg();
       actWin->executeGc.setFG( meterColor.getDisconnected() );
@@ -1532,20 +1733,27 @@ XPoint xpoints[6];
  faceW = w - 2 * caseWidth;
  faceH = h - 2 * caseWidth;
 
-// if (labelType = 0) {
-//    fetch pv name ...
-//}
-// else if (labelType = 1) {
-//    fetch pv label ...
-//}
-// else if (labelType =2) {
- if (strlen(literalLabel)){
-   strncpy (label, literalLabel, 39);
-   faceH = faceH + caseWidth - 4 - labelFontHeight;
- }
- else strcpy (label,"");
-
-//}
+  if ( labelType == 0 ) {
+    strncpy( label, readPvExpStr.getExpanded(), PV_Factory::MAX_PV_NAME );
+    label[PV_Factory::MAX_PV_NAME] = 0;
+  }
+  else if ( labelType == 1 ) {
+    strncpy( label, readPvLabel, PV_Factory::MAX_PV_NAME );
+    label[PV_Factory::MAX_PV_NAME] = 0;
+  }
+  else if ( labelType == 2 ) {
+    if ( strlen(literalLabel) ) {
+      strncpy( label, literalLabel, PV_Factory::MAX_PV_NAME );
+      label[PV_Factory::MAX_PV_NAME] = 0;
+    }
+    else {
+      strcpy (label,"");
+    }
+  }
+  else {
+    strcpy (label,"");
+  }
+  faceH = faceH + caseWidth - 4 - labelFontHeight;
 
  actWin->executeGc.saveFg();
 
@@ -1642,7 +1850,7 @@ XPoint xpoints[6];
  // crude attempt to prevent divide by zero in angle calc
  if ((scaleMax - scaleMin) < 0.000001 * (readV - scaleMin)){
    scaleMax = scaleMin +1.0;
-   // printf ("check meter scale min and max\n");
+   // fprintf(stderr,"check meter scale min and max\n");
  }
 
  beginAngle = descentAngle;
@@ -1684,9 +1892,15 @@ if (drawStaticFlag){
    }
 
    if (strlen (label)){
+     xR.x = faceX;
+     xR.y = faceY + faceH + 2;
+     xR.width  = faceW;
+     xR.height = h - faceH;
+     actWin->executeGc.addNormXClipRectangle( xR );
      drawText (actWin->executeWidget, &actWin->executeGc,
-	       labelFs, faceX + 2, faceY + faceH + 2,
-	       XmALIGNMENT_BEGINNING, label);
+	       labelFs, x+w/2, faceY + faceH + 2,
+	       XmALIGNMENT_CENTER, label);
+     actWin->executeGc.removeNormXClipRectangle();
    }
 
    if (shadowMode) {
@@ -2027,43 +2241,94 @@ int opStat;
     opComplete = 0;
     oldMeterNeedleXEnd = 0;
     oldMeterNeedleYEnd = 0;
+    meterNeedleXend = 1;
+    meterNeedleYend = 1;
     oldMeterNeedleXOrigin = 0;
     oldMeterNeedleYOrigin = 0;
-    readPvId = NULL;
-    initialReadConnection = 1;
+    readPvId = readPvLabelId = NULL;
+    initialReadConnection = initialReadLabelConnection = 1;
     oldStat = oldSev = -1;
+    strcpy( readPvLabel, "" );
+    connection.init();
 
     drawStaticFlag = 1;
 
-    controlPvConnected = readPvConnected = active = activeInitFlag= 0;
+    active = activeInitFlag= 0;
     activeMode = 1;
-
-    if ( !controlPvExpStr.getExpanded() ||
-      // ( strcmp( controlPvExpStr.getExpanded(), "" ) == 0 ) ) {
-      blankOrComment( controlPvExpStr.getExpanded() ) ) {
-      controlExists = 0;
-    }
-    else {
-      controlExists = 1;
-    }
-
-    if ( !readPvExpStr.getExpanded() ||
-      // ( strcmp( readPvExpStr.getExpanded(), "" ) == 0 ) ) {
-      blankOrComment( readPvExpStr.getExpanded() ) ) {
-      readExists = 0;
-    }
-    else {
-      readExists = 1;
-      meterColor.setConnectSensitive();
-      fgColor.setConnectSensitive();
-      scaleColor.setConnectSensitive();
-    }
 
     break;
 
   case 2:
 
     if ( !opComplete ) {
+
+      if ( !readPvExpStr.getExpanded() ||
+        blankOrComment( readPvExpStr.getExpanded() ) ) {
+        readExists = 0;
+      }
+      else {
+        readExists = 1;
+        connection.addPv();
+        meterColor.setConnectSensitive();
+        fgColor.setConnectSensitive();
+        scaleColor.setConnectSensitive();
+      }
+
+      if ( labelType == 1 ) {
+        if ( !readPvLabelExpStr.getExpanded() ||
+          blankOrComment( readPvLabelExpStr.getExpanded() ) ) {
+          readLabelExists = 0;
+        }
+        else {
+          readLabelExists = 1;
+          connection.addPv();
+        }
+      }
+      else {
+        readLabelExists = 0;
+      }
+
+      if ( scaleMinExpStr.getExpanded() ) {
+        scaleMin = atof( scaleMinExpStr.getExpanded() );
+      }
+      else {
+        scaleMin = 0;
+      }
+
+      if ( scaleMaxExpStr.getExpanded() ) {
+        scaleMax = atof( scaleMaxExpStr.getExpanded() );
+      }
+      else {
+        scaleMax = 0;
+      }
+
+      if ( scalePrecExpStr.getExpanded() ) {
+        scalePrecision = atol( scalePrecExpStr.getExpanded() );
+      }
+      else {
+        scalePrecision = 0;
+      }
+
+      if ( labIntExpStr.getExpanded() ) {
+        labelIntervals = atol( labIntExpStr.getExpanded() );
+      }
+      else {
+        labelIntervals = 0;
+      }
+
+      if ( majorIntExpStr.getExpanded() ) {
+        majorIntervals = atol( majorIntExpStr.getExpanded() );
+      }
+      else {
+        majorIntervals = 0;
+      }
+
+      if ( minorIntExpStr.getExpanded() ) {
+        minorIntervals = atol( minorIntExpStr.getExpanded() );
+      }
+      else {
+        minorIntervals = 0;
+      }
 
       initEnable();
 
@@ -2081,7 +2346,21 @@ int opStat;
            this );
 	}
 	else {
-          printf( activeMeterClass_str38 );
+          fprintf( stderr, activeMeterClass_str38 );
+          opStat = 0;
+        }
+      }
+
+      if ( readLabelExists ) {
+	readPvLabelId = the_PV_Factory->create(
+         readPvLabelExpStr.getExpanded() );
+	if ( readPvLabelId ) {
+	  readPvLabelId->add_conn_state_callback(
+           meter_monitor_read_label_connect_state,
+           this );
+	}
+	else {
+          fprintf( stderr, activeMeterClass_str46 );
           opStat = 0;
         }
       }
@@ -2128,6 +2407,17 @@ int activeMeterClass::deactivate (
         readPvId->remove_value_callback( meter_readUpdate, this );
         readPvId->release();
         readPvId = NULL;
+      }
+    }
+
+    if ( readLabelExists ) {
+      if ( readPvLabelId ) {
+        readPvLabelId->remove_conn_state_callback(
+         meter_monitor_read_label_connect_state,
+         this );
+        readPvLabelId->remove_value_callback( meter_readLabelUpdate, this );
+        readPvLabelId->release();
+        readPvLabelId = NULL;
       }
     }
 
@@ -2203,17 +2493,9 @@ int activeMeterClass::getMeterActionRequest (
   int *drag )
 {
 
-  if ( !controlExists ) {
-    *up = 0;
-    *down = 0;
-    *drag = 0;
-    return 1;
-  }
-
-  *up = 1;
-  *down = 1;
-  *drag = 1;
-
+  *up = 0;
+  *down = 0;
+  *drag = 0;
   return 1;
 
 }
@@ -2231,11 +2513,30 @@ int activeMeterClass::expand1st (
   char *expansions[] )
 {
 
-int stat;
+int stat, retStat = 1;
 
   stat = readPvExpStr.expand1st( numMacros, macros, expansions );
+  if ( !(stat & 1 ) ) retStat = stat;
 
-  return stat;
+  stat = scaleMinExpStr.expand1st( numMacros, macros, expansions );
+  if ( !(stat & 1 ) ) retStat = stat;
+
+  stat = scaleMaxExpStr.expand1st( numMacros, macros, expansions );
+  if ( !(stat & 1 ) ) retStat = stat;
+
+  stat = scalePrecExpStr.expand1st( numMacros, macros, expansions );
+  if ( !(stat & 1 ) ) retStat = stat;
+
+  stat = labIntExpStr.expand1st( numMacros, macros, expansions );
+  if ( !(stat & 1 ) ) retStat = stat;
+
+  stat = majorIntExpStr.expand1st( numMacros, macros, expansions );
+  if ( !(stat & 1 ) ) retStat = stat;
+
+  stat = minorIntExpStr.expand1st( numMacros, macros, expansions );
+  if ( !(stat & 1 ) ) retStat = stat;
+
+  return retStat;
 
 }
 
@@ -2245,21 +2546,63 @@ int activeMeterClass::expand2nd (
   char *expansions[] )
 {
 
-int stat;
+int stat, retStat = 1;
 
   stat = readPvExpStr.expand2nd( numMacros, macros, expansions );
+  if ( !(stat & 1 ) ) retStat = stat;
 
-  return stat;
+  stat = scaleMinExpStr.expand2nd( numMacros, macros, expansions );
+  if ( !(stat & 1 ) ) retStat = stat;
+
+  stat = scaleMaxExpStr.expand2nd( numMacros, macros, expansions );
+  if ( !(stat & 1 ) ) retStat = stat;
+
+  stat = scalePrecExpStr.expand2nd( numMacros, macros, expansions );
+  if ( !(stat & 1 ) ) retStat = stat;
+
+  stat = labIntExpStr.expand2nd( numMacros, macros, expansions );
+  if ( !(stat & 1 ) ) retStat = stat;
+
+  stat = majorIntExpStr.expand2nd( numMacros, macros, expansions );
+  if ( !(stat & 1 ) ) retStat = stat;
+
+
+  stat = minorIntExpStr.expand2nd( numMacros, macros, expansions );
+  if ( !(stat & 1 ) ) retStat = stat;
+
+
+  return retStat;
 
 }
 
 int activeMeterClass::containsMacros ( void ) {
 
-int stat;
+int result;
 
-  stat = readPvExpStr.containsPrimaryMacros();
+ return 1;
 
-  return stat;
+  result = readPvExpStr.containsPrimaryMacros();
+  if ( result ) return 1;
+
+  result = scaleMinExpStr.containsPrimaryMacros();
+  if ( result ) return 1;
+
+  result = scaleMaxExpStr.containsPrimaryMacros();
+  if ( result ) return 1;
+
+  result = scalePrecExpStr.containsPrimaryMacros();
+  if ( result ) return 1;
+
+  result = labIntExpStr.containsPrimaryMacros();
+  if ( result ) return 1;
+
+  result = majorIntExpStr.containsPrimaryMacros();
+  if ( result ) return 1;
+
+  result = minorIntExpStr.containsPrimaryMacros();
+  if ( result ) return 1;
+
+  return 0;
 
 }
 
@@ -2307,7 +2650,7 @@ int tmpw, tmph, ret_stat;
     }
   }
 
-  if ( -h != -1 ) {
+  if ( _h != -1 ) {
     tmph = _h;
     if ( tmph < minH ) {
       ret_stat = 0;
@@ -2339,9 +2682,7 @@ int nc, ni, nr, ne, nd;
 
   if ( nc ) {
 
-    readPvConnected = 1;
-
-    v = curReadV = readPvId->get_double();
+    v = readV = curReadV = readPvId->get_double() - baseV;
     readMin = readPvId->get_lower_disp_limit();
     readMax = readPvId->get_upper_disp_limit();
 
@@ -2351,11 +2692,34 @@ int nc, ni, nr, ne, nd;
 
   if ( ni ) {
 
-    if ( initialReadConnection ) {
+    if ( readExists ) {
 
-      initialReadConnection = 0;
+      if ( initialReadConnection ) {
 
-      readPvId->add_value_callback( meter_readUpdate, this );
+        initialReadConnection = 0;
+
+        readPvId->add_value_callback( meter_readUpdate, this );
+
+        if ( trackDelta ) {
+          baseV = readPvId->get_double();
+        }
+        else {
+	  baseV = 0;
+        }
+
+      }
+
+    }
+
+    if ( readLabelExists ) {
+
+      if ( initialReadLabelConnection ) {
+
+        initialReadLabelConnection = 0;
+
+        readPvLabelId->add_value_callback( meter_readLabelUpdate, this );
+
+      }
 
     }
 
@@ -2375,7 +2739,7 @@ int nc, ni, nr, ne, nd;
     active = 1;
     activeInitFlag = 1;
 
-    readV = v;
+    v = readV = curReadV = readPvId->get_double() - baseV;
     bufInvalidate();
     eraseActive();
     drawActive();
@@ -2385,6 +2749,9 @@ int nc, ni, nr, ne, nd;
   if ( nr ) {
     bufInvalidate();
     eraseActive();
+    if ( readPvId && readPvId->is_valid() ) {
+      v = readV = curReadV = readPvId->get_double() - baseV;
+    }
     drawActive();
   }
 
@@ -2393,7 +2760,9 @@ int nc, ni, nr, ne, nd;
   }
 
   if ( nd ) {
-    readV = v;
+    if ( readPvId && readPvId->is_valid() ) {
+      v = readV = curReadV = readPvId->get_double() - baseV;
+    }
     drawActive();
   }
 
@@ -2520,6 +2889,20 @@ void activeMeterClass::getPvs (
 
   *n = 1;
   pvs[0] = readPvId;
+
+}
+
+// crawler functions may return blank pv names
+char *activeMeterClass::crawlerGetFirstPv ( void ) {
+
+  crawlerPvIndex = 0;
+  return readPvExpStr.getExpanded();
+
+}
+
+char *activeMeterClass::crawlerGetNextPv ( void ) {
+
+  return NULL;
 
 }
 

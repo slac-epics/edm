@@ -30,7 +30,9 @@ static XtTranslations g_parsedTrans;
 static char g_dragTrans[] =
   "#override ~Ctrl~Shift<Btn2Down>: startDrag()\n\
    Ctrl~Shift<Btn2Down>: pvInfo()\n\
-   Shift<Btn2Down>: dummy()\n\
+   Shift Ctrl<Btn2Down>: dummy()\n\
+   Shift~Ctrl<Btn2Down>: dummy()\n\
+   Shift Ctrl<Btn2Up>: selectActions()\n\
    Shift~Ctrl<Btn2Up>: selectDrag()\n\
    <Btn3Up>: changeParams()";
 
@@ -38,6 +40,7 @@ static XtActionsRec g_dragActions[] = {
   { "startDrag", (XtActionProc) drag },
   { "pvInfo", (XtActionProc) pvInfo },
   { "dummy", (XtActionProc) dummy },
+  { "selectActions", (XtActionProc) selectActions },
   { "changeParams", (XtActionProc) changeParams },
   { "selectDrag", (XtActionProc) selectDrag }
 };
@@ -139,7 +142,7 @@ double fvalue;
   if ( mslo->controlExists ) {
     if ( mslo->controlPvId ) {
       stat = mslo->controlPvId->put( fvalue );
-      if ( !stat ) printf( activeMotifSliderClass_str59 );
+      if ( !stat ) fprintf( stderr, activeMotifSliderClass_str59 );
     }
   }
 
@@ -197,7 +200,7 @@ double fvalue;
   if ( mslo->controlExists ) {
     if ( mslo->controlPvId ) {
       stat = mslo->controlPvId->put( fvalue );
-      if ( !stat ) printf( activeMotifSliderClass_str59 );
+      if ( !stat ) fprintf( stderr, activeMotifSliderClass_str59 );
     }
   }
 
@@ -361,6 +364,24 @@ XButtonEvent *be = (XButtonEvent *) e;
 
 }
 
+static void selectActions (
+   Widget w,
+   XEvent *e,
+   String *params,
+   Cardinal numParams )
+{
+
+activeMotifSliderClass *mslo;
+XButtonEvent *be = (XButtonEvent *) e;
+
+  XtVaGetValues( w, XmNuserData, &mslo, NULL );
+
+  if ( !mslo->enabled ) return;
+
+  mslo->doActions( be, be->x, be->y );
+
+}
+
 static void pvInfo (
    Widget w,
    XEvent *e,
@@ -478,7 +499,7 @@ activeMotifSliderClass *mslo = (activeMotifSliderClass *) client;
   if ( mslo->controlExists ) {
     if ( mslo->controlPvId ) {
       stat = mslo->controlPvId->put( fvalue );
-      if ( !stat ) printf( activeMotifSliderClass_str3 );
+      if ( !stat ) fprintf( stderr, activeMotifSliderClass_str3 );
       mslo->actWin->appCtx->proc->lock();
       mslo->actWin->addDefExeNode( mslo->aglPtr );
       mslo->actWin->appCtx->proc->unlock();
@@ -1104,6 +1125,7 @@ static int orienTypeEnum[2] = {
    &orientation, &horz );
   tag.loadW( "savedValuePv", &savedValuePvName, emptyStr );
   tag.loadBoolW( "showSavedValue", &showSavedValue, &zero );
+  tag.loadW( unknownTags );
   tag.loadW( "endObjectProperties" );
   tag.loadW( "" );
 
@@ -1231,6 +1253,7 @@ static int orienTypeEnum[2] = {
 
   tag.init();
   tag.loadR( "beginObjectProperties" );
+  tag.loadR( unknownTags );
   tag.loadR( "major", &major );
   tag.loadR( "minor", &minor );
   tag.loadR( "release", &release );
@@ -2243,7 +2266,7 @@ double mult, fvalue;
       if ( mslo->controlExists ) {
         if ( mslo->controlPvId ) {
           stat = mslo->controlPvId->put( fvalue );
-          if ( !stat ) printf( activeMotifSliderClass_str59 );
+          if ( !stat ) fprintf( stderr, activeMotifSliderClass_str59 );
         }
       }
 
@@ -2294,7 +2317,7 @@ double mult, fvalue;
       if ( mslo->controlExists ) {
         if ( mslo->controlPvId ) {
           stat = mslo->controlPvId->put( fvalue );
-          if ( !stat ) printf( activeMotifSliderClass_str59 );
+          if ( !stat ) fprintf( stderr, activeMotifSliderClass_str59 );
         }
       }
 
@@ -2407,7 +2430,7 @@ double mult, fvalue;
       if ( mslo->controlExists ) {
         if ( mslo->controlPvId ) {
           stat = mslo->controlPvId->put( fvalue );
-          if ( !stat ) printf( activeMotifSliderClass_str59 );
+          if ( !stat ) fprintf( stderr, activeMotifSliderClass_str59 );
         }
       }
 
@@ -2421,7 +2444,7 @@ double mult, fvalue;
       if ( mslo->savedValueExists ) {
         if ( mslo->savedValuePvId ) {
           stat = mslo->savedValuePvId->put( mslo->savedV );
-          if ( !stat ) printf( activeMotifSliderClass_str59 );
+          if ( !stat ) fprintf( stderr, activeMotifSliderClass_str59 );
         }
       }
       else {
@@ -2442,7 +2465,7 @@ double mult, fvalue;
       if ( mslo->controlExists ) {
         if ( mslo->controlPvId ) {
           stat = mslo->controlPvId->put( mslo->controlV );
-          if ( !stat ) printf( activeMotifSliderClass_str59 );
+          if ( !stat ) fprintf( stderr, activeMotifSliderClass_str59 );
         }
       }
 
@@ -2632,7 +2655,7 @@ double fvalue, mult;
       if ( mslo->controlExists ) {
         if ( mslo->controlPvId ) {
           stat = mslo->controlPvId->put( fvalue );
-          if ( !stat ) printf( activeMotifSliderClass_str59 );
+          if ( !stat ) fprintf( stderr, activeMotifSliderClass_str59 );
         }
       }
 
@@ -2683,7 +2706,7 @@ double fvalue, mult;
       if ( mslo->controlExists ) {
         if ( mslo->controlPvId ) {
           stat = mslo->controlPvId->put( fvalue );
-          if ( !stat ) printf( activeMotifSliderClass_str59 );
+          if ( !stat ) fprintf( stderr, activeMotifSliderClass_str59 );
         }
       }
 
@@ -2708,6 +2731,10 @@ double fvalue, mult;
       if ( ( be->state & ShiftMask ) &&
            !( be->state & ControlMask ) ) {
         stat = mslo->selectDragValue( be );
+      }
+      else if ( ( be->state & ShiftMask ) &&
+                ( be->state & ControlMask ) ) {
+        mslo->doActions( be, be->x, be->y );
       }
 
       break;
@@ -3674,6 +3701,40 @@ void activeMotifSliderClass::getPvs (
   *n = 2;
   pvs[0] = controlPvId;
   pvs[1] = savedValuePvId;
+
+}
+
+// crawler functions may return blank pv names
+char *activeMotifSliderClass::crawlerGetFirstPv ( void ) {
+
+  crawlerPvIndex = 0;
+  return controlPvName.getExpanded();
+
+}
+
+char *activeMotifSliderClass::crawlerGetNextPv ( void ) {
+
+int max;
+
+  if ( controlLabelType != MSLC_K_LITERAL ) { // label name is a pv
+    max = 2;
+  }
+  else {
+    max = 1;
+  }
+
+  if ( crawlerPvIndex >= max ) return NULL;
+
+  crawlerPvIndex++;
+
+  if ( crawlerPvIndex == 1 ) {
+    return savedValuePvName.getExpanded();
+  }
+  else if ( crawlerPvIndex == 2 ) {
+    return controlLabelName.getExpanded();
+  }
+
+  return NULL;
 
 }
 

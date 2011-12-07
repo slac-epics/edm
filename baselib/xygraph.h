@@ -99,7 +99,7 @@
 #define XYGC_K_PLOT_SORTED_X_MODE 1
 
 #define XYGC_MAJOR_VERSION 4
-#define XYGC_MINOR_VERSION 2
+#define XYGC_MINOR_VERSION 3
 #define XYGC_RELEASE 0
 
 #ifdef __xygraph_cc
@@ -140,6 +140,10 @@ static char *dragName[] = {
 };
 
 static void updateTimerAction (
+  XtPointer client,
+  XtIntervalId *id );
+
+static void updateAutoScaleTimerAction (
   XtPointer client,
   XtIntervalId *id );
 
@@ -422,6 +426,9 @@ typedef struct editBufTag {
   int bufFormatType;
   int bufBorder;
   int bufPlotAreaBorder;
+  int bufAutoScaleBothDirections;
+  efInt bufAutoScaleTimerMs;
+  efDouble bufAutoScaleThreshPct;
   int bufXFormatType;
   efInt bufXPrecision;
   int bufY1FormatType[NUM_Y_AXES];
@@ -439,6 +446,10 @@ typedef struct objPlusIndexTag {
 } objPlusIndexType, *objPlusIndexPtr;
 
 friend void updateTimerAction (
+  XtPointer client,
+  XtIntervalId *id );
+
+friend void updateAutoScaleTimerAction (
   XtPointer client,
   XtIntervalId *id );
 
@@ -745,7 +756,9 @@ efDouble y1Min[NUM_Y_AXES], y1Max[NUM_Y_AXES];
 int y2Axis, y2AxisStyle, y2AxisSource;
 efDouble y2Min, y2Max;
 
-double curXMin, curXMax, curY1Min[NUM_Y_AXES], curY1Max[NUM_Y_AXES],
+double curXMin, curXMax, adjCurXMin, adjCurXMax,
+ curY1Min[NUM_Y_AXES], curY1Max[NUM_Y_AXES],
+ adjCurY1Min[NUM_Y_AXES], adjCurY1Max[NUM_Y_AXES],
  curY2Min, curY2Max;
 int curXPrec, curY1Prec[NUM_Y_AXES], curY2Prec;
 
@@ -778,6 +791,10 @@ char fontTag[63+1];
 
 int border;
 int plotAreaBorder;
+int autoScaleBothDirections;
+efInt autoScaleTimerMs;
+efDouble autoScaleThreshPct;
+double autoScaleThreshFrac;
 
 int opComplete, active, activeMode, init, bufInvalid;
 XFontStruct *fs;
@@ -823,12 +840,16 @@ Widget plotWidget;
 int needConnect, needInit, needRefresh, needUpdate, needErase, needDraw,
  needResetConnect, needReset, needTrigConnect, needTrig, needXRescale,
  needY1Rescale[NUM_Y_AXES], needY2Rescale, needBufferScroll, needVectorUpdate,
- needRealUpdate, needBoxRescale, needNewLimits, needOriginalLimits;
+ needRealUpdate, needBoxRescale, needNewLimits, needOriginalLimits,
+ needAutoScaleUpdate;
 
 int numBufferScrolls;
 
 int updateTimerActive, updateTimerValue;
 XtIntervalId updateTimer;
+
+int updateAutoScaleTimerActive, updateAutoScaleTimerValue;
+XtIntervalId updateAutoScaleTimer;
 
 double xRescaleValue, y1RescaleValue[NUM_Y_AXES], y2RescaleValue;
 
@@ -1086,6 +1107,10 @@ void getPvs (
   int max,
   ProcessVariable *pvs[],
   int *n );
+
+char *crawlerGetFirstPv ( void );
+
+char *crawlerGetNextPv ( void );
 
 };
 

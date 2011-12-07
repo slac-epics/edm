@@ -3,6 +3,8 @@
 #include"regTextupdate.h"
 #include"strip.h"
 #include"byte.h"
+#include"environment.str"
+#include"pv_register.str"
 
 // --------------------------------------------------------
 // Registration
@@ -19,15 +21,23 @@ static int libRecIndex = 0;
 
 static libRecType exported[] =
 {
-    { TEXTUPDATE_CLASSNAME, "Monitors", "Textupdate" },
-    { REGTEXTUPDATE_CLASSNAME, "Monitors", "RegTextupdate" },
-    { TEXTENTRY_CLASSNAME, "Controls", "Textentry" },
-    { STRIP_CLASSNAME, "Monitors", "Stripchart" },
-    { BYTE_CLASSNAME, "Monitors", "Byte" }
+    { TEXTUPDATE_CLASSNAME, global_str2, reg_str1 },
+    { REGTEXTUPDATE_CLASSNAME, global_str2, reg_str2 },
+    { TEXTENTRY_CLASSNAME, global_str5, reg_str3 },
+    { BYTE_CLASSNAME, global_str2, reg_str4 }
 };
 
 extern "C"
 {
+
+    char *author ( void ) {
+
+    static char *a = "Kay Kasemir (kasemirk@ornl.gov)";
+
+      return a;
+
+    }
+
     int firstRegRecord(char **className, char **typeName, char **text)
     {
         *className = exported[0].className;
@@ -36,7 +46,7 @@ extern "C"
         libRecIndex = 1;
         return 0;
     }
-
+  
     int nextRegRecord(char **className, char **typeName, char **text)
     {
         int max = sizeof(exported) / sizeof(exported[0]);
@@ -88,19 +98,6 @@ extern "C"
         return (void *) obj;
     }
 
-    void *create_StripClassPtr (void)
-    {
-        edmStripClass *obj = new edmStripClass;
-        return (void *) obj;
-    }
-    
-    void *clone_StripClassPtr (void *rhs)
-    {
-        edmStripClass *src = (edmStripClass *) rhs;
-        edmStripClass *obj = new edmStripClass(src);
-        return (void *) obj;
-    }
-
     void *create_ByteClassPtr (void)
     {
         edmByteClass *obj = new edmByteClass;
@@ -113,7 +110,6 @@ extern "C"
         edmByteClass *obj = new edmByteClass(src);
         return (void *) obj;
     }
-
     
 } // extern "C"
 
