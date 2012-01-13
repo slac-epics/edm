@@ -104,7 +104,7 @@ protected:
 // will help avoid base class poisoning run-time issues for libraries built
 // at one site and utilized at another.
 //
-static const int MAJOR_VERSION = 2;
+static const int MAJOR_VERSION = 5;
 static const int MINOR_VERSION = 0;
 
 friend void dragFin (
@@ -172,6 +172,7 @@ activeWindowClass *actWin;
 void *aglPtr; // will hold the activeGraphicListPtr container
 undoClass *curUndoObj;
 int startEdit, editConfirmed;
+int startSar, sarConfirmed;
 
 int deleteRequest; // if true, then wants to be deleted
 
@@ -189,13 +190,15 @@ void clone ( const activeGraphicClass *source );
 
 virtual ~activeGraphicClass ( void );
 
+Drawable drawable ( Widget w );
+
 int baseMajorVersion ( void );
 
 int baseMinorVersion ( void );
 
 void checkBaseClassVersion (
   int ver,
-  char *file
+  char *name
 );
 
 virtual void setObjType (
@@ -550,7 +553,8 @@ virtual int paste ( void );
 
 virtual int edit ( void );
 
-virtual int doEdit ( undoClass *_undoObj );
+virtual int doEdit (
+  undoClass *_undoObj );
 
 void operationComplete ( void );
 
@@ -579,6 +583,8 @@ virtual int removeLastPoint ( void );
 virtual pointPtr selectPoint (
   int x,
   int y );
+
+virtual void deselectAllPoints ( void ) {}
 
 virtual int movePoint (
   pointPtr curPoint,
@@ -710,6 +716,8 @@ virtual int intersects (
 virtual int smartDrawAllActive ( void );
 
 virtual int doSmartDrawAllActive ( void );
+
+virtual int doSmartDrawAllButMeActive ( void );
 
 virtual int drawActiveIfIntersects (
   int x0,
@@ -894,6 +902,15 @@ virtual void clearMouseOver ( void );
 virtual int initDefExeNode (
   void *ptr );
 
+virtual int expandTemplate (
+  int numMacros,
+  char *macros[],
+  char *expansions[] ) {
+
+  return 1;
+
+}
+
 virtual int expand1st (
   int numMacros,
   char *macros[],
@@ -1051,6 +1068,10 @@ virtual int activateComplete ( void ) {
   return 1;
 }
 
+virtual int activateBeforePreReexecuteComplete ( void ) {
+  return activateComplete();
+}
+
 virtual activeGraphicClass *getTail ( void );
 
 virtual void setEditProperties ( void );
@@ -1115,6 +1136,22 @@ virtual void getPvs (
   int max,
   ProcessVariable *pvs[],
   int *n );
+
+virtual char *getSearchString (
+  int index
+) {
+
+  return NULL;
+
+}
+
+virtual void replaceString (
+  int index,
+  int max,
+  char *string
+) {
+
+}
 
 virtual int showPvInfo (
   XButtonEvent *be,
@@ -1337,6 +1374,13 @@ int crawlerPvIndex; // for crawler
 // pv crawler functions
 virtual char *crawlerGetFirstPv ( void );
 virtual char *crawlerGetNextPv ( void );
+
+void getSelBoxDims (
+  int *x,
+  int *y,
+  int *w,
+  int *h
+);
 
 };
 

@@ -26,6 +26,7 @@
 
 static char *groupDragName = "?";
 
+#if 0
 static void groupUnconnectedTimeout (
   XtPointer client,
   XtIntervalId *id )
@@ -44,6 +45,7 @@ activeGroupClass *ago = (activeGroupClass *) client;
   ago->unconnectedTimer = 0;
 
 }
+#endif
 
 void agc_edit_update (
   Widget w,
@@ -210,6 +212,7 @@ activeGraphicListPtr head;
 
   name = new char[strlen("activeGroupClass")+1];
   strcpy( name, "activeGroupClass" );
+  checkBaseClassVersion( activeGraphicClass::MAJOR_VERSION, name );
   deleteRequest = 0;
 
   head = new activeGraphicListType;
@@ -217,6 +220,13 @@ activeGraphicListPtr head;
   head->blink = head;
 
   voidHead = (void *) head;
+
+  relatedDisplayNodeHead = new RelatedDisplayNodeType;
+  relatedDisplayNodeHead->flink = relatedDisplayNodeHead;
+  relatedDisplayNodeHead->blink = relatedDisplayNodeHead;
+
+  curCrawlerNode = NULL;
+  curCrawlerState = GETTING_FIRST_CRAWLER_PV;
 
   btnDownActionHead = new btnActionListType;
   btnDownActionHead->flink = btnDownActionHead;
@@ -263,6 +273,18 @@ btnActionListPtr curBtnAction, nextBtnAction;
   head->flink = NULL;
   head->blink = NULL;
   delete head;
+
+  RelatedDisplayNodePtr currd, nextrd;
+
+  currd = relatedDisplayNodeHead->flink;
+  while ( currd != relatedDisplayNodeHead ) {
+    nextrd = currd->flink;
+    delete currd;
+    currd = nextrd;
+  }
+  relatedDisplayNodeHead->flink = NULL;
+  relatedDisplayNodeHead->blink = NULL;
+  delete relatedDisplayNodeHead;
 
   // btn down action list
 
@@ -364,6 +386,12 @@ activeGraphicListPtr head, cur, curSource, sourceHead;
   }
 
   voidHead = (void *) head;
+  curCrawlerNode = NULL;
+  curCrawlerState = GETTING_FIRST_CRAWLER_PV;
+
+  relatedDisplayNodeHead = new RelatedDisplayNodeType;
+  relatedDisplayNodeHead->flink = relatedDisplayNodeHead;
+  relatedDisplayNodeHead->blink = relatedDisplayNodeHead;
 
   btnDownActionHead = new btnActionListType;
   btnDownActionHead->flink = btnDownActionHead;
@@ -392,6 +420,10 @@ activeGraphicListPtr head, cur, curSource, sourceHead;
   activeMode = 0;
 
   eBuf = NULL;
+
+  doAccSubs( visPvExpStr );
+  doAccSubs( minVisString, 39 );
+  doAccSubs( maxVisString, 39 );
 
 }
 
@@ -1097,10 +1129,17 @@ activeGraphicListPtr cur;
   ef.addTextField( "Y", 30, &bufY );
   ef.addTextField( "Visibility PV", 30, eBuf->bufVisPvName,
    PV_Factory::MAX_PV_NAME );
+  invisPvEntry = ef.getCurItem();
   ef.addOption( " ", "Not Visible if|Visible if", &bufVisInverted );
+  visInvEntry = ef.getCurItem();
+  invisPvEntry->addDependency( visInvEntry );
   ef.addTextField( ">=", 30, bufMinVisString, 39 );
+  minVisEntry = ef.getCurItem();
+  invisPvEntry->addDependency( minVisEntry );
   ef.addTextField( "and <", 30, bufMaxVisString, 39 );
-
+  maxVisEntry = ef.getCurItem();
+  invisPvEntry->addDependency( maxVisEntry );
+  invisPvEntry->addDependencyCallbacks();
   ef.finished( agc_edit_ok, agc_edit_apply, agc_edit_cancel, this );
   actWin->currentEf = &ef;
   ef.popup();
@@ -1119,6 +1158,33 @@ activeGraphicListPtr cur;
     cur->node->beginEdit();
     cur = cur->flink;
   }
+
+}
+
+int activeGroupClass::activateBeforePreReexecuteComplete ( void ) {
+
+  //return 1;
+
+  return activateComplete();
+
+}
+
+int activeGroupClass::activateComplete ( void ) {
+
+activeGraphicListPtr head = (activeGraphicListPtr) voidHead;
+activeGraphicListPtr cur;
+
+  cur = head->flink;
+  while ( cur != head ) {
+    if ( !(cur->node->activateComplete()) ) {
+      //printf( "%s at %-d,%-d not ready\n", cur->node->objName(),
+      // cur->node->getX0(), cur->node->getY0() );
+      return 0;
+    }
+    cur = cur->flink;
+  }
+
+  return 1;
 
 }
 
@@ -2790,6 +2856,35 @@ activeGraphicListPtr cur;
 
 }
 
+int activeGroupClass::expandTemplate (
+  int numMacros,
+  char *macros[],
+  char *expansions[] )
+{
+
+expStringClass tmpStr;
+activeGraphicListPtr head = (activeGraphicListPtr) voidHead;
+activeGraphicListPtr cur;
+
+  if ( deleteRequest ) return 1;
+
+  tmpStr.setRaw( visPvExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  visPvExpStr.setRaw( tmpStr.getExpanded() );
+
+  cur = head->flink;
+  while ( cur != head ) {
+
+    cur->node->expandTemplate( numMacros, macros, expansions );
+
+    cur = cur->flink;
+
+  }
+
+  return 1;
+
+}
+
 int activeGroupClass::expand1st (
   int numMacros,
   char *macros[],
@@ -3419,6 +3514,152 @@ int stat;
 
 }
 
+char *activeGroupClass::getSearchString (
+  int i
+) {
+
+// this must be called such that i starts at zero and increments by one subsequently
+// i.e. evil coupling exists between this function and the code in act_win.cc from
+// which it is called
+
+activeGraphicListPtr head = (activeGraphicListPtr) voidHead;
+activeGraphicListPtr cur;
+char *str;
+
+  if ( i == 0 ) {
+    return visPvExpStr.getRaw();
+  }
+  else if ( i == 1 ) {
+    return minVisString;
+  }
+  else if ( i == 2 ) {
+    return maxVisString;
+  }
+  else if ( i == 3 ) {
+
+    _edmDebug();
+
+    sarNeedNextNode = 0;
+    sarIndex = 0;
+    sarItemIndexOffset = i;
+    cur = head;
+    sarNode = (void *) cur;
+    if ( cur->flink == head ) {
+      // empty
+      return NULL;
+    }
+
+    do {
+
+      cur = cur->flink;
+      sarNode = (void *) cur;
+      sarNeedNextNode = 0;
+      if ( cur != head ) {
+        str = cur->node->getSearchString( sarIndex );
+        if ( !str ) {
+          sarNeedNextNode = 1;
+        }
+        else {
+          return str;
+        }
+      }
+      else {
+        // no more
+        return NULL;
+      }
+
+    } while (  sarNeedNextNode );
+
+  }
+  else {
+
+    cur = (activeGraphicListPtr) sarNode;
+    if ( cur == head ) {
+      // no more
+      return NULL;
+    }
+
+    do {
+
+      if ( sarNeedNextNode ) {
+
+        cur = cur->flink;
+        sarNode = (void *) cur;
+        sarIndex = 0;
+        sarNeedNextNode = 0;
+        sarItemIndexOffset = i;
+        if ( cur != head ) {
+          str = cur->node->getSearchString( sarIndex );
+          if ( !str ) {
+            sarNeedNextNode = 1;
+          }
+          else {
+            return str;
+          }
+        }
+        else {
+          // no more
+          return NULL;
+        }
+
+      }
+      else {
+
+        sarIndex++;
+        str = cur->node->getSearchString( sarIndex );
+        if ( !str ) {
+          sarNeedNextNode = 1;
+        }
+        else {
+          return str;
+        }
+
+      }
+
+    } while (  sarNeedNextNode );
+
+  }
+
+  return NULL;
+
+}
+
+void activeGroupClass::replaceString (
+  int i,
+  int max,
+  char *string
+) {
+
+activeGraphicListPtr head = (activeGraphicListPtr) voidHead;
+activeGraphicListPtr cur;
+
+  if ( i == 0 ) {
+    visPvExpStr.setRaw( string );
+  }
+  else if ( i == 1 ) {
+    int l = max;
+    if ( 39 < max ) l = 39;
+    strncpy( minVisString, string, l );
+    minVisString[l] = 0;
+  }
+  else if ( i == 2 ) {
+    int l = max;
+    if ( 39 < max ) l = 39;
+    strncpy( maxVisString, string, l );
+    maxVisString[l] = 0;
+  }
+  else {
+    cur = (activeGraphicListPtr) sarNode;
+    if ( cur != head ) {
+      cur->node->replaceString ( i - sarItemIndexOffset,
+       max, string );
+    }
+  }
+
+  updateDimensions();
+
+}
+
 void activeGroupClass::getPvs (
   int max,
   ProcessVariable *pvs[],
@@ -3743,9 +3984,31 @@ activeGraphicListPtr cur;
 
 void activeGroupClass::map ( void ) {
 
+#if 0
+activeGraphicListPtr head = (activeGraphicListPtr) voidHead;
+activeGraphicListPtr cur;
+
+  cur = head->flink;
+  while ( cur != head ) {
+    cur->node->map();
+    cur = cur->flink;
+  }
+#endif
+
 }
 
 void activeGroupClass::unmap ( void ) {
+
+#if 0
+activeGraphicListPtr head = (activeGraphicListPtr) voidHead;
+activeGraphicListPtr cur;
+
+  cur = head->flink;
+  while ( cur != head ) {
+    cur->node->unmap();
+    cur = cur->flink;
+  }
+#endif
 
 }
 
@@ -3788,5 +4051,254 @@ int activeGroupClass::putGroupVisInfo (
   maxVisString[39] = 0;
 
   return 1; // success
+
+}
+
+char *activeGroupClass::crawlerGetFirstPv ( void ) {
+
+activeGraphicListPtr head = (activeGraphicListPtr) voidHead;
+activeGraphicListPtr cur;
+char *crawlerPv = NULL;
+
+  curCrawlerState = GETTING_FIRST_CRAWLER_PV;
+
+  cur = head->flink;
+  if ( cur == head ) {
+    curCrawlerState = NO_MORE_CRAWLER_PVS;
+    goto done;
+  }
+
+  while ( ( crawlerPv == NULL ) && ( curCrawlerState != NO_MORE_CRAWLER_PVS ) ) {
+
+    if ( curCrawlerState == GETTING_FIRST_CRAWLER_PV ) {
+
+      crawlerPv = cur->node->crawlerGetFirstPv();
+      if ( crawlerPv ) {
+        if ( strcmp( crawlerPv, "" ) == 0 ) crawlerPv = NULL;
+      }
+      if ( crawlerPv ) {
+        curCrawlerState = GETTING_NEXT_CRAWLER_PV;
+      }
+      else {
+        cur = cur->flink;
+        if ( cur == head ) {
+          curCrawlerState = NO_MORE_CRAWLER_PVS;
+        }
+      }
+
+    }
+    else if ( curCrawlerState == GETTING_NEXT_CRAWLER_PV ) {
+
+      crawlerPv = cur->node->crawlerGetNextPv();
+      if ( crawlerPv ) {
+        if ( strcmp( crawlerPv, "" ) == 0 ) crawlerPv = NULL;
+      }
+      if ( !crawlerPv ) {
+        cur = cur->flink;
+        if ( cur == head ) {
+          curCrawlerState = NO_MORE_CRAWLER_PVS;
+        }
+	else {
+          curCrawlerState = GETTING_FIRST_CRAWLER_PV;
+	}
+      }
+
+    }
+
+  }
+
+done:
+  curCrawlerNode = (void *) cur;
+  return crawlerPv;
+
+}
+
+char *activeGroupClass::crawlerGetNextPv ( void ) {
+
+activeGraphicListPtr head = (activeGraphicListPtr) voidHead;
+activeGraphicListPtr cur = (activeGraphicListPtr) curCrawlerNode;
+char *crawlerPv = NULL;
+
+  if ( ( cur == head ) || ( curCrawlerState == NO_MORE_CRAWLER_PVS ) ) {
+    goto done;
+  }
+
+  while ( ( crawlerPv == NULL ) && ( curCrawlerState != NO_MORE_CRAWLER_PVS ) ) {
+
+    if ( curCrawlerState == GETTING_FIRST_CRAWLER_PV ) {
+
+      crawlerPv = cur->node->crawlerGetFirstPv();
+      if ( crawlerPv ) {
+        if ( strcmp( crawlerPv, "" ) == 0 ) crawlerPv = NULL;
+      }
+      if ( crawlerPv ) {
+        curCrawlerState = GETTING_NEXT_CRAWLER_PV;
+      }
+      else {
+        cur = cur->flink;
+        if ( cur == head ) {
+          curCrawlerState = NO_MORE_CRAWLER_PVS;
+        }
+      }
+
+    }
+    else if ( curCrawlerState == GETTING_NEXT_CRAWLER_PV ) {
+
+      crawlerPv = cur->node->crawlerGetNextPv();
+      if ( crawlerPv ) {
+        if ( strcmp( crawlerPv, "" ) == 0 ) crawlerPv = NULL;
+      }
+      if ( !crawlerPv ) {
+        cur = cur->flink;
+        if ( cur == head ) {
+          curCrawlerState = NO_MORE_CRAWLER_PVS;
+        }
+	else {
+          curCrawlerState = GETTING_FIRST_CRAWLER_PV;
+	}
+      }
+
+    }
+
+  }
+
+done:
+  curCrawlerNode = (void *) cur;
+  return crawlerPv;
+
+}
+
+int activeGroupClass::isRelatedDisplay ( void ) {
+
+activeGraphicListPtr head = (activeGraphicListPtr) voidHead;
+activeGraphicListPtr cur;
+
+  cur = head->flink;
+  while ( cur != head ) {
+    if ( cur->node->isRelatedDisplay() ) {
+      return 1;
+    }
+    cur = cur->flink;
+  }
+
+  return 0;
+
+}
+
+int activeGroupClass::getNumRelatedDisplays ( void ) {
+
+  // build list of related display nodes and record extent of indices
+
+activeGraphicListPtr head = (activeGraphicListPtr) voidHead;
+activeGraphicListPtr cur;
+RelatedDisplayNodePtr currd;
+int index = 0;
+
+  cur = head->flink;
+  while ( cur != head ) {
+
+    if ( cur->node->isRelatedDisplay() ) {
+
+      currd = new RelatedDisplayNodeType;
+
+      currd->ptr = (activeGraphicListPtr) cur;
+      currd->first = index;
+      index += cur->node->getNumRelatedDisplays();
+      currd->last = index - 1;
+
+      currd->blink = relatedDisplayNodeHead->blink;
+      relatedDisplayNodeHead->blink->flink = currd;
+      relatedDisplayNodeHead->blink = currd;
+      currd->flink = relatedDisplayNodeHead;
+
+    }
+
+    cur = cur->flink;
+
+  }
+
+  return index;
+
+}
+
+int activeGroupClass::getRelatedDisplayProperty (
+  int index,
+  char *name
+) {
+
+// translate index to node and node specific index
+
+RelatedDisplayNodePtr head = relatedDisplayNodeHead;
+RelatedDisplayNodePtr cur;
+activeGraphicListPtr ptr;
+
+  cur = head->flink;
+  while ( cur != head ) {
+
+    if ( index <= cur->last ) {
+      index -= cur->first;
+      ptr = (activeGraphicListPtr) cur->ptr;
+      return ptr->node->getRelatedDisplayProperty( index, name );
+    }
+
+    cur = cur->flink;
+
+  }
+
+  return 0;
+
+}
+
+char *activeGroupClass::getRelatedDisplayName (
+  int index
+) {
+
+// translate index to node and node specific index
+
+RelatedDisplayNodePtr head = relatedDisplayNodeHead;
+RelatedDisplayNodePtr cur;
+activeGraphicListPtr ptr;
+
+  cur = head->flink;
+  while ( cur != head ) {
+
+    if ( index <= cur->last ) {
+      index -= cur->first;
+      ptr = (activeGraphicListPtr) cur->ptr;
+      return ptr->node->getRelatedDisplayName( index );
+    }
+
+    cur = cur->flink;
+
+  }
+
+  return NULL;
+
+}
+
+char *activeGroupClass::getRelatedDisplayMacros (
+  int index
+) {
+
+// translate index to node and node specific index
+
+RelatedDisplayNodePtr head = relatedDisplayNodeHead;
+RelatedDisplayNodePtr cur;
+activeGraphicListPtr ptr;
+
+  cur = head->flink;
+  while ( cur != head ) {
+
+    if ( index <= cur->last ) {
+      index -= cur->first;
+      ptr = (activeGraphicListPtr) cur->ptr;
+      return ptr->node->getRelatedDisplayMacros( index );
+    }
+
+    cur = cur->flink;
+
+  }
+
+  return NULL;
 
 }

@@ -405,6 +405,7 @@ activeChoiceButtonClass::activeChoiceButtonClass ( void ) {
 
   name = new char[strlen("activeChoiceButtonClass")+1];
   strcpy( name, "activeChoiceButtonClass" );
+  checkBaseClassVersion( activeGraphicClass::MAJOR_VERSION, name );
 
   fgColorMode = ACBC_K_COLORMODE_STATIC;
   bgColorMode = ACBC_K_COLORMODE_STATIC;
@@ -427,6 +428,8 @@ activeChoiceButtonClass::activeChoiceButtonClass ( void ) {
   orientation = ACBC_K_ORIENTATION_VERT;
 
   eBuf = NULL;
+
+  crawlerPvIndex = 0;
 
   setBlinkFunction( (void *) doBlink );
 
@@ -506,6 +509,15 @@ activeGraphicClass *acbo = (activeGraphicClass *) this;
   eBuf = NULL;
 
   setBlinkFunction( (void *) doBlink );
+
+  crawlerPvIndex = 0;
+
+  doAccSubs( controlPvExpStr );
+  doAccSubs( readPvExpStr );
+  doAccSubs( colorPvExpStr );
+  doAccSubs( visPvExpStr );
+  doAccSubs( minVisString, 39 );
+  doAccSubs( maxVisString, 39 );
 
 }
 
@@ -988,9 +1000,17 @@ char title[32], *ptr;
 
   ef.addTextField( activeChoiceButtonClass_str30, 35, eBuf->bufVisPvName,
    PV_Factory::MAX_PV_NAME );
+  invisPvEntry = ef.getCurItem();
   ef.addOption( " ", activeChoiceButtonClass_str31, &bufVisInverted );
+  visInvEntry = ef.getCurItem();
+  invisPvEntry->addDependency( visInvEntry );
   ef.addTextField( activeChoiceButtonClass_str32, 35, bufMinVisString, 39 );
+  minVisEntry = ef.getCurItem();
+  invisPvEntry->addDependency( minVisEntry );
   ef.addTextField( activeChoiceButtonClass_str33, 35, bufMaxVisString, 39 );
+  maxVisEntry = ef.getCurItem();
+  invisPvEntry->addDependency( maxVisEntry );
+  invisPvEntry->addDependencyCallbacks();
 
   return 1;
 
@@ -1043,10 +1063,10 @@ int activeChoiceButtonClass::eraseActive ( void ) {
 
   prevVisibility = visibility;
 
-  XDrawRectangle( actWin->d, XtWindow(actWin->drawWidget),
+  XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->drawGc.eraseGC(), x, y, w, h );
 
-  XFillRectangle( actWin->d, XtWindow(actWin->drawWidget),
+  XFillRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->drawGc.eraseGC(), x, y, w, h );
 
   return 1;
@@ -1372,7 +1392,7 @@ int inconsistent;
       actWin->executeGc.setFG( bgColor.getDisconnectedIndex(), &blink );
       actWin->executeGc.setLineWidth( 1 );
       actWin->executeGc.setLineStyle( LineSolid );
-      XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+      XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
        actWin->executeGc.normGC(), x, y, w, h );
       actWin->executeGc.restoreFg();
       needToEraseUnconnected = 1;
@@ -1382,7 +1402,7 @@ int inconsistent;
   else if ( needToEraseUnconnected ) {
     actWin->executeGc.setLineWidth( 1 );
     actWin->executeGc.setLineStyle( LineSolid );
-    XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.eraseGC(), x, y, w, h );
     needToEraseUnconnected = 0;
     eraseActive();
@@ -1431,7 +1451,7 @@ int inconsistent;
   // background
   actWin->executeGc.setFG( bgColor.pixelIndex(), &blink );
 
-  XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+  XFillRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x, y, w, h );
 
   if ( orientation == ACBC_K_ORIENTATION_HORZ ) {
@@ -1465,7 +1485,7 @@ int inconsistent;
 
           actWin->executeGc.setFG( inconsistentColor.getIndex(), &blink );
 
-          XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+          XFillRectangle( actWin->d, drawable(actWin->executeWidget),
            actWin->executeGc.normGC(), buttonX, buttonY, buttonW, buttonH );
 
 	}
@@ -1473,27 +1493,27 @@ int inconsistent;
 
           actWin->executeGc.setFG( selColor.getIndex(), &blink );
 
-          XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+          XFillRectangle( actWin->d, drawable(actWin->executeWidget),
            actWin->executeGc.normGC(), buttonX, buttonY, buttonW, buttonH );
 
 	}
 
         actWin->executeGc.setFG( actWin->ci->pix(botShadowColor) );
 
-        XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+        XDrawLine( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.normGC(), buttonX, buttonY, buttonX+buttonW, buttonY );
 
-        XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+        XDrawLine( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.normGC(), buttonX, buttonY, buttonX,
           buttonY+buttonH );
 
         actWin->executeGc.setFG( actWin->ci->pix(topShadowColor) );
 
-        XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+        XDrawLine( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.normGC(), buttonX+buttonW, buttonY, buttonX+buttonW,
          buttonY+buttonH );
 
-        XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+        XDrawLine( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.normGC(), buttonX, buttonY+buttonH,
          buttonX+buttonW, buttonY+buttonH );
 
@@ -1502,34 +1522,34 @@ int inconsistent;
 
         actWin->executeGc.setFG( bgColor.getIndex(), &blink );
 
-        XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+        XFillRectangle( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.normGC(), buttonX, buttonY, buttonW, buttonH );
 
         actWin->executeGc.setFG( actWin->ci->pix(topShadowColor) );
 
-        XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+        XDrawLine( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.normGC(), buttonX, buttonY, buttonX+buttonW,
          buttonY );
 
-        XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+        XDrawLine( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.normGC(), buttonX+1, buttonY+1, buttonX+buttonW-1,
          buttonY+1 );
 
-        XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+        XDrawLine( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.normGC(), buttonX, buttonY, buttonX,
           buttonY+buttonH );
 
-        XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+        XDrawLine( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.normGC(), buttonX+1, buttonY+1,
          buttonX+1, buttonY+buttonH-1 );
 
         actWin->executeGc.setFG( actWin->ci->pix(botShadowColor) );
 
-        XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+        XDrawLine( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.normGC(), buttonX+buttonW, buttonY, buttonX+buttonW,
          buttonY+buttonH );
 
-        XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+        XDrawLine( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.normGC(), buttonX, buttonY+buttonH,
          buttonX+buttonW, buttonY+buttonH );
 
@@ -1580,7 +1600,8 @@ int inconsistent;
           buttonX++;
         }
 
-        drawText( actWin->executeWidget, &actWin->executeGc, fs, tX, tY,
+        drawText( actWin->executeWidget, drawable(actWin->executeWidget),
+         &actWin->executeGc, fs, tX, tY,
          XmALIGNMENT_CENTER, (char *) stateStringPvId->get_enum( i ) );
 
         actWin->executeGc.removeNormXClipRectangle();
@@ -1624,7 +1645,7 @@ int inconsistent;
 
           actWin->executeGc.setFG( inconsistentColor.getIndex(), &blink );
 
-          XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+          XFillRectangle( actWin->d, drawable(actWin->executeWidget),
            actWin->executeGc.normGC(), buttonX, buttonY, buttonW, buttonH );
 
 	}
@@ -1632,28 +1653,28 @@ int inconsistent;
 
           actWin->executeGc.setFG( selColor.getIndex(), &blink );
 
-          XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+          XFillRectangle( actWin->d, drawable(actWin->executeWidget),
            actWin->executeGc.normGC(), buttonX, buttonY, buttonW, buttonH );
 
 	}
 
         actWin->executeGc.setFG( actWin->ci->pix(botShadowColor) );
 
-        XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+        XDrawLine( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.normGC(), buttonX, buttonY, buttonX+buttonW,
          buttonY );
 
-        XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+        XDrawLine( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.normGC(), buttonX, buttonY, buttonX,
           buttonY+buttonH );
 
         actWin->executeGc.setFG( actWin->ci->pix(topShadowColor) );
 
-        XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+        XDrawLine( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.normGC(), buttonX+buttonW, buttonY, buttonX+buttonW,
          buttonY+buttonH );
 
-        XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+        XDrawLine( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.normGC(), buttonX, buttonY+buttonH,
          buttonX+buttonW, buttonY+buttonH );
 
@@ -1662,34 +1683,34 @@ int inconsistent;
 
         actWin->executeGc.setFG( bgColor.getIndex(), &blink );
 
-        XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+        XFillRectangle( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.normGC(), buttonX, buttonY, buttonW, buttonH );
 
         actWin->executeGc.setFG( actWin->ci->pix(topShadowColor) );
 
-        XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+        XDrawLine( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.normGC(), buttonX, buttonY, buttonX+buttonW,
          buttonY );
 
-        XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+        XDrawLine( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.normGC(), buttonX+1, buttonY+1, buttonX+buttonW-1,
          buttonY+1 );
 
-        XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+        XDrawLine( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.normGC(), buttonX, buttonY, buttonX,
           buttonY+buttonH );
 
-        XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+        XDrawLine( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.normGC(), buttonX+1, buttonY+1,
          buttonX+1, buttonY+buttonH-1 );
 
         actWin->executeGc.setFG( actWin->ci->pix(botShadowColor) );
 
-        XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+        XDrawLine( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.normGC(), buttonX+buttonW, buttonY, buttonX+buttonW,
          buttonY+buttonH );
 
-        XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+        XDrawLine( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.normGC(), buttonX, buttonY+buttonH,
          buttonX+buttonW, buttonY+buttonH );
 
@@ -1740,7 +1761,8 @@ int inconsistent;
           buttonY++;
         }
 
-        drawText( actWin->executeWidget, &actWin->executeGc, fs, tX, tY,
+        drawText( actWin->executeWidget, drawable(actWin->executeWidget),
+         &actWin->executeGc, fs, tX, tY,
          XmALIGNMENT_CENTER, (char *) stateStringPvId->get_enum( i ) );
 
         actWin->executeGc.removeNormXClipRectangle();
@@ -1761,13 +1783,41 @@ int inconsistent;
 
 }
 
+int activeChoiceButtonClass::expandTemplate (
+  int numMacros,
+  char *macros[],
+  char *expansions[] )
+{
+
+expStringClass tmpStr;
+
+  tmpStr.setRaw( controlPvExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  controlPvExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( readPvExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  readPvExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( visPvExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  visPvExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( colorPvExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  colorPvExpStr.setRaw( tmpStr.getExpanded() );
+
+  return 1;
+
+}
+
 int activeChoiceButtonClass::expand1st (
   int numMacros,
   char *macros[],
   char *expansions[] )
 {
 
-int stat, retStat = 1;;
+int stat, retStat = 1;
 
   stat = controlPvExpStr.expand1st( numMacros, macros, expansions );
   if ( !( stat & 1 ) ) retStat = stat;
@@ -2214,7 +2264,9 @@ int stat, i, state, buttonX, buttonY, buttonH, buttonW,
 
     if ( ( state >= 0 ) && ( state < numStates ) ) {
       value = (short) state;
-      stat = controlPvId->put( value );
+      stat = controlPvId->put(
+       XDisplayName(actWin->appCtx->displayName),
+       value );
     }
 
   }
@@ -2660,6 +2712,95 @@ void activeChoiceButtonClass::getPvs (
   pvs[1] = readPvId;
   pvs[2] = visPvId;
   pvs[3] = colorPvId;
+
+}
+
+char *activeChoiceButtonClass::getSearchString (
+  int i
+) {
+
+  if ( i == 0 ) {
+    return controlPvExpStr.getRaw();
+  }
+  else if ( i == 1 ) {
+    return readPvExpStr.getRaw();
+  }
+  else if ( i == 2 ) {
+    return colorPvExpStr.getRaw();
+  }
+  else if ( i == 3 ) {
+    return visPvExpStr.getRaw();
+  }
+  else if ( i == 4 ) {
+    return minVisString;
+  }
+  else if ( i == 5 ) {
+    return maxVisString;
+  }
+
+  return NULL;
+
+}
+
+void activeChoiceButtonClass::replaceString (
+  int i,
+  int max,
+  char *string
+) {
+
+  if ( i == 0 ) {
+    controlPvExpStr.setRaw( string );
+  }
+  else if ( i == 1 ) {
+    readPvExpStr.setRaw( string );
+  }
+  else if ( i == 2 ) {
+    colorPvExpStr.setRaw( string );
+  }
+  else if ( i == 3 ) {
+    visPvExpStr.setRaw( string );
+  }
+  else if ( i == 4 ) {
+    int l = max;
+    if ( 39 < max ) l = 39;
+    strncpy( minVisString, string, l );
+    minVisString[l] = 0;
+  }
+  else if ( i == 5 ) {
+    int l = max;
+    if ( 39 < max ) l = 39;
+    strncpy( maxVisString, string, l );
+    maxVisString[l] = 0;
+  }
+
+}
+
+// crawler functions may return blank pv names
+char *activeChoiceButtonClass::crawlerGetFirstPv ( void ) {
+
+  crawlerPvIndex = 0;
+  return controlPvExpStr.getExpanded();
+
+}
+
+char *activeChoiceButtonClass::crawlerGetNextPv ( void ) {
+
+  if ( crawlerPvIndex >= 3 ) return NULL;
+
+  crawlerPvIndex++;
+
+  if ( crawlerPvIndex == 1 ) {
+
+    return readPvExpStr.getExpanded();
+
+  }
+  else if ( crawlerPvIndex == 2 ) {
+
+    return visPvExpStr.getExpanded();
+
+  }
+
+  return colorPvExpStr.getExpanded();
 
 }
 

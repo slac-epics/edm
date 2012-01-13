@@ -76,7 +76,7 @@ int l;
   baro->readPvExpStr.setRaw( baro->eBuf->bufReadPvName );
   baro->nullPvExpStr.setRaw( baro->eBuf->bufNullPvName );
 
-  strncpy( baro->label, baro->bufLabel, 39 );
+  baro->label.setRaw( baro->eBuf->bufLabel );
 
   baro->labelType = baro->bufLabelType;
 
@@ -352,6 +352,7 @@ activeBarClass::activeBarClass ( void ) {
 
   name = new char[strlen("activeBarClass")+1];
   strcpy( name, "activeBarClass" );
+  checkBaseClassVersion( activeGraphicClass::MAJOR_VERSION, name );
   minW = 50;
   minH = 2;
   minVertW = 2;
@@ -359,7 +360,6 @@ activeBarClass::activeBarClass ( void ) {
   barStrLen = 10;
   strcpy( fontTag, "" );
   fs = NULL;
-  strcpy( label, "" );
   activeMode = 0;
 
   barColorMode = BARC_K_COLORMODE_STATIC;
@@ -415,8 +415,7 @@ activeGraphicClass *baro = (activeGraphicClass *) this;
   controlPvExpStr.copy( source->controlPvExpStr );
   readPvExpStr.copy( source->readPvExpStr );
   nullPvExpStr.copy( source->nullPvExpStr );
-
-  strncpy( label, source->label, 39 );
+  label.copy( source->label );
 
   barColorMode = source->barColorMode;
   fgColorMode = source->fgColorMode;
@@ -451,13 +450,15 @@ activeGraphicClass *baro = (activeGraphicClass *) this;
 
   strncpy( scaleFormat, source->scaleFormat, 15 );
 
-  strcpy( label, source->label );
-
   horizontal = source->horizontal;
 
   unconnectedTimer = 0;
 
   eBuf = NULL;
+
+  doAccSubs( readPvExpStr );
+  doAccSubs( nullPvExpStr );
+  doAccSubs( label );
 
   updateDimensions();
 
@@ -576,7 +577,7 @@ static int orienTypeEnum[2] = {
   tag.loadW( "bgColor", actWin->ci, &bgColor );
   tag.loadW( "indicatorPv", &readPvExpStr, emptyStr );
   tag.loadW( "nullPv", &nullPvExpStr, emptyStr );
-  tag.loadW( "label", label, emptyStr );
+  tag.loadW( "label", &label, emptyStr );
   tag.loadW( "labelType", 2, labelTypeEnumStr, labelTypeEnum,
    &labelType, &lit );
   tag.loadBoolW( "showScale", &showScale, &zero );
@@ -661,7 +662,7 @@ efDouble efMin, efMax;
   tag.loadR( "bgColor", actWin->ci, &bgColor );
   tag.loadR( "indicatorPv", &readPvExpStr, emptyStr );
   tag.loadR( "nullPv", &nullPvExpStr, emptyStr );
-  tag.loadR( "label", 39, label, emptyStr );
+  tag.loadR( "label", &label, emptyStr );
   tag.loadR( "labelType", 2, labelTypeEnumStr, labelTypeEnum,
    &labelType, &lit );
   tag.loadR( "showScale", &showScale, &zero );
@@ -893,7 +894,9 @@ efDouble efD;
    actWin->incLine();
   readPvExpStr.setRaw( oneName );
 
-  readStringFromFile( label, 39+1, f ); actWin->incLine();
+  readStringFromFile( oneName, PV_Factory::MAX_PV_NAME+1, f );
+   actWin->incLine();
+  label.setRaw( oneName );
 
   fscanf( f, "%d\n", &labelType ); actWin->incLine();
 
@@ -1001,7 +1004,7 @@ efDouble efD;
     }
     readMaxExpStr.setRaw( oneName );
 
-    readStringFromFile( oneName, 39+1, f ); actWin->incLine();
+    readStringFromFile( oneName, PV_Factory::MAX_PV_NAME+1, f ); actWin->incLine();
     strncpy( scaleFormat, oneName, 15 );
 
   }
@@ -1125,7 +1128,10 @@ char title[32], *ptr;
   else
     strcpy( eBuf->bufNullPvName, "" );
 
-  strncpy( bufLabel, label, 39 );
+  if ( label.getRaw() )
+    strncpy( eBuf->bufLabel, label.getRaw(), PV_Factory::MAX_PV_NAME );
+  else
+    strcpy( eBuf->bufLabel, "" );
 
   bufLabelType = labelType;
 
@@ -1204,25 +1210,52 @@ char title[32], *ptr;
   ef.addTextField( activeBarClass_str8, 35, &bufY );
   ef.addTextField( activeBarClass_str9, 35, &bufW );
   ef.addTextField( activeBarClass_str10, 35, &bufH );
-//   ef.addTextField( activeBarClass_str11, 35, eBuf->bufControlPvName, PV_Factory::MAX_PV_NAME );
+
   ef.addTextField( activeBarClass_str12, 35, eBuf->bufReadPvName, PV_Factory::MAX_PV_NAME );
   ef.addTextField( activeBarClass_str13, 35, eBuf->bufNullPvName, PV_Factory::MAX_PV_NAME );
-  ef.addOption( activeBarClass_str14, activeBarClass_str15, &bufLabelType );
-  ef.addTextField( activeBarClass_str16, 35, bufLabel, 39 );
-  ef.addToggle( activeBarClass_str18, &bufBorder );
-  ef.addToggle( activeBarClass_str19, &bufShowScale );
 
+  ef.addOption( activeBarClass_str14, activeBarClass_str15, &bufLabelType );
+  labelTypeEntry = ef.getCurItem();
+  labelTypeEntry->setNumValues( 2 );
+  ef.addTextField( activeBarClass_str16, 35, eBuf->bufLabel, PV_Factory::MAX_PV_NAME );
+  labelEntry = ef.getCurItem();
+  labelTypeEntry->addInvDependency( 0, labelEntry );
+  labelTypeEntry->addDependencyCallbacks();
+
+  ef.addToggle( activeBarClass_str18, &bufBorder );
+
+  ef.addToggle( activeBarClass_str19, &bufShowScale );
+  showScaleEntry = ef.getCurItem();
   ef.addTextField( activeBarClass_str20, 35, bufLabelTicks, 15 );
+  labelTicksEntry = ef.getCurItem();
+  showScaleEntry->addDependency( labelTicksEntry );
   ef.addTextField( activeBarClass_str21, 35, bufMajorTicks, 15 );
+  majorTicksEntry = ef.getCurItem();
+  showScaleEntry->addDependency( majorTicksEntry );
   ef.addTextField( activeBarClass_str22, 35, bufMinorTicks, 15 );
+  minorTicksEntry = ef.getCurItem();
+  showScaleEntry->addDependency( minorTicksEntry );
 
   ef.addToggle( activeBarClass_str23, &bufLimitsFromDb );
+  limitsFromDbEntry = ef.getCurItem();
   ef.addOption( activeBarClass_str24, activeBarClass_str25, bufScaleFormat, 15 );
+  scaleFormatEntry = ef.getCurItem();
+  showScaleEntry->addDependency( scaleFormatEntry );
   ef.addTextField( activeBarClass_str26, 35, bufPrecision, 15 );
+  scalePrecEntry = ef.getCurItem();
+  limitsFromDbEntry->addInvDependency( scalePrecEntry );
   ef.addTextField( activeBarClass_str27, 35, bufReadMin, 15 );
+  scaleMinEntry = ef.getCurItem();
+  limitsFromDbEntry->addInvDependency( scaleMinEntry );
   ef.addTextField( activeBarClass_str28, 35, bufReadMax, 15 );
+  scaleMaxEntry = ef.getCurItem();
+  limitsFromDbEntry->addInvDependency( scaleMaxEntry );
+  limitsFromDbEntry->addDependencyCallbacks();
 
   ef.addTextField( activeBarClass_str29, 35, bufBarOriginX, 15 );
+  scaleOriginEntry = ef.getCurItem();
+  showScaleEntry->addDependency( scaleOriginEntry );
+  showScaleEntry->addDependencyCallbacks();
 
   ef.addOption( activeBarClass_str44, activeBarClass_str45,
    &bufHorizontal );
@@ -1291,25 +1324,16 @@ int activeBarClass::eraseActive ( void ) {
     actWin->executeGc.setLineWidth( 1 );
     actWin->executeGc.setLineStyle( LineSolid );
 
-    //XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
-    // actWin->executeGc.normGC(), x, y, w, h );
-
-    //XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
-    // actWin->executeGc.normGC(), x, y, w, h );
-
-    XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.eraseGC(), x, y, w, h );
 
-    XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+    XFillRectangle( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.eraseGC(), x, y, w, h );
 
   }
   else {
 
-//      XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
-//       actWin->executeGc.normGC(), oldBarX, barY, oldBarW, barH );
-
-    XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+    XFillRectangle( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), oldBarX, barY, oldBarW, barH );
 
   }
@@ -1320,457 +1344,40 @@ int activeBarClass::eraseActive ( void ) {
 
 void activeBarClass::drawHorzScale (
   Widget widget,
+  Drawable dr,
   gcClass *gc )
 {
 
-int stat, x0, y0, x1, y1;
-int labelTickHeight, majorTickHeight, minorTickHeight;
-int scale_len;
-double dx, inc, minorDx, minorInc;
-char fmt[31+1], str[31+1];
-
-  drawXLinearScale ( actWin->d, XtWindow(widget), gc, 1, barAreaX,
-   y0 = barY + barH + 3, barAreaW, readMin, readMax, labelTicks,
+  drawXLinearScale ( actWin->d, dr, gc, 1, barAreaX,
+   barY + barH + 3, barAreaW, readMin, readMax, labelTicks,
    majorTicks, minorTicks, fgColor.pixelColor(),
    bgColor.pixelColor(), 0, 0, 0, 0, 0, actWin->fi, fontTag, fs, 1, 0, 0, 0 );
-
-  return;
-
-  if ( fs ) {
-    gc->setFontTag( fontTag, actWin->fi );
-  }
-
-  if ( strcmp( scaleFormat, "GFloat" ) == 0 ) {
-    sprintf( fmt, "%%.%-dg", precision );
-  }
-  else if ( strcmp( scaleFormat, "Exponential" ) == 0 ) {
-    sprintf( fmt, "%%.%-de", precision );
-  }
-  else {
-    sprintf( fmt, "%%.%-df", precision );
-  }
-
-  scale_len = w;
-
-  // draw scale and annotation
-
-  x0 = barAreaX;
-  x1 = x0 + barAreaW;
-  y0 = barY + barH + 3;
-  y1 = y0;
-
-  // draw axis
-  XDrawLine( actWin->d, XtWindow(widget), gc->normGC(), x0, y0, x1, y1 );
-
-  labelTickHeight = (int) ( 0.6 * fontHeight );
-  if ( labelTickHeight < 5 ) labelTickHeight = 5;
-  majorTickHeight = (int) ( 0.8 * (float) labelTickHeight );
-  minorTickHeight = (int) ( 0.5 * (float) labelTickHeight );
-
-  // draw label ticks
-  if ( labelTicks > 0 ) {
-
-    x0 = barAreaX;
-    x1 = x0;
-    y0 = barY + barH + 3;
-    y1 = y0 + labelTickHeight;
-
-    dx = readMin;
-    inc = ( readMax - readMin ) / labelTicks;
-
-    if ( mode == BARC_K_MAX_GE_MIN ) {
-
-      while ( dx < readMax - inc * 0.5 ) {
-
-        XDrawLine( actWin->d, XtWindow(widget), gc->normGC(), x0, y0, x1, y1 );
-
-        sprintf( str, fmt, dx );
-        stat = drawText( widget, gc, fs, x1, y1+2, XmALIGNMENT_CENTER, str );
-
-        dx += inc;
-        x1 = x0 = (int) rint( barAreaX + ( dx - readMin ) * barAreaW /
-         ( readMax - readMin ) );
-
-      }
-
-    }
-    else {
-
-      while ( dx > readMax - inc * 0.5 ) {
-
-        XDrawLine( actWin->d, XtWindow(widget), gc->normGC(), x0, y0, x1, y1 );
-
-        sprintf( str, fmt, dx );
-        stat = drawText( widget, gc, fs, x1, y1+2, XmALIGNMENT_CENTER, str );
-
-        dx += inc;
-        x1 = x0 = (int) rint( barAreaX + ( dx - readMin ) * barAreaW /
-         ( readMax - readMin ) );
-
-      }
-
-    }
-
-    // draw last one
-
-    x0 = barAreaX + barAreaW;
-    x1 = x0;
-    y0 = barY + barH + 3;
-    y1 = y0 + labelTickHeight;
-
-    XDrawLine( actWin->d, XtWindow(widget), gc->normGC(), x0, y0, x1, y1 );
-
-    dx = readMax;
-    sprintf( str, fmt, dx );
-    stat = drawText( widget, gc, fs, x1, y1+2, XmALIGNMENT_CENTER, str );
-
-  }
-
-  // draw major ticks
-  if ( majorTicks > 0 ) {
-
-    x0 = barAreaX;
-    x1 = x0;
-    y0 = barY + barH + 3;
-    y1 = y0 + majorTickHeight;
-
-    dx = readMin;
-    inc = ( readMax - readMin ) / majorTicks;
-
-    if ( mode == BARC_K_MAX_GE_MIN ) {
-
-      while ( dx < readMax - inc * 0.5 ) {
-
-        XDrawLine( actWin->d, XtWindow(widget), gc->normGC(), x0, y0, x1, y1 );
-
-        dx += inc;
-        x1 = x0 = (int) rint( barAreaX + ( dx - readMin ) *
-         barAreaW / ( readMax - readMin ) );
-
-      }
-
-    }
-    else {
-
-      while ( dx > readMax - inc * 0.5 ) {
-
-        XDrawLine( actWin->d, XtWindow(widget), gc->normGC(), x0, y0, x1, y1 );
-
-        dx += inc;
-        x1 = x0 = (int) rint( barAreaX + ( dx - readMin ) *
-         barAreaW / ( readMax - readMin ) );
-
-      }
-
-    }
-
-    // draw last one
-
-    x0 = barAreaX + barAreaW;
-    x1 = x0;
-    y0 = barY + barH + 3;
-    y1 = y0 + majorTickHeight;
-
-    XDrawLine( actWin->d, XtWindow(widget), gc->normGC(), x0, y0, x1, y1 );
-
-  }
-
-  // draw minor ticks
-  if ( ( majorTicks > 0 ) && ( minorTicks > 0 ) ) {
-
-    x0 = barAreaX;
-    x1 = x0;
-    y0 = barY + barH + 3;
-    y1 = y0 + minorTickHeight;
-
-    dx = readMin;
-    inc = ( readMax - readMin ) / majorTicks;
-
-    if ( mode == BARC_K_MAX_GE_MIN ) {
-
-      while ( dx < readMax - inc * 0.5 ) {
-
-        minorDx = dx;
-        minorInc = inc / minorTicks;
-
-        while ( minorDx < ( dx + inc - 1.5 * minorInc ) ) {
-
-          minorDx += minorInc;
-          x1 = x0 = (int) rint( barAreaX + ( minorDx - readMin ) *
-           barAreaW / ( readMax - readMin ) );
-
-          XDrawLine( actWin->d, XtWindow(widget), gc->normGC(), x0, y0,
-           x1, y1 );
-
-        }
-
-        dx += inc;
-
-      }
-
-    }
-    else {
-
-      while ( dx > readMax - inc * 0.5 ) {
-
-        minorDx = dx;
-        minorInc = inc / minorTicks;
-
-        while ( minorDx > ( dx + inc - 1.5 * minorInc ) ) {
-
-          minorDx += minorInc;
-          x1 = x0 = (int) rint( barAreaX + ( minorDx - readMin ) *
-           barAreaW / ( readMax - readMin ) );
-
-          XDrawLine( actWin->d, XtWindow(widget), gc->normGC(), x0, y0,
-           x1, y1 );
-
-        }
-
-        dx += inc;
-
-      }
-
-    }
-
-  }
 
 }
 
 void activeBarClass::drawVertScale (
   Widget widget,
+  Drawable dr,
   gcClass *gc )
 {
 
-int stat, x0, y0, x1, y1, ty;
-int labelTickWidth, majorTickWidth, minorTickWidth;
-double dy, inc, minorDy, minorInc;
-char fmt[31+1], str[31+1];
-
-  drawYLinearScale ( actWin->d, XtWindow(widget), gc, 1, barAreaX - 4,
+  drawYLinearScale ( actWin->d, dr, gc, 1, barAreaX - 4,
    barAreaY, barAreaH, readMin, readMax, labelTicks,
    majorTicks, minorTicks, fgColor.pixelColor(),
    bgColor.pixelColor(), 0, 0, 0, 0, 0, actWin->fi, fontTag, fs, 1, 0, 0, 0 );
-
-  return;
-
-  if ( fs ) {
-    gc->setFontTag( fontTag, actWin->fi );
-  }
-
-  if ( strcmp( scaleFormat, "GFloat" ) == 0 ) {
-    sprintf( fmt, "%%.%-dg", precision );
-  }
-  else if ( strcmp( scaleFormat, "Exponential" ) == 0 ) {
-    sprintf( fmt, "%%.%-de", precision );
-  }
-  else {
-    sprintf( fmt, "%%.%-df", precision );
-  }
-
-  // draw scale and annotation
-
-  x0 = x1 = barAreaX - 4;
-  y0 = barAreaY;
-  y1 = barAreaY - barAreaH;
-
-  // draw axis
-  XDrawLine( actWin->d, XtWindow(widget), gc->normGC(), x0, y0, x1, y1 );
-
-  labelTickWidth = (int) ( 0.5 * fontHeight );
-  if ( labelTickWidth < 5 ) labelTickWidth = 5;
-  majorTickWidth = (int) ( 0.8 * (float) labelTickWidth );
-  minorTickWidth = (int) ( 0.5 * (float) labelTickWidth );
-
-  // draw label ticks
-  if ( labelTicks > 0 ) {
-
-    y0 = barAreaY;
-    y1 = y0;
-    x0 = barAreaX - 4;
-    x1 = x0 - labelTickWidth;
-
-    dy = readMin;
-    inc = ( readMax - readMin ) / labelTicks;
-
-    if ( mode == BARC_K_MAX_GE_MIN ) {
-
-      while ( dy < readMax - inc * 0.5 ) {
-
-        XDrawLine( actWin->d, XtWindow(widget), gc->normGC(), x0, y0, x1, y1 );
-
-        sprintf( str, fmt, dy );
-        ty = y1 - (int) rint( 0.5 * fontHeight );
-        stat = drawText( widget, gc, fs, x1-2, ty, XmALIGNMENT_END, str );
-
-        dy += inc;
-        y1 = y0 = (int) rint( barAreaY -
-         ( dy - readMin ) * barAreaH / ( readMax - readMin ) );
-
-      }
-
-    }
-    else {
-
-      while ( dy > readMax - inc * 0.5 ) {
-
-        XDrawLine( actWin->d, XtWindow(widget), gc->normGC(), x0, y0, x1, y1 );
-
-        sprintf( str, fmt, dy );
-        ty = y1 - (int) rint( 0.5 * fontHeight );
-        stat = drawText( widget, gc, fs, x1-2, ty, XmALIGNMENT_END, str );
-
-        dy += inc;
-        y1 = y0 = (int) rint( barAreaY -
-         ( dy - readMin ) * barAreaH / ( readMax - readMin ) );
-
-      }
-
-    }
-
-    // draw last one
-
-    y0 = y1 = barAreaY - barAreaH;
-    x0 = barAreaX - 4;
-    x1 = x0 - labelTickWidth;
-
-    XDrawLine( actWin->d, XtWindow(widget), gc->normGC(), x0, y0, x1, y1 );
-
-    dy = readMax;
-    ty = y1 - (int) rint( 0.5 * fontHeight );
-    sprintf( str, fmt, dy );
-    stat = drawText( widget, gc, fs, x1-2, ty, XmALIGNMENT_END, str );
-
-  }
-
-  // draw major ticks
-  if ( majorTicks > 0 ) {
-
-    y0 = y1 = barAreaY;
-    x0 = barAreaX - 4;
-    x1 = x0 - majorTickWidth;
-
-    dy = readMin;
-    inc = ( readMax - readMin ) / majorTicks;
-
-    if ( mode == BARC_K_MAX_GE_MIN ) {
-
-      while ( dy < readMax - inc * 0.5 ) {
-
-        XDrawLine( actWin->d, XtWindow(widget), gc->normGC(), x0, y0, x1, y1 );
-
-        dy += inc;
-        y1 = y0 = (int) rint( barAreaY - ( dy - readMin ) *
-         barAreaH / ( readMax - readMin ) );
-
-      }
-
-    }
-    else {
-
-      while ( dy > readMax - inc * 0.5 ) {
-
-        XDrawLine( actWin->d, XtWindow(widget), gc->normGC(), x0, y0, x1, y1 );
-
-        dy += inc;
-        y1 = y0 = (int) rint( barAreaY - ( dy - readMin ) *
-         barAreaH / ( readMax - readMin ) );
-
-      }
-
-    }
-
-    // draw last one
-
-    y0 = y1 = barAreaY - barAreaH;
-    x0 = barAreaX - 4;
-    x1 = x0 - majorTickWidth;
-
-    XDrawLine( actWin->d, XtWindow(widget), gc->normGC(), x0, y0, x1, y1 );
-
-  }
-
-  // draw minor ticks
-  if ( ( majorTicks > 0 ) && ( minorTicks > 0 ) ) {
-
-    y0 = y1 = barAreaY;
-    x0 = barAreaX - 4;
-    x1 = x0 - minorTickWidth;
-
-    dy = readMin;
-    inc = ( readMax - readMin ) / majorTicks;
-
-    if ( mode == BARC_K_MAX_GE_MIN ) {
-
-      while ( dy < readMax - inc * 0.5 ) {
-
-        minorDy = dy;
-        minorInc = inc / minorTicks;
-
-        while ( minorDy < ( dy + inc - 1.5 * minorInc ) ) {
-
-          minorDy += minorInc;
-          y1 = y0 = (int) rint( barAreaY - ( minorDy - readMin ) *
-           barAreaH / ( readMax - readMin ) );
-
-          XDrawLine( actWin->d, XtWindow(widget), gc->normGC(), x0, y0,
-           x1, y1 );
-
-        }
-
-        dy += inc;
-
-      }
-
-    }
-    else {
-
-      while ( dy > readMax - inc * 0.5 ) {
-
-        minorDy = dy;
-        minorInc = inc / minorTicks;
-
-        while ( minorDy > ( dy + inc - 1.5 * minorInc ) ) {
-
-          minorDy += minorInc;
-          y1 = y0 = (int) rint( barAreaY - ( minorDy - readMin ) *
-           barAreaH / ( readMax - readMin ) );
-
-          XDrawLine( actWin->d, XtWindow(widget), gc->normGC(), x0, y0,
-           x1, y1 );
-
-        }
-
-        dy += inc;
-
-      }
-
-    }
-
-  }
-
-  // draw line along origin
-  if ( border || showScale )
-    x0 = barAreaX - 4;
-  else
-    x0 = x;
-  x1 = x + w;
-  dy = barOriginX;
-  y1 = y0 = (int) rint( barAreaY -
-   ( dy - readMin ) * barAreaH / ( readMax - readMin ) );
-  XDrawLine( actWin->d, XtWindow(widget), gc->normGC(), x0, y0, x1, y1 );
 
 }
 
 void activeBarClass::drawScale (
   Widget widget,
+  Drawable dr,
   gcClass *gc )
 {
 
   if ( horizontal )
-    drawHorzScale( widget, gc );
+    drawHorzScale( widget, dr, gc );
   else
-    drawVertScale( widget, gc );
+    drawVertScale( widget, dr, gc );
 
 }
 
@@ -1799,19 +1406,20 @@ int tX, tY;
 
     actWin->drawGc.setFG( fgColor.getColor() );
 
-    if ( showScale ) drawScale( actWin->drawWidget, &actWin->drawGc );
+    if ( showScale ) drawScale( actWin->drawWidget,
+     XtWindow(actWin->drawWidget), &actWin->drawGc );
 
     XDrawRectangle( actWin->d, XtWindow(actWin->drawWidget),
      actWin->drawGc.normGC(), x, y, w, h );
 
-    if ( strcmp( label, "" ) != 0 ) {
+    if ( strcmp( label.getRaw(), "" ) != 0 ) {
       if ( fs ) {
         actWin->drawGc.setFontTag( fontTag, actWin->fi );
         tX = barAreaX;
         tY = y + 2;
         if ( border ) tY += 2;
         drawText( actWin->drawWidget, &actWin->drawGc, fs, tX, tY,
-         XmALIGNMENT_BEGINNING, label );
+         XmALIGNMENT_BEGINNING, label.getRaw() );
       }
     }
 
@@ -1831,19 +1439,20 @@ int tX, tY;
 
     actWin->drawGc.setFG( fgColor.getColor() );
 
-    if ( showScale ) drawScale( actWin->drawWidget, &actWin->drawGc );
+    if ( showScale ) drawScale( actWin->drawWidget,
+     XtWindow(actWin->drawWidget), &actWin->drawGc );
 
     XDrawRectangle( actWin->d, XtWindow(actWin->drawWidget),
      actWin->drawGc.normGC(), x, y, w, h );
 
-    if ( strcmp( label, "" ) != 0 ) {
+    if ( strcmp( label.getRaw(), "" ) != 0 ) {
       if ( fs ) {
         actWin->drawGc.setFontTag( fontTag, actWin->fi );
         tX = barAreaX + barAreaW;
         tY = y + (int) ( .25 * (double) fontHeight );
         if ( border ) tY += 2;
         drawText( actWin->drawWidget, &actWin->drawGc, fs, tX, tY,
-         XmALIGNMENT_END, label );
+         XmALIGNMENT_END, label.getRaw() );
       }
     }
 
@@ -1858,7 +1467,7 @@ int tX, tY;
 int activeBarClass::drawActive ( void ) {
 
 int tX, tY, x0, y0, x1, y1;
-char str[39+1];
+char str[PV_Factory::MAX_PV_NAME+1];
 
   if ( !init ) {
     if ( needToDrawUnconnected ) {
@@ -1866,7 +1475,7 @@ char str[39+1];
       actWin->executeGc.setFG( bgColor.getDisconnected() );
       actWin->executeGc.setLineWidth( 1 );
       actWin->executeGc.setLineStyle( LineSolid );
-      XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+      XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
        actWin->executeGc.normGC(), x, y, w, h );
       actWin->executeGc.restoreFg();
       needToEraseUnconnected = 1;
@@ -1875,7 +1484,7 @@ char str[39+1];
   else if ( needToEraseUnconnected ) {
     actWin->executeGc.setLineWidth( 1 );
     actWin->executeGc.setLineStyle( LineSolid );
-    XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.eraseGC(), x, y, w, h );
     needToEraseUnconnected = 0;
   }
@@ -1890,12 +1499,12 @@ char str[39+1];
 
       actWin->executeGc.setFG( bgColor.getColor() );
 
-      XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+      XFillRectangle( actWin->d, drawable(actWin->executeWidget),
        actWin->executeGc.normGC(), x, y, w, h );
 
       actWin->executeGc.setFG( barColor.getColor() );
 
-      XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+      XFillRectangle( actWin->d, drawable(actWin->executeWidget),
        actWin->executeGc.normGC(), barX, barY, barW, barH );
 
     }
@@ -1905,12 +1514,12 @@ char str[39+1];
 
         actWin->executeGc.setFG( bgColor.getColor() );
 
-        XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+        XFillRectangle( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.normGC(), oldBarX, barY, oldBarW, barH );
 
         actWin->executeGc.setFG( barColor.getColor() );
 
-        XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+        XFillRectangle( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.normGC(), barX, barY, barW, barH );
 
       }
@@ -1922,7 +1531,7 @@ char str[39+1];
 
             actWin->executeGc.setFG( barColor.getColor() );
 
-            XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+            XFillRectangle( actWin->d, drawable(actWin->executeWidget),
              actWin->executeGc.normGC(), oldBarX+oldBarW, barY,
              barW-oldBarW, barH );
 
@@ -1931,7 +1540,7 @@ char str[39+1];
 
             actWin->executeGc.setFG( bgColor.getColor() );
 
-            XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+            XFillRectangle( actWin->d, drawable(actWin->executeWidget),
              actWin->executeGc.normGC(), barX+barW, barY,
              oldBarW-barW, barH );
 
@@ -1944,7 +1553,7 @@ char str[39+1];
 
             actWin->executeGc.setFG( barColor.getColor() );
 
-            XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+            XFillRectangle( actWin->d, drawable(actWin->executeWidget),
              actWin->executeGc.normGC(), barX, barY,
              oldBarX-barX, barH );
 
@@ -1953,7 +1562,7 @@ char str[39+1];
 
             actWin->executeGc.setFG( bgColor.getColor() );
 
-            XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+            XFillRectangle( actWin->d, drawable(actWin->executeWidget),
              actWin->executeGc.normGC(), oldBarX, barY,
              barX-oldBarX, barH );
 
@@ -1975,12 +1584,12 @@ char str[39+1];
 
       actWin->executeGc.setFG( bgColor.getColor() );
 
-      XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+      XFillRectangle( actWin->d, drawable(actWin->executeWidget),
        actWin->executeGc.normGC(), x, y, w, h );
 
       actWin->executeGc.setFG( barColor.getColor() );
 
-      XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+      XFillRectangle( actWin->d, drawable(actWin->executeWidget),
        actWin->executeGc.normGC(), barX, barY-barH, barW, barH );
 
       // draw line along origin
@@ -1991,7 +1600,7 @@ char str[39+1];
       x1 = x + w;
       y1 = y0 = (int) rint( barAreaY -
        ( barOriginX - readMin ) * barAreaH / ( readMax - readMin ) );
-      XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+      XDrawLine( actWin->d, drawable(actWin->executeWidget),
        actWin->executeGc.normGC(), x0, y0, x1, y1 );
 
     }
@@ -2001,12 +1610,12 @@ char str[39+1];
 
         actWin->executeGc.setFG( bgColor.getColor() );
 
-        XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+        XFillRectangle( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.normGC(), barX, oldBarY-oldBarH, barW, oldBarH );
 
         actWin->executeGc.setFG( barColor.getColor() );
 
-        XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+        XFillRectangle( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.normGC(), barX, barY-barH, barW, barH );
 
         // draw line along origin
@@ -2017,7 +1626,7 @@ char str[39+1];
         x1 = x + w;
         y1 = y0 = (int) rint( barAreaY -
          ( barOriginX - readMin ) * barAreaH / ( readMax - readMin ) );
-        XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+        XDrawLine( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.normGC(), x0, y0, x1, y1 );
 
       }
@@ -2029,7 +1638,7 @@ char str[39+1];
 
             actWin->executeGc.setFG( barColor.getColor() );
 
-            XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+            XFillRectangle( actWin->d, drawable(actWin->executeWidget),
              actWin->executeGc.normGC(), barX, barY-barH,
              barW, barH-oldBarH );
 
@@ -2038,7 +1647,7 @@ char str[39+1];
 
             actWin->executeGc.setFG( bgColor.getColor() );
 
-            XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+            XFillRectangle( actWin->d, drawable(actWin->executeWidget),
              actWin->executeGc.normGC(), barX, barY-oldBarH,
              barW, oldBarH-barH );
 
@@ -2051,7 +1660,7 @@ char str[39+1];
 
             actWin->executeGc.setFG( barColor.getColor() );
 
-            XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+            XFillRectangle( actWin->d, drawable(actWin->executeWidget),
              actWin->executeGc.normGC(), barX, oldBarY,
              barW, barY-oldBarY );
 
@@ -2060,7 +1669,7 @@ char str[39+1];
 
             actWin->executeGc.setFG( bgColor.getColor() );
 
-            XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+            XFillRectangle( actWin->d, drawable(actWin->executeWidget),
              actWin->executeGc.normGC(), barX, barY,
              barW, oldBarY-barY );
 
@@ -2082,13 +1691,14 @@ char str[39+1];
     actWin->executeGc.setFG( fgColor.getColor() );
 
     if ( showScale ) {
-      drawScale( actWin->executeWidget, &actWin->executeGc );
+      drawScale( actWin->executeWidget,
+       drawable(actWin->drawWidget), &actWin->executeGc );
     }
 
     if ( labelType == BARC_K_PV_NAME )
-      strncpy( str, readPvId->get_name(), 39 );
+      strncpy( str, readPvId->get_name(), PV_Factory::MAX_PV_NAME );
     else
-      strncpy( str, label, 39 );
+      strncpy( str, label.getExpanded(), PV_Factory::MAX_PV_NAME );
 
     if ( horizontal ) {
 
@@ -2098,8 +1708,8 @@ char str[39+1];
           tX = barAreaX;
           tY = y + 2;
           if ( border ) tY += 2;
-          drawText( actWin->executeWidget, &actWin->executeGc, fs, tX, tY,
-           XmALIGNMENT_BEGINNING, str );
+          drawText( actWin->executeWidget, drawable(actWin->drawWidget),
+           &actWin->executeGc, fs, tX, tY, XmALIGNMENT_BEGINNING, str );
         }
       }
 
@@ -2112,8 +1722,8 @@ char str[39+1];
           tX = barAreaX + barAreaW;
           tY = y + (int) ( .25 * (double) fontHeight );
           if ( border ) tY += 2;
-          drawText( actWin->executeWidget, &actWin->executeGc, fs, tX, tY,
-           XmALIGNMENT_END, str );
+          drawText( actWin->executeWidget, drawable(actWin->drawWidget),
+           &actWin->executeGc, fs, tX, tY, XmALIGNMENT_END, str );
         }
       }
 
@@ -2122,7 +1732,7 @@ char str[39+1];
     if ( border ) {
       actWin->executeGc.setLineWidth( 1 );
       actWin->executeGc.setLineStyle( LineSolid );
-      XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+      XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
        actWin->executeGc.normGC(), x, y, w, h );
     }
 
@@ -2423,7 +2033,7 @@ void activeBarClass::updateDimensions ( void )
     barAreaX = x;
     barAreaW = w;
 
-    if ( ( strcmp( label, "" ) != 0 ) ||
+    if ( ( strcmp( label.getRaw(), "" ) != 0 ) ||
          ( labelType == BARC_K_PV_NAME ) ) {
       minH += fontHeight + 5;
       barY += fontHeight + 5;
@@ -2447,7 +2057,7 @@ void activeBarClass::updateDimensions ( void )
       barAreaW = w - barStrLen - 6;
     }
 
-    if ( border && !showScale && ( ( strcmp( label, "" ) == 0 ) ||
+    if ( border && !showScale && ( ( strcmp( label.getRaw(), "" ) == 0 ) ||
      ( labelType == BARC_K_PV_NAME ) ) ) {
       minH += 9;
       barY += 5;
@@ -2464,7 +2074,7 @@ void activeBarClass::updateDimensions ( void )
 
     barH = h;
 
-    if ( ( strcmp( label, "" ) != 0 ) ||
+    if ( ( strcmp( label.getRaw(), "" ) != 0 ) ||
          ( labelType == BARC_K_PV_NAME ) ) {
       barH -= ( fontHeight + 5 );
       if ( border ) barH -= 9;
@@ -2474,7 +2084,7 @@ void activeBarClass::updateDimensions ( void )
       barH -= ( fontHeight + fontHeight + 5 );
     }
 
-    if ( border && !showScale && ( ( strcmp( label, "" ) == 0 ) ||
+    if ( border && !showScale && ( ( strcmp( label.getRaw(), "" ) == 0 ) ||
      ( labelType == BARC_K_PV_NAME ) ) ) {
       barH -= 9;
     }
@@ -2485,7 +2095,7 @@ void activeBarClass::updateDimensions ( void )
     minVertW = 2;
     minVertH = 10;
 
-    if ( ( strcmp( label, "" ) != 0 ) ||
+    if ( ( strcmp( label.getRaw(), "" ) != 0 ) ||
          ( labelType == BARC_K_PV_NAME ) ) {
       minVertH += fontHeight + 5;
     }
@@ -2520,7 +2130,7 @@ void activeBarClass::updateDimensions ( void )
     barX = barAreaX = x;
     barW = barAreaW = w;
 
-    if ( ( strcmp( label, "" ) != 0 ) ||
+    if ( ( strcmp( label.getRaw(), "" ) != 0 ) ||
          ( labelType == BARC_K_PV_NAME ) ) {
       barAreaH -= (int) ( 1.5 * (double) fontHeight ) - 5;
       barH = barAreaH;
@@ -2619,25 +2229,87 @@ void activeBarClass::bufInvalidate ( void )
 
 }
 
+int activeBarClass::expandTemplate (
+  int numMacros,
+  char *macros[],
+  char *expansions[] )
+{
+
+expStringClass tmpStr;
+
+  tmpStr.setRaw( label.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  label.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( readPvExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  readPvExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( nullPvExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  nullPvExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( labelTicksExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  labelTicksExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( majorTicksExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  majorTicksExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( minorTicksExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  minorTicksExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( readMinExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  readMinExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( readMaxExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  readMaxExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( precisionExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  precisionExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( barOriginXExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  barOriginXExpStr.setRaw( tmpStr.getExpanded() );
+
+  return 1;
+
+}
+
 int activeBarClass::expand1st (
   int numMacros,
   char *macros[],
   char *expansions[] )
 {
 
-int stat;
+int retStat, stat;
 
+  retStat = label.expand1st( numMacros, macros, expansions );
   stat = readPvExpStr.expand1st( numMacros, macros, expansions );
+  if ( !( stat & 1 ) ) retStat = stat;
   stat = nullPvExpStr.expand1st( numMacros, macros, expansions );
+  if ( !( stat & 1 ) ) retStat = stat;
   stat = labelTicksExpStr.expand1st( numMacros, macros, expansions );
+  if ( !( stat & 1 ) ) retStat = stat;
   stat = majorTicksExpStr.expand1st( numMacros, macros, expansions );
+  if ( !( stat & 1 ) ) retStat = stat;
   stat = minorTicksExpStr.expand1st( numMacros, macros, expansions );
+  if ( !( stat & 1 ) ) retStat = stat;
   stat = readMinExpStr.expand1st( numMacros, macros, expansions );
+  if ( !( stat & 1 ) ) retStat = stat;
   stat = readMaxExpStr.expand1st( numMacros, macros, expansions );
+  if ( !( stat & 1 ) ) retStat = stat;
   stat = precisionExpStr.expand1st( numMacros, macros, expansions );
+  if ( !( stat & 1 ) ) retStat = stat;
   stat = barOriginXExpStr.expand1st( numMacros, macros, expansions );
+  if ( !( stat & 1 ) ) retStat = stat;
 
-  return stat;
+  return retStat;
 
 }
 
@@ -2647,25 +2319,38 @@ int activeBarClass::expand2nd (
   char *expansions[] )
 {
 
-int stat;
+int retStat, stat;
 
+  retStat = label.expand2nd( numMacros, macros, expansions );
   stat = readPvExpStr.expand2nd( numMacros, macros, expansions );
+  if ( !( stat & 1 ) ) retStat = stat;
   stat = nullPvExpStr.expand2nd( numMacros, macros, expansions );
+  if ( !( stat & 1 ) ) retStat = stat;
   stat = labelTicksExpStr.expand2nd( numMacros, macros, expansions );
+  if ( !( stat & 1 ) ) retStat = stat;
   stat = majorTicksExpStr.expand2nd( numMacros, macros, expansions );
+  if ( !( stat & 1 ) ) retStat = stat;
   stat = minorTicksExpStr.expand2nd( numMacros, macros, expansions );
+  if ( !( stat & 1 ) ) retStat = stat;
   stat = readMinExpStr.expand2nd( numMacros, macros, expansions );
+  if ( !( stat & 1 ) ) retStat = stat;
   stat = readMaxExpStr.expand2nd( numMacros, macros, expansions );
+  if ( !( stat & 1 ) ) retStat = stat;
   stat = precisionExpStr.expand2nd( numMacros, macros, expansions );
+  if ( !( stat & 1 ) ) retStat = stat;
   stat = barOriginXExpStr.expand2nd( numMacros, macros, expansions );
+  if ( !( stat & 1 ) ) retStat = stat;
 
-  return stat;
+  return retStat;
 
 }
 
 int activeBarClass::containsMacros ( void ) {
 
 int result;
+
+  result = label.containsPrimaryMacros();
+  if ( result ) return 1;
 
   result = readPvExpStr.containsPrimaryMacros();
   if ( result ) return 1;
@@ -3125,6 +2810,7 @@ int locH;
 void activeBarClass::updateBar ( void ) {
 
 int locW, locH;
+double tempW, tempH;
 
   if ( horizontal ) {
 
@@ -3179,9 +2865,17 @@ int locW, locH;
 
         barX = originW;
 
-        barW = (int) ( factorGe * ( readV - barOriginX ) + 0.5 );
+        //barW = (int) ( factorGe * ( readV - barOriginX ) + 0.5 );
 
-        if ( barW > barMaxW ) barW = barMaxW;
+        //if ( barW > barMaxW ) barW = barMaxW;
+
+        tempW = factorGe * ( readV - barOriginX );
+        if ( tempW > barMaxW ) {
+          barW = barMaxW;
+        }
+        else {
+          barW = (int) ( tempW + 0.5 );
+        }
 
       }
       else {
@@ -3207,9 +2901,17 @@ int locW, locH;
 
         barX = originW;
 
-        barW = (int) ( ( readV - barOriginX ) * factorLt + 0.5 );
+        //barW = (int) ( ( readV - barOriginX ) * factorLt + 0.5 );
 
-        if ( barW > barMaxW ) barW = barMaxW;
+        //if ( barW > barMaxW ) barW = barMaxW;
+
+        tempW = ( readV - barOriginX ) * factorLt;
+        if ( tempW > barMaxW ) {
+          barW = barMaxW;
+        }
+        else {
+          barW = (int) ( tempW + 0.5 );
+        }
 
       }
       else {
@@ -3287,9 +2989,17 @@ int locW, locH;
 
         barY = barAreaY - originH;
 
-        barH = (int) ( factorGe * ( readV - barOriginX ) + 0.5 );
+        //barH = (int) ( factorGe * ( readV - barOriginX ) + 0.5 );
 
-        if ( barH > barMaxH ) barH = barMaxH;
+        //if ( barH > barMaxH ) barH = barMaxH;
+
+        tempH = factorGe * ( readV - barOriginX );
+        if ( tempH > barMaxH ) {
+          barH = barMaxH;
+        }
+        else {
+          barH = (int) ( tempH + 0.5 );
+        }
 
       }
       else {
@@ -3315,9 +3025,17 @@ int locW, locH;
 
         barY = barAreaY - originH;
 
-        barH = (int) ( ( readV - barOriginX ) * factorLt + 0.5 );
+        //barH = (int) ( ( readV - barOriginX ) * factorLt + 0.5 );
 
-        if ( barH > barMaxH ) barH = barMaxH;
+        //if ( barH > barMaxH ) barH = barMaxH;
+
+        tempH = ( readV - barOriginX ) * factorLt;
+        if ( tempH > barMaxH ) {
+          barH = barMaxH;
+        }
+        else {
+          barH = (int) ( tempH + 0.5 );
+        }
 
       }
       else {
@@ -3442,7 +3160,7 @@ double v;
     eraseActive();
     readV = v;
     updateDimensions();
-    drawActive();
+    smartDrawAllActive();
 
     if ( initialReadConnection ) {
 
@@ -3478,7 +3196,7 @@ double v;
 
     updateDimensions();
 
-    drawActive();
+    smartDrawAllActive();
 
   }
 
@@ -3492,7 +3210,7 @@ double v;
 
   if ( nd ) {
     readV = v;
-    drawActive();
+    smartDrawAllActive();
   }
 
 //----------------------------------------------------------------------------
@@ -3500,7 +3218,7 @@ double v;
   if ( nfd ) {
     readV = v;
     bufInvalidate();
-    drawActive();
+    smartDrawAllActive();
   }
 
 //----------------------------------------------------------------------------
@@ -3509,7 +3227,7 @@ double v;
 
       readV = v;
       updateBar();
-      drawActive();
+      smartDrawAllActive();
 
   }
 
@@ -3650,6 +3368,42 @@ void activeBarClass::getPvs (
   *n = 2;
   pvs[0] = readPvId;
   pvs[1] = nullPvId;
+
+}
+
+char *activeBarClass::getSearchString (
+  int i
+) {
+
+  if ( i == 0 ) {
+    return readPvExpStr.getRaw();
+  }
+  else if ( i == 1 ) {
+    return nullPvExpStr.getRaw();
+  }
+  else if ( i == 2 ) {
+    return label.getRaw();
+  }
+
+  return NULL;
+
+}
+
+void activeBarClass::replaceString (
+  int i,
+  int max,
+  char *string
+) {
+
+  if ( i == 0 ) {
+    readPvExpStr.setRaw( string );
+  }
+  else if ( i == 1 ) {
+    nullPvExpStr.setRaw( string );
+  }
+  else if ( i == 2 ) {
+    label.setRaw( string );
+  }
 
 }
 

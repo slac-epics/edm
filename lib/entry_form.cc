@@ -23,6 +23,218 @@
 
 #include "thread.h"
 
+static void toggleEntryDependency (
+  Widget w,
+  XtPointer client,
+  XtPointer call
+) {
+
+class toggleEntry *tbo;
+int i;
+
+  tbo = (class toggleEntry *) client;
+
+  if ( XmToggleButtonGetState( w ) ) {
+    for ( i=0; i<tbo->numDepend; i++ ) {
+      if ( tbo->dependList[i].entry ) {
+        if ( tbo->dependList[i].sense ) {
+          tbo->dependList[i].entry->enable();
+        }
+        else {
+          tbo->dependList[i].entry->disable();
+        }
+      }
+    }
+  }
+  else {
+    for ( i=0; i<tbo->numDepend; i++ ) {
+      if ( tbo->dependList[i].entry ) {
+        if ( tbo->dependList[i].sense ) {
+          tbo->dependList[i].entry->disable();
+        }
+        else {
+          tbo->dependList[i].entry->enable();
+        }
+      }
+    }
+  }
+
+}
+
+static void textEntryDependency (
+  Widget w,
+  XtPointer client,
+  XtPointer call
+) {
+
+class textEntry *teo;
+char *buf;
+int i;
+
+  teo = (class textEntry *) client;
+
+  buf = XmTextGetString( w );
+  if ( !blank( buf ) ) {
+    for ( i=0; i<teo->numDepend; i++ ) {
+      if ( teo->dependList[i].entry ) {
+        if ( teo->dependList[i].sense ) {
+          teo->dependList[i].entry->enable();
+	}
+	else {
+          teo->dependList[i].entry->disable();
+	}
+      }
+    }
+  }
+  else {
+    for ( i=0; i<teo->numDepend; i++ ) {
+      if ( teo->dependList[i].entry ) {
+        if ( teo->dependList[i].sense ) {
+          teo->dependList[i].entry->disable();
+	}
+	else {
+          teo->dependList[i].entry->enable();
+	}
+      }
+    }
+  }
+  XtFree( buf );
+
+}
+
+static void optionEntryDependency (
+  Widget w,
+  XtPointer client,
+  XtPointer call
+) {
+
+widgetListPtr curpb;
+Widget curHistoryWidget;
+class optionEntry *opto;
+int i, n;
+
+  opto = (class optionEntry *) client;
+
+  XtVaGetValues( opto->activeW,
+   XmNmenuHistory, (XtArgVal) &curHistoryWidget,
+   NULL );
+
+  if ( w != curHistoryWidget ) return;
+
+  // disable/enable all
+  n = 0;
+  curpb = opto->head->flink;
+  while ( curpb ) {
+
+    for ( i=0; i<opto->optNumDepend[n]; i++ ) {
+      if ( opto->optDependList[n][i].sense ) {
+        opto->optDependList[n][i].entry->disable();
+      }
+      else {
+        opto->optDependList[n][i].entry->enable();
+      }
+    }
+
+    curpb = curpb->flink;
+    n++;
+
+  }
+
+  // enable/disable any that satisfy condition
+  n = 0;
+  curpb = opto->head->flink;
+  while ( curpb ) {
+
+    if ( curpb->w == w ) {
+
+      for ( i=0; i<opto->optNumDepend[n]; i++ ) {
+
+        if ( opto->optDependList[n][i].entry ) {
+          if ( opto->optDependList[n][i].sense ) {
+            opto->optDependList[n][i].entry->enable();
+	  }
+	  else {
+            opto->optDependList[n][i].entry->disable();
+	  }
+	}
+
+      }
+
+    }
+
+    curpb = curpb->flink;
+    n++;
+
+  }
+
+}
+
+#if 0
+// old version
+static void optionEntryDependency (
+  Widget w,
+  XtPointer client,
+  XtPointer call
+) {
+
+widgetListPtr curpb;
+Widget curHistoryWidget;
+class optionEntry *opto;
+int i, n;
+
+  opto = (class optionEntry *) client;
+
+  XtVaGetValues( opto->activeW,
+   XmNmenuHistory, (XtArgVal) &curHistoryWidget,
+   NULL );
+
+  if ( w != curHistoryWidget ) return;
+
+  n = 0;
+  curpb = opto->head->flink;
+  while ( curpb ) {
+
+    if ( curpb->w == w ) {
+
+      for ( i=0; i<opto->optNumDepend[n]; i++ ) {
+
+        if ( opto->optDependList[n][i].entry ) {
+          if ( opto->optDependList[n][i].sense ) {
+            opto->optDependList[n][i].entry->enable();
+	  }
+	  else {
+            opto->optDependList[n][i].entry->disable();
+	  }
+	}
+
+      }
+
+    }
+    else {
+
+      for ( i=0; i<opto->optNumDepend[n]; i++ ) {
+
+        if ( opto->optDependList[n][i].entry ) {
+          if ( opto->optDependList[n][i].sense ) {
+            opto->optDependList[n][i].entry->disable();
+	  }
+	  else {
+            opto->optDependList[n][i].entry->enable();
+	  }
+	}
+
+      }
+
+    }
+
+    curpb = curpb->flink;
+    n++;
+
+  }
+
+}
+#endif
+
 static void efEventHandler (
   Widget w,
   XtPointer client,
@@ -442,6 +654,72 @@ XConfigureEvent *ce;
 
 }
 
+void entryListBase::addDependency (
+  class entryListBase* entry
+) {
+
+  if ( numDepend < 9 ) {
+    dependList[numDepend].entry = entry;
+    dependList[numDepend].sense = 1;
+    numDepend++;
+  }
+
+}
+
+void entryListBase::addInvDependency (
+  class entryListBase* entry
+) {
+
+  if ( numDepend < 9 ) {
+    dependList[numDepend].entry = entry;
+    dependList[numDepend].sense = 0;
+    numDepend++;
+  }
+
+}
+
+void entryListBase::addDependency (
+  int i,
+  class entryListBase* entry
+) {
+
+  if ( numDepend < 9 ) {
+    dependList[numDepend].entry = entry;
+    dependList[numDepend].sense = 1;
+    numDepend++;
+  }
+
+}
+
+void entryListBase::addInvDependency (
+  int i,
+  class entryListBase* entry
+) {
+
+  if ( numDepend < 9 ) {
+    dependList[numDepend].entry = entry;
+    dependList[numDepend].sense = 0;
+    numDepend++;
+  }
+
+}
+
+void entryListBase::enable ( void ) {
+
+  if ( activeW ) {
+    XtSetSensitive( activeW, True );
+  }
+
+}
+
+void entryListBase::disable ( void ) {
+
+  if ( activeW ) {
+    XtSetSensitive( activeW, False );
+  }
+
+}
+
 subFormWidget::subFormWidget ( void ) {
 
   wPtr = NULL;
@@ -473,6 +751,12 @@ toggleEntry::~toggleEntry ( void ) {
 
 }
 
+void toggleEntry::cleanup ( void ) {
+
+  removeDependencyCallbacks();
+
+}
+
 void toggleEntry::setValue ( int value ) {
 
 int n;
@@ -484,9 +768,38 @@ Arg args[2];
 
 }
 
+void toggleEntry::addDependencyCallbacks ( void ) {
+
+  if ( !haveCallback ) {
+    haveCallback = 1;
+    XtAddCallback( activeW, XmNvalueChangedCallback, toggleEntryDependency,
+     this );
+    toggleEntryDependency( activeW, this, NULL );
+  }
+
+}
+
+void toggleEntry::removeDependencyCallbacks ( void ) {
+
+  if ( haveCallback ) {
+    haveCallback = 0;
+    //XtRemoveCallback( activeW, XmNvalueChangedCallback,
+    // toggleEntryDependency, this );
+  }
+
+  numDepend = 0;
+
+}
+
 textEntry::textEntry ( void ) { }
 
 textEntry::~textEntry ( void ) {
+
+}
+
+void textEntry::cleanup ( void ) {
+
+  removeDependencyCallbacks();
 
 }
 
@@ -529,8 +842,33 @@ Arg args[2];
 
 }
 
+void textEntry::addDependencyCallbacks ( void ) {
+
+  if ( !haveCallback ) {
+    haveCallback = 1;
+    XtAddCallback( activeW, XmNvalueChangedCallback, textEntryDependency,
+     this );
+    textEntryDependency( activeW, this, NULL );
+  }
+
+}
+
+void textEntry::removeDependencyCallbacks ( void ) {
+
+  if ( haveCallback ) {
+    haveCallback = 0;
+    //XtRemoveCallback( activeW, XmNvalueChangedCallback,
+    // textEntryDependency, this );
+  }
+
+  numDepend = 0;
+
+}
+
 colorButtonEntry::colorButtonEntry ( void )
 {
+
+  theCb = NULL;
 
 }
 
@@ -552,6 +890,19 @@ Arg args[2];
 
 }
 
+void colorButtonEntry::enable ( void ) {
+
+  if ( theCb ) theCb->enable();
+
+}
+
+void colorButtonEntry::disable ( void ) {
+
+  if ( theCb ) theCb->disable();
+
+}
+
+
 fontMenuEntry::fontMenuEntry ( void )
 {
 
@@ -568,11 +919,19 @@ fontMenuEntry::~fontMenuEntry ( void )
 
 optionEntry::optionEntry ( void ) {
 
+int i;
+
 //   fprintf( stderr, "optionEntry::optionEntry - new widgetListType\n" );
 
   head = new widgetListType;
   tail = head;
   tail->flink = NULL;
+
+  numValues = 0;
+  for ( i=0; i<10; i++ ) {
+    optNumDepend[i] = 0;
+    optHaveCallback[i] = 0;
+  }
 
 }
 
@@ -584,14 +943,18 @@ widgetListPtr cur, next;
   cur = head->flink;
   while ( cur ) {
     next = cur->flink;
-//     fprintf( stderr, "optionEntry::~optionEntry - delete node\n" );
     delete[] cur->value;
     delete cur;
     cur = next;
   }
 
-//   fprintf( stderr, "optionEntry::~optionEntry - delete head\n" );
   delete head;
+
+}
+
+void optionEntry::cleanup ( void ) {
+
+  removeDependencyCallbacks();
 
 }
 
@@ -600,8 +963,6 @@ void optionEntry::setValue ( int value ) {
 widgetListPtr curpb;
 int item, n;
 Arg args[2];
-
-//   fprintf( stderr, "In optionEntry::setValue, value = %-d\n", value );
 
   item = 0;
   curpb = head->flink;
@@ -627,8 +988,6 @@ widgetListPtr curpb;
 int item, n;
 Arg args[2];
 
-//   fprintf( stderr, "In optionEntry::setValue, value = [%s]\n", value );
-
   curpb = head->flink;
   while ( curpb ) {
 
@@ -642,6 +1001,105 @@ Arg args[2];
     curpb = curpb->flink;
     item++;
 
+  }
+
+}
+
+void optionEntry::addDependency (
+  int i,
+  class entryListBase* entry
+) {
+
+  if ( i < 0 ) return;
+  if ( i >= numValues ) return;
+
+  if ( optNumDepend[i] < 9 ) {
+    optDependList[i][optNumDepend[i]].entry = entry;
+    optDependList[i][optNumDepend[i]].sense = 1;
+    optNumDepend[i]++;
+  }
+
+}
+
+void optionEntry::addInvDependency (
+  int i,
+  class entryListBase* entry
+) {
+
+  if ( i < 0 ) return;
+  if ( i >= numValues ) return;
+
+  if ( optNumDepend[i] < 9 ) {
+    optDependList[i][optNumDepend[i]].entry = entry;
+    optDependList[i][optNumDepend[i]].sense = 0;
+    optNumDepend[i]++;
+  }
+
+}
+
+void optionEntry::addDependencyCallbacks ( void ) {
+
+int i;
+widgetListPtr curpb;
+
+  if ( numValues == 0 ) {
+    fprintf( stderr,
+     "optionEntry::addDependencyCallbacks - numValues not set\n" );
+  }
+
+  i = 0;
+  curpb = head->flink;
+  while ( curpb ) {
+
+    if ( i <= numValues ) {
+      if ( !optHaveCallback[i] ) {
+        optHaveCallback[i] = 1;
+        if ( curpb->w ) {
+          XtAddCallback( curpb->w, XmNactivateCallback,
+           optionEntryDependency, this );
+          optionEntryDependency( curpb->w, this, NULL );
+        }
+      }
+    }
+    else {
+      return;
+    }
+
+    curpb = curpb->flink;
+    i++;
+
+  }
+
+}
+
+void optionEntry::removeDependencyCallbacks ( void ) {
+
+widgetListPtr curpb;
+int i;
+
+  i = 0;
+  curpb = head->flink;
+  while ( curpb ) {
+
+    if ( i <= numValues ) {
+
+      if ( optHaveCallback[i] ) {
+        optHaveCallback[i] = 0;
+        //XtRemoveCallback( curpb->w, XmNactivateCallback,
+        // optionEntryDependency, this );
+      }
+
+    }
+
+    curpb = curpb->flink;
+    i++;
+
+  }
+
+  numValues = 0;
+  for ( i=0; i<10; i++ ) {
+    optNumDepend[i] = 0;
+    optHaveCallback[i] = 0;
   }
 
 }
@@ -683,6 +1141,11 @@ entryFormClass::entryFormClass ( void ) {
   entryTag = NULL;
   actionTag = NULL;
 
+  callbackData.op = 0;
+  callbackData.command = 0;
+  callbackPtr = NULL;
+  clientCb = NULL;
+
   object_type = EF_K_RECTANGULAR;
 
   shell = NULL;
@@ -719,6 +1182,12 @@ entryListBase *cur, *next;
 
 // fprintf( stderr, "entryFormClass::destroy\n" );
 
+  cur = itemHead->flink;
+  while ( cur ) {
+    cur->cleanup();
+    cur = cur->flink;
+  }
+
   if ( entryFontList ) XmFontListFree( entryFontList );
   if ( actionFontList ) XmFontListFree( actionFontList );
 
@@ -750,6 +1219,13 @@ entryListBase *cur, *next;
   }
 
   return 1;
+
+}
+
+entryListBase *entryFormClass::getCurItem ( void )
+{
+
+  return itemTail;
 
 }
 
@@ -860,7 +1336,14 @@ XmString str;
    XmNmappedWhenManaged, False,
    NULL );
 
-  scrollWin = XtVaCreateWidget( "scrollwin", xmScrolledWindowWidgetClass, shell,
+  paneTop = XtVaCreateWidget( "paneTop", xmPanedWindowWidgetClass, shell,
+   XmNsashWidth, 1,
+   XmNsashHeight, 1,
+   NULL );
+
+  scrollWin = XtVaCreateWidget( "scrollwin", xmScrolledWindowWidgetClass, paneTop,
+   XmNallowResize, True,
+   XmNpaneMaximum, 10000,
    XmNscrollBarDisplayPolicy, XmAS_NEEDED,
    XmNscrollingPolicy, XmAUTOMATIC,
    NULL );
@@ -870,7 +1353,9 @@ XmString str;
    XmNsashHeight, 1,
    NULL );
 
-  labelForm = XtVaCreateWidget( "labelform", xmFormWidgetClass, pane, NULL );
+  labelForm = XtVaCreateWidget( "labelform", xmFormWidgetClass, pane,
+   XmNallowResize, True,
+   NULL );
 
   if ( entryTag )
     str = XmStringCreate( label, entryTag );
@@ -895,6 +1380,7 @@ XmString str;
   topForm = XtVaCreateWidget( "topform", xmFormWidgetClass, pane,
    XmNallowResize, True,
    XmNpaneMaximum, 10000,
+   XmNmarginWidth, 50,
    NULL );
 
   curTopParent = topForm;
@@ -904,12 +1390,18 @@ XmString str;
    efEventHandler, (XtPointer) this );
 
   controlForm = XtVaCreateWidget( "controlform", xmFormWidgetClass, pane,
+   XmNallowResize, True,
+   XmNmarginWidth, 50,
    NULL );
 
   arrayForm = XtVaCreateWidget( "arrayform", xmFormWidgetClass, pane,
+   XmNallowResize, True,
+   XmNmarginWidth, 50,
    NULL );
 
-  bottomForm = XtVaCreateWidget( "bottomform", xmFormWidgetClass, pane,
+  bottomForm = XtVaCreateWidget( "bottomform", xmFormWidgetClass, paneTop,
+   XmNallowResize, True,
+   XmNskipAdjust, True,
    NULL );
 
   XtAddEventHandler( bottomForm,
@@ -1066,7 +1558,14 @@ char buf[16];
    XmNmappedWhenManaged, False,
    NULL );
 
-  scrollWin = XtVaCreateWidget( "scrollwin", xmScrolledWindowWidgetClass, shell,
+  paneTop = XtVaCreateWidget( "paneTop", xmPanedWindowWidgetClass, shell,
+   XmNsashWidth, 1,
+   XmNsashHeight, 1,
+   NULL );
+
+  scrollWin = XtVaCreateWidget( "scrollwin", xmScrolledWindowWidgetClass, paneTop,
+   XmNallowResize, True,
+   XmNpaneMaximum, 10000,
    XmNscrollBarDisplayPolicy, XmAS_NEEDED,
    XmNscrollingPolicy, XmAUTOMATIC,
    NULL );
@@ -1076,7 +1575,9 @@ char buf[16];
    XmNsashHeight, 1,
    NULL );
 
-  labelForm = XtVaCreateWidget( "labelform", xmFormWidgetClass, pane, NULL );
+  labelForm = XtVaCreateWidget( "labelform", xmFormWidgetClass, pane,
+   XmNallowResize, True,
+   NULL );
 
   if ( entryTag )
     str = XmStringCreate( label, entryTag );
@@ -1101,6 +1602,7 @@ char buf[16];
   topForm = XtVaCreateWidget( "topform", xmFormWidgetClass, pane,
    XmNallowResize, True,
    XmNpaneMaximum, 10000,
+   XmNmarginWidth, 50,
    NULL );
 
   curTopParent = topForm;
@@ -1109,7 +1611,10 @@ char buf[16];
    KeyPressMask|ButtonPressMask|ButtonReleaseMask, False,
    efEventHandler, (XtPointer) this );
 
-  controlForm = XtVaCreateWidget( "controlform", xmFormWidgetClass, pane, NULL );
+  controlForm = XtVaCreateWidget( "controlform", xmFormWidgetClass, pane,
+   XmNallowResize, True,
+   XmNmarginWidth, 50,
+   NULL );
 
   if ( maxItems > 1 ) {
 
@@ -1244,6 +1749,8 @@ char buf[16];
   }
 
   arrayForm = XtVaCreateWidget( "arrayform", xmFormWidgetClass, pane,
+   XmNallowResize, True,
+   XmNmarginWidth, 50,
    NULL );
 
 //    XtAddEventHandler( controlForm,
@@ -1254,7 +1761,8 @@ char buf[16];
    KeyPressMask|ButtonPressMask|ButtonReleaseMask, False,
    efEventHandler, (XtPointer) this );
 
-  bottomForm = XtVaCreateWidget( "bottomform", xmFormWidgetClass, pane,
+  bottomForm = XtVaCreateWidget( "bottomform", xmFormWidgetClass, paneTop,
+   XmNskipAdjust, True,
    NULL );
 
   XtAddEventHandler( bottomForm,
@@ -2740,7 +3248,8 @@ XmString str;
 
 }
 
-int entryFormClass::addTextBox (
+int entryFormClass::addGenericTextBox (
+  int edit,
   char *label,
   int width,
   int height,
@@ -2769,10 +3278,19 @@ Widget scrolledTextWidget = NULL;
     n = 0;
     XtSetArg( args[n], XmNrows, height ); n++;
     XtSetArg( args[n], XmNcolumns, width ); n++;
-    XtSetArg( args[n], XmNeditable, True ); n++;
+    if ( edit ) {
+      XtSetArg( args[n], XmNeditable, True ); n++;
+    }
+    else {
+      XtSetArg( args[n], XmNeditable, False ); n++;
+    }
     XtSetArg( args[n], XmNeditMode, XmMULTI_LINE_EDIT ); n++;
-    XtSetArg( args[n], XmNcursorPositionVisible, True ); n++;
-    //XtSetArg( args[n], XmNfontList, NULL ); n++;
+    if ( edit ) {
+      XtSetArg( args[n], XmNcursorPositionVisible, True ); n++;
+    }
+    else {
+      XtSetArg( args[n], XmNcursorPositionVisible, False ); n++;
+    }
     XtSetArg( args[n], XmNmaxLength, stringSize ); n++;
     XtSetArg( args[n], XmNtopAttachment, XmATTACH_FORM ); n++;
     XtSetArg( args[n], XmNrightAttachment, XmATTACH_FORM ); n++;
@@ -2791,10 +3309,19 @@ Widget scrolledTextWidget = NULL;
     n = 0;
     XtSetArg( args[n], XmNrows, height ); n++;
     XtSetArg( args[n], XmNcolumns, width ); n++;
-    XtSetArg( args[n], XmNeditable, True ); n++;
+    if ( edit ) {
+      XtSetArg( args[n], XmNeditable, True ); n++;
+    }
+    else {
+      XtSetArg( args[n], XmNeditable, False ); n++;
+    }
     XtSetArg( args[n], XmNeditMode, XmMULTI_LINE_EDIT ); n++;
-    XtSetArg( args[n], XmNcursorPositionVisible, True ); n++;
-    //XtSetArg( args[n], XmNfontList, NULL ); n++;
+    if ( edit ) {
+      XtSetArg( args[n], XmNcursorPositionVisible, True ); n++;
+    }
+    else {
+      XtSetArg( args[n], XmNcursorPositionVisible, False ); n++;
+    }
     XtSetArg( args[n], XmNmaxLength, stringSize ); n++;
     XtSetArg( args[n], XmNtopAttachment, XmATTACH_WIDGET ); n++;
     XtSetArg( args[n], XmNtopWidget, curW ); n++;
@@ -2827,7 +3354,6 @@ Widget scrolledTextWidget = NULL;
    XmNtopWidget, curW,
    XmNrightAttachment, XmATTACH_WIDGET,
    XmNrightWidget, curW,
-   //XmNfontList, entryFontList,
    NULL );
 
   XmStringFree( str );
@@ -2850,7 +3376,6 @@ Widget scrolledTextWidget = NULL;
      XmNmarginTop, 7,
      XmNtopAttachment, XmATTACH_FORM,
      XmNleftAttachment, XmATTACH_FORM,
-     //XmNfontList, entryFontList,
      NULL );
 
     XmStringFree( str );
@@ -2858,10 +3383,19 @@ Widget scrolledTextWidget = NULL;
     n = 0;
     XtSetArg( args[n], XmNrows, height ); n++;
     XtSetArg( args[n], XmNcolumns, width ); n++;
-    XtSetArg( args[n], XmNeditable, True ); n++;
+    if ( edit ) {
+      XtSetArg( args[n], XmNeditable, True ); n++;
+    }
+    else {
+      XtSetArg( args[n], XmNeditable, False ); n++;
+    }
     XtSetArg( args[n], XmNeditMode, XmMULTI_LINE_EDIT ); n++;
-    XtSetArg( args[n], XmNcursorPositionVisible, True ); n++;
-    //XtSetArg( args[n], XmNfontList, NULL ); n++;
+    if ( edit ) {
+      XtSetArg( args[n], XmNcursorPositionVisible, True ); n++;
+    }
+    else {
+      XtSetArg( args[n], XmNcursorPositionVisible, False ); n++;
+    }
     XtSetArg( args[n], XmNmaxLength, stringSize ); n++;
     XtSetArg( args[n], XmNtopAttachment, XmATTACH_WIDGET ); n++;
     XtSetArg( args[n], XmNtopWidget, cur->labelW ); n++;
@@ -2881,10 +3415,19 @@ Widget scrolledTextWidget = NULL;
     n = 0;
     XtSetArg( args[n], XmNrows, height ); n++;
     XtSetArg( args[n], XmNcolumns, width ); n++;
-    XtSetArg( args[n], XmNeditable, True ); n++;
+    if ( edit ) {
+      XtSetArg( args[n], XmNeditable, True ); n++;
+    }
+    else {
+      XtSetArg( args[n], XmNeditable, False ); n++;
+    }
     XtSetArg( args[n], XmNeditMode, XmMULTI_LINE_EDIT ); n++;
-    XtSetArg( args[n], XmNcursorPositionVisible, True ); n++;
-    //XtSetArg( args[n], XmNfontList, NULL ); n++;
+    if ( edit ) {
+      XtSetArg( args[n], XmNcursorPositionVisible, True ); n++;
+    }
+    else {
+      XtSetArg( args[n], XmNcursorPositionVisible, False ); n++;
+    }
     XtSetArg( args[n], XmNmaxLength, stringSize ); n++;
     XtSetArg( args[n], XmNtopAttachment, XmATTACH_WIDGET ); n++;
     XtSetArg( args[n], XmNtopWidget, prevW ); n++;
@@ -2907,14 +3450,38 @@ Widget scrolledTextWidget = NULL;
 
   if ( scrolledTextWidget ) XtManageChild( scrolledTextWidget );
 
-  XtAddCallback( cur->activeW, XmNvalueChangedCallback, TextBoxToString,
-   cur );
+  if ( edit ) XtAddCallback( cur->activeW, XmNvalueChangedCallback,
+   TextBoxToString, cur );
 
   itemTail->flink = cur;
   itemTail = cur;
   itemTail->flink = NULL;
 
   return 1;
+
+}
+
+int entryFormClass::addTextBox (
+  char *label,
+  int width,
+  int height,
+  char *dest,
+  int stringSize )
+{
+
+  return addGenericTextBox( 1, label, width, height, dest, stringSize );
+
+}
+
+int entryFormClass::addReadonlyTextBox (
+  char *label,
+  int width,
+  int height,
+  char *dest,
+  int stringSize )
+{
+
+  return addGenericTextBox( 0, label, width, height, dest, stringSize );
 
 }
 
@@ -3320,6 +3887,8 @@ colorButtonEntry *cur;
 
   cur = new colorButtonEntry;
 
+  cur->theCb = cb;
+
   if ( curTopParent == topForm ) {
 
   //fprintf( stderr, "using topForm\n" );
@@ -3588,6 +4157,8 @@ colorButtonEntry *cur;
 
   cur = new colorButtonEntry;
 
+  cur->theCb = cb;
+
   if ( curTopParent  == topForm ) {
 
   if ( firstItem ) {
@@ -3749,6 +4320,8 @@ textEntry *te;
 
   cur = new colorButtonEntry;
 
+  cur->theCb = cb;
+
   if ( firstItem ) {
 
     firstItem = 0;
@@ -3881,6 +4454,8 @@ colorButtonEntry *cur;
 textEntry *te;
 
   cur = new colorButtonEntry;
+
+  cur->theCb = cb;
 
   if ( firstItem ) {
 
@@ -4066,6 +4641,8 @@ widgetListPtr curpb;
   ctx = NULL;
   tk = strtok_r( buf, "|", &ctx );
   while ( tk ) {
+
+    cur->numValues++;
 
     curpb = new widgetListType;
     curpb->destination = (void *) dest;
@@ -4260,6 +4837,8 @@ widgetListPtr curpb;
   ctx = NULL;
   tk = strtok_r( buf, "|", &ctx );
   while ( tk ) {
+
+    cur->numValues++;
 
     curpb = new widgetListType;
     curpb->destination = (void *) dest;
@@ -4460,6 +5039,8 @@ widgetListPtr curpb;
   tk = strtok_r( buf, "|", &ctx );
   while ( tk ) {
 
+    cur->numValues++;
+
     curpb = new widgetListType;
     curpb->destination = (void *) dest;
     curpb->entryNumber = n++;
@@ -4601,6 +5182,8 @@ widgetListPtr curpb;
   ctx = NULL;
   tk = strtok_r( buf, "|", &ctx );
   while ( tk ) {
+
+    cur->numValues++;
 
     curpb = new widgetListType;
     curpb->destination = (void *) dest;
@@ -5108,6 +5691,166 @@ Widget *children;
   XtManageChild( bottomForm );
   XtManageChild( pane );
   XtManageChild( scrollWin );
+  XtManageChild( paneTop );
+
+  // remove pane sashes from tab traversal
+  XtVaGetValues( pane,
+   XmNchildren, &children,
+   XmNnumChildren, &num,
+   NULL );
+
+  while ( num-- > 0 ) {
+    if ( XmIsSash( children[num] ) ) {
+      XtVaSetValues( children[num],
+       XmNtraversalOn, False,
+       NULL );
+    }
+  }
+
+  return 1;
+
+}
+
+void entryFormClass::ok_callback (
+  Widget w,
+  XtPointer client,
+  XtPointer call
+) {
+
+  entryFormClass *ef = (entryFormClass *) client;
+  client = ef->callbackPtr;
+  ef->callbackData.command = entryFormClass::OK;
+  (ef->clientCb)( w, client, XtPointer (&ef->callbackData) );
+
+}
+
+void entryFormClass::apply_callback (
+  Widget w,
+  XtPointer client,
+  XtPointer call
+) {
+
+  entryFormClass *ef = (entryFormClass *) client;
+  client = ef->callbackPtr;
+  ef->callbackData.command = entryFormClass::APPLY;
+  (ef->clientCb)( w, client, XtPointer (&ef->callbackData) );
+
+}
+
+void entryFormClass::cancel_callback (
+  Widget w,
+  XtPointer client,
+  XtPointer call
+) {
+
+  entryFormClass *ef = (entryFormClass *) client;
+  client = ef->callbackPtr;
+  ef->callbackData.command = entryFormClass::CANCEL;
+  (ef->clientCb)( w, client, XtPointer (&ef->callbackData) );
+
+}
+
+int entryFormClass::finished (
+  int operationType,
+  XtCallbackProc cb,
+  XtPointer ptr )
+{
+
+XmString str;
+int num;
+Widget *children;
+XtCallbackProc ok_cb, apply_cb, cancel_cb;
+
+  callbackPtr = ptr;
+  clientCb = cb;
+  ptr = this;
+  callbackData.op = operationType;
+  ok_cb = entryFormClass::ok_callback;
+  apply_cb = entryFormClass::apply_callback;
+  cancel_cb = entryFormClass::cancel_callback;
+
+  okCb = ok_cb;
+  applyCb = apply_cb;
+  cancelCb = cancel_cb;
+  pbCallbackPtr = ptr;
+
+  if ( actionTag )
+    str = XmStringCreate( "Cancel", actionTag );
+  else
+    str = XmStringCreateLocalized( "Cancel" );
+
+  pb_cancel = XtVaCreateManagedWidget( "pb", xmPushButtonGadgetClass, bottomForm,
+   XmNtopAttachment, XmATTACH_FORM,
+   XmNbottomAttachment, XmATTACH_FORM,
+   XmNrightAttachment, XmATTACH_FORM,
+   XmNdefaultButtonShadowThickness, 1,
+   XmNlabelString, str,
+   NULL );
+
+  XmStringFree( str );
+
+  this->wp.w = pb_cancel;
+  this->wp.obj = this;
+  this->wp.client = ptr;
+  XtAddCallback( pb_cancel, XmNactivateCallback, kill_cb, &this->wp );
+
+  Atom wm_delete_window = XmInternAtom( XtDisplay(shell),
+   "WM_DELETE_WINDOW", False );
+
+  XmAddWMProtocolCallback( shell, wm_delete_window, kill_cb, &this->wp );
+
+  XtVaSetValues( shell, XmNdeleteResponse, XmDO_NOTHING, NULL );
+
+  if ( actionTag )
+    str = XmStringCreate( "Apply", actionTag );
+  else
+    str = XmStringCreateLocalized( "Apply" );
+
+  pb_apply = XtVaCreateManagedWidget( "pb", xmPushButtonGadgetClass,  bottomForm,
+   XmNtopAttachment, XmATTACH_OPPOSITE_WIDGET,
+   XmNtopWidget, pb_cancel,
+   XmNbottomAttachment, XmATTACH_OPPOSITE_WIDGET,
+   XmNbottomWidget, pb_cancel,
+   XmNrightAttachment, XmATTACH_WIDGET,
+   XmNrightWidget, pb_cancel,
+   XmNdefaultButtonShadowThickness, 1,
+   XmNlabelString, str,
+   NULL );
+
+  XmStringFree( str );
+
+  XtAddCallback( pb_apply, XmNactivateCallback, apply_cb, ptr );
+
+  if ( actionTag )
+    str = XmStringCreate( "OK", actionTag );
+  else
+    str = XmStringCreateLocalized( "OK" );
+
+  pb_ok = XtVaCreateManagedWidget( "pb", xmPushButtonGadgetClass, bottomForm,
+   XmNtopAttachment, XmATTACH_OPPOSITE_WIDGET,
+   XmNtopWidget, pb_apply,
+   XmNbottomAttachment, XmATTACH_OPPOSITE_WIDGET,
+   XmNbottomWidget, pb_apply,
+   XmNrightAttachment, XmATTACH_WIDGET,
+   XmNrightWidget, pb_apply,
+   XmNleftAttachment, XmATTACH_NONE,
+   XmNshowAsDefault, True,
+   XmNdefaultButtonShadowThickness, 1,
+   XmNlabelString, str,
+   NULL );
+
+  XmStringFree( str );
+
+  XtAddCallback( pb_ok, XmNactivateCallback, ok_cb, ptr );
+
+  XtManageChild( labelForm );
+  if ( !firstItem ) XtManageChild( topForm );
+  if ( maxItems > 1 ) XtManageChild( controlForm );
+  if ( maxItems > 0 ) XtManageChild( arrayForm );
+  XtManageChild( bottomForm );
+  XtManageChild( pane );
+  XtManageChild( scrollWin );
+  XtManageChild( paneTop );
 
   // remove pane sashes from tab traversal
   XtVaGetValues( pane,
@@ -5174,6 +5917,7 @@ Widget *children;
   XtManageChild( bottomForm );
   XtManageChild( pane );
   XtManageChild( scrollWin );
+  XtManageChild( paneTop );
 
   // remove pane sashes from tab traversal
   XtVaGetValues( pane,
@@ -5197,7 +5941,7 @@ int entryFormClass::popup ( void ) {
 
 Arg args[5];
 int n;
-short paneW = 0, paneH = 0;
+short paneW = 0, paneH = 0, botH = 0;
 XTextProperty xtext;
 char *pTitle;
 
@@ -5214,6 +5958,10 @@ char *pTitle;
  }
 
   n = 0;
+  XtSetArg( args[n], XmNheight, (XtArgVal) &botH ); n++;
+  XtGetValues( bottomForm, args, n );
+
+  n = 0;
   XtSetArg( args[n], XmNwidth, (XtArgVal) &paneW ); n++;
   XtSetArg( args[n], XmNheight, (XtArgVal) &paneH ); n++;
   XtGetValues( pane, args, n );
@@ -5221,10 +5969,10 @@ char *pTitle;
   paneW += 10;
 
   n = 0;
-  paneH += 10;
+  paneH += botH + 25;
   if ( paneH + 25 > *largestH ) {
     paneH = *largestH - 25;
-    paneW += 25;
+    paneW += 40;
   }
   XtSetArg( args[n], XmNheight, (XtArgVal) paneH ); n++;
   XtSetValues( shell, args, n );

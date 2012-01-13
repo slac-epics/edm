@@ -1,39 +1,39 @@
-4 0 0
+4 0 1
 beginScreenProperties
 major 4
 minor 0
-release 0
-x 33
-y 6
-w 500
-h 985
+release 1
+x 182
+y 21
+w 473
+h 973
 font "helvetica-medium-r-18.0"
 ctlFont "helvetica-medium-r-12.0"
 btnFont "helvetica-bold-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 51400 51400 51400
+bgColor rgb 52171 52171 52171
 textColor rgb 0 0 0
 ctlFgColor1 rgb 0 0 0
-ctlFgColor2 rgb 0 0 49344
-ctlBgColor1 rgb 48059 48059 48059
-ctlBgColor2 rgb 56026 56026 56026
-topShadowColor rgb 60652 60652 60652
-botShadowColor rgb 26985 26985 26985
+ctlFgColor2 rgb 0 0 65535
+ctlBgColor1 rgb 46517 46517 46517
+ctlBgColor2 rgb 56797 56797 56797
+topShadowColor rgb 61423 61423 61423
+botShadowColor rgb 24929 24929 24929
 endScreenProperties
 
 # (Static Text)
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
 x 21
 y 19
 w 107
-h 27
+h 31
 font "helvetica-medium-r-24.0"
 fgColor rgb 0 0 0
-bgColor rgb 60652 60652 60652
+bgColor rgb 61423 61423 61423
 value {
   "XY Graph"
 }
@@ -44,15 +44,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
 x 148
 y 23
-w 147
-h 21
+w 148
+h 23
 font "helvetica-bold-r-18.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "Trace Properties"
@@ -64,15 +64,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
 x 25
 y 75
 w 13
-h 16
+h 19
 font "helvetica-medium-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "X:"
@@ -84,15 +84,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
 x 47
 y 96
-w 260
-h 16
+w 263
+h 19
 font "helvetica-medium-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "x PV, leave blank for a chronological plot"
@@ -104,15 +104,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
 x 24
 y 125
-w 12
-h 16
+w 13
+h 19
 font "helvetica-medium-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "Y:"
@@ -124,18 +124,18 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
 x 47
 y 144
-w 27
-h 16
+w 29
+h 19
 font "helvetica-medium-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
-  "y pv"
+  "y PV"
 }
 autoSize
 endObjectProperties
@@ -144,15 +144,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
 x 24
 y 175
-w 12
-h 16
+w 13
+h 19
 font "helvetica-medium-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "S:"
@@ -164,15 +164,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
 x 47
 y 199
 w 284
-h 32
+h 38
 font "helvetica-medium-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "if selected, PV value is assume to be signed"
@@ -185,15 +185,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
 x 24
-y 251
-w 127
-h 16
+y 332
+w 129
+h 19
 font "helvetica-medium-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "Plot Type (no label):"
@@ -205,15 +205,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
 x 47
-y 271
+y 352
 w 49
-h 16
+h 19
 font "helvetica-medium-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "scope -"
@@ -225,15 +225,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
 x 24
-y 515
-w 141
-h 16
+y 596
+w 142
+h 19
 font "helvetica-medium-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "Trace Type (no label):"
@@ -245,15 +245,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
 x 66
-y 540
-w 92
-h 16
+y 621
+w 94
+h 19
 font "helvetica-medium-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "line - draw line"
@@ -265,15 +265,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
 x 24
-y 463
-w 20
-h 16
+y 544
+w 21
+h 19
 font "helvetica-medium-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "Y2:"
@@ -285,15 +285,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
 x 47
-y 484
-w 134
-h 16
+y 565
+w 133
+h 19
 font "helvetica-medium-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "Use Y2 axis for trace"
@@ -305,15 +305,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
 x 63
-y 291
-w 32
-h 16
+y 372
+w 33
+h 19
 font "helvetica-medium-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "plot -"
@@ -325,15 +325,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
 x 103
-y 271
+y 352
 w 245
-h 16
+h 19
 font "helvetica-medium-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "data is plotted exactly as it is received"
@@ -345,15 +345,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
 x 103
-y 291
-w 251
-h 16
+y 372
+w 252
+h 19
 font "helvetica-medium-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "data is sorted by ascending values of x"
@@ -365,15 +365,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
 x 47
-y 323
-w 217
-h 16
+y 404
+w 225
+h 19
 font "helvetica-medium-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "Example: Plot (0,0) (1,1) (0,1) (1,0)"
@@ -386,13 +386,13 @@ object activeLineClass
 beginObjectProperties
 major 4
 minor 0
-release 0
+release 1
 x 51
-y 363
+y 444
 w 78
 h 62
 lineColor rgb 0 0 0
-fillColor rgb 48059 48059 48059
+fillColor rgb 46517 46517 46517
 numPoints 4
 xPoints {
   0 51
@@ -401,10 +401,10 @@ xPoints {
   3 128
 }
 yPoints {
-  0 425
-  1 363
-  2 363
-  3 425
+  0 506
+  1 444
+  2 444
+  3 506
 }
 endObjectProperties
 
@@ -413,13 +413,13 @@ object activeLineClass
 beginObjectProperties
 major 4
 minor 0
-release 0
+release 1
 x 174
-y 363
+y 444
 w 77
 h 63
 lineColor rgb 0 0 0
-fillColor rgb 48059 48059 48059
+fillColor rgb 46517 46517 46517
 numPoints 4
 xPoints {
   0 174
@@ -428,10 +428,10 @@ xPoints {
   3 251
 }
 yPoints {
-  0 426
-  1 363
-  2 363
-  3 424
+  0 507
+  1 444
+  2 444
+  3 505
 }
 endObjectProperties
 
@@ -439,15 +439,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
 x 70
-y 419
+y 500
 w 42
-h 16
+h 19
 font "helvetica-bold-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "scope"
@@ -459,15 +459,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
 x 200
-y 419
+y 500
 w 27
-h 16
+h 19
 font "helvetica-bold-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "plot"
@@ -479,15 +479,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
 x 59
-y 558
-w 102
-h 16
+y 639
+w 105
+h 19
 font "helvetica-medium-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "point - plot point"
@@ -499,15 +499,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
 x 47
-y 576
-w 109
-h 16
+y 657
+w 112
+h 19
 font "helvetica-medium-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "needle - fill under"
@@ -519,15 +519,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
 x 24
-y 609
-w 49
-h 16
+y 717
+w 52
+h 19
 font "helvetica-medium-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "Update:"
@@ -539,15 +539,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
 x 47
-y 632
+y 740
 w 60
-h 16
+h 19
 font "helvetica-medium-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "X and Y -"
@@ -559,15 +559,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
 x 112
-y 632
-w 303
-h 16
+y 740
+w 306
+h 19
 font "helvetica-medium-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "plot next observation on change in both x and y"
@@ -579,15 +579,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
 x 112
-y 651
-w 300
-h 16
+y 759
+w 301
+h 19
 font "helvetica-medium-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "plot next observation on change in either x or y"
@@ -599,15 +599,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
 x 58
-y 651
-w 49
-h 16
+y 759
+w 48
+h 19
 font "helvetica-medium-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "X or Y -"
@@ -619,15 +619,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
 x 112
-y 670
-w 232
-h 16
+y 778
+w 233
+h 19
 font "helvetica-medium-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "plot next observation on change in x"
@@ -639,15 +639,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
 x 88
-y 670
-w 19
-h 16
+y 778
+w 18
+h 19
 font "helvetica-medium-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "X -"
@@ -659,15 +659,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
 x 89
-y 689
+y 797
 w 18
-h 16
+h 19
 font "helvetica-medium-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "Y -"
@@ -679,15 +679,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
 x 52
-y 708
-w 55
-h 16
+y 816
+w 56
+h 19
 font "helvetica-medium-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "Trigger -"
@@ -699,15 +699,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
 x 112
-y 689
-w 232
-h 16
+y 797
+w 233
+h 19
 font "helvetica-medium-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "plot next observation on change in y"
@@ -719,15 +719,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
 x 112
-y 709
-w 290
-h 16
+y 817
+w 291
+h 19
 font "helvetica-medium-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "plot next observation on change in trigger PV"
@@ -739,15 +739,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
 x 24
-y 739
-w 27
-h 16
+y 858
+w 28
+h 19
 font "helvetica-medium-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "Thk:"
@@ -759,15 +759,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
-x 47
-y 763
-w 88
-h 16
+x 39
+y 882
+w 87
+h 19
 font "helvetica-medium-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "line thickness"
@@ -779,15 +779,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
-x 24
-y 796
-w 130
-h 16
+x 174
+y 858
+w 132
+h 19
 font "helvetica-medium-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "Line Type (no label):"
@@ -799,15 +799,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
-x 44
-y 821
+x 187
+y 882
 w 30
-h 16
+h 19
 font "helvetica-medium-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "soild"
@@ -819,15 +819,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
-x 44
-y 839
+x 187
+y 901
 w 32
-h 16
+h 19
 font "helvetica-medium-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "dash"
@@ -839,15 +839,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
-x 24
-y 867
-w 49
-h 16
+x 361
+y 858
+w 53
+h 19
 font "helvetica-medium-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "Symbol:"
@@ -859,15 +859,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
-x 44
-y 892
+x 376
+y 882
 w 35
-h 16
+h 19
 font "helvetica-medium-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "circle"
@@ -879,15 +879,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
-x 44
-y 910
+x 376
+y 901
 w 45
-h 16
+h 19
 font "helvetica-medium-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "square"
@@ -899,15 +899,15 @@ endObjectProperties
 object activeXTextClass
 beginObjectProperties
 major 4
-minor 0
+minor 1
 release 0
-x 44
-y 930
-w 54
-h 16
+x 376
+y 921
+w 58
+h 19
 font "helvetica-medium-r-14.0"
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
+bgColor rgb 46517 46517 46517
 useDisplayBg
 value {
   "diamond"
@@ -919,16 +919,16 @@ endObjectProperties
 object relatedDisplayClass
 beginObjectProperties
 major 4
-minor 0
+minor 2
 release 0
 x 294
-y 382
+y 463
 w 101
 h 28
 fgColor rgb 0 0 0
-bgColor rgb 48059 48059 48059
-topShadowColor rgb 60652 60652 60652
-botShadowColor rgb 26985 26985 26985
+bgColor rgb 46517 46517 46517
+topShadowColor rgb 61423 61423 61423
+botShadowColor rgb 24929 24929 24929
 font "helvetica-bold-r-14.0"
 noEdit
 buttonLabel "more info..."
@@ -940,5 +940,66 @@ displayFileName {
 setPosition {
   0 "button"
 }
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 17
+y 675
+w 305
+h 19
+font "helvetica-medium-r-14.0"
+fgColor rgb 0 0 0
+bgColor rgb 46517 46517 46517
+useDisplayBg
+value {
+  "single point - plot one point (must be scalar pv)"
+}
+autoSize
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 24
+y 254
+w 15
+h 19
+font "helvetica-medium-r-14.0"
+fgColor rgb 0 0 0
+bgColor rgb 46517 46517 46517
+useDisplayBg
+value {
+  "N:"
+}
+autoSize
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 0
+x 47
+y 273
+w 384
+h 38
+font "helvetica-medium-r-14.0"
+fgColor rgb 0 0 0
+bgColor rgb 46517 46517 46517
+useDisplayBg
+value {
+  "pv which determines size of vector for x PV and y PV above"
+  "(if x and y are array PVs)"
+}
+autoSize
 endObjectProperties
 

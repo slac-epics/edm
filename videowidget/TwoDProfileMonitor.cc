@@ -11,22 +11,26 @@
 #define VIDEO_MAX_LOAD_FACTOR 4
 #define VIDEO_MAX_DATA_WIDTH 10000
 #define VIDEO_MAX_DATA_HEIGHT 10000
+#define VIDEO_NBITSPERPIXEL_DEFAULT 8
 #define VIDEO_MAJOR_VERSION 4
-#define VIDEO_MINOR_VERSION 0
+#define VIDEO_MINOR_VERSION 1
 #define VIDEO_RELEASE 1
 
 #include <time.h>
-#ifdef SOLARIS
-#include <iostream.h>
-#else
-#include <stream.h>
-#endif
+#include <iostream>
+
+//#ifdef SOLARIS
+//#include <iostream.h>
+//#else
+//#include <stream.h>
+//#endif
 
 #include <act_grf.h>
 #include <act_win.h>
 #include <app_pkg.h>
 #include <entry_form.h>
 #include <pv_factory.h>
+#include "edm.version"
 
 //#include "widget.h"
 #include "image.h"
@@ -49,6 +53,7 @@ class TwoDProfileMonitor : public activeGraphicClass
     int yBuf;
     int wBuf;
     int hBuf;
+    int nBitsPerPixelBuf;
     char dataPvBuf[activeGraphicClass::MAX_PV_NAME+1];
     char widthPvBuf[activeGraphicClass::MAX_PV_NAME+1];
     char heightPvBuf[activeGraphicClass::MAX_PV_NAME+1];
@@ -69,6 +74,7 @@ class TwoDProfileMonitor : public activeGraphicClass
     struct timeval lasttv;
     unsigned long average_time_usec;
     int opComplete;
+    int nBitsPerPixel;
 
     // widget-specific stuff
     //widgetData wd;
@@ -181,6 +187,29 @@ public:
     // execute mode widget functions
   
     virtual int deactivate ( int pass );
+
+    virtual int expandTemplate (int numMacros,
+                           char *macros[],
+                           char *expansions[] ) 
+    {
+
+        expStringClass tmpStr;
+
+        tmpStr.setRaw( dataPvStr.getRaw() );
+        tmpStr.expand1st( numMacros, macros, expansions );
+        dataPvStr.setRaw( tmpStr.getExpanded() );
+
+        tmpStr.setRaw( widthPvStr.getRaw() );
+        tmpStr.expand1st( numMacros, macros, expansions );
+        widthPvStr.setRaw( tmpStr.getExpanded() );
+
+        tmpStr.setRaw( heightPvStr.getRaw() );
+        tmpStr.expand1st( numMacros, macros, expansions );
+        heightPvStr.setRaw( tmpStr.getExpanded() );
+
+        return 1;
+    
+    }
   
     virtual int expand1st (int numMacros,
                            char *macros[],
@@ -448,7 +477,7 @@ public:
                                    : dataPv->get_dimension () / dataWidth),
                  (double *) dataPv->get_double_array() );
 		if ( img->validImage() ) {
-                  XPutImage( actWin->d, XtWindow(actWin->executeWidget),
+                  XPutImage( actWin->d, drawable(actWin->executeWidget),
                    actWin->executeGc.normGC(), img->ximage(),
 		   0, 0, x, y, w, h );
 		}
@@ -476,7 +505,7 @@ public:
                     temp );
 		   free (temp);
                    if ( img->validImage() ) {
-                     XPutImage( actWin->d, XtWindow(actWin->executeWidget),
+                     XPutImage( actWin->d, drawable(actWin->executeWidget),
                       actWin->executeGc.normGC(), img->ximage(),
                       0, 0, x, y, w, h );
 		   }
@@ -501,7 +530,7 @@ public:
                      temp );
                     free (temp);
                     if ( img->validImage() ) {
-                      XPutImage( actWin->d, XtWindow(actWin->executeWidget),
+                      XPutImage( actWin->d, drawable(actWin->executeWidget),
                        actWin->executeGc.normGC(), img->ximage(),
                        0, 0, x, y, w, h );
 		    }
@@ -555,6 +584,30 @@ public:
     virtual void getPvs (int max,
                          ProcessVariable *pvs[],
                          int *n ){ *n = 1; pvs[0] = dataPv;};
+
+    virtual char *getSearchString (
+      int i
+    ) {
+
+      if ( i == 0 ) {
+        return dataPvStr.getRaw();
+      }
+
+      return NULL;
+
+    }
+
+    virtual void replaceString (
+      int i,
+      int max,
+      char *string
+      ) {
+
+      if ( i == 0 ) {
+        dataPvStr.setRaw( string );
+      }
+
+    }
   
     // This is a funny interface. It seems that the idea is to have a generic
     // interface to all widgets with a "standard" set of parameters (e.g.
@@ -637,7 +690,7 @@ public:
   
     int read (TwoDProfileMonitor* mon,
               FILE *fptr,
-              int *x, int *y, int *w, int *h,
+              int *x, int *y, int *w, int *h, int *nBitsPerPixel,
               expStringClass *dataPvStr,
               expStringClass *widthPvStr,
               expStringClass *heightPvStr,
@@ -659,6 +712,7 @@ public:
         loadR ( "heightPvStr", heightPvStr, (char *) "" ); 
         loadR ( "dataWidth", dataWidth);
         loadR ( "pvBasedDataSize", pvBasedDataSize);
+        loadR ( "nBitsPerPixel", nBitsPerPixel );
         stat = readTags ( fptr, "endObjectProperties" );
         if (major > VIDEO_MAJOR_VERSION ||
             (major == VIDEO_MAJOR_VERSION && minor > VIDEO_MINOR_VERSION))
@@ -677,7 +731,7 @@ public:
         return stat;
     }
     int write (FILE *fptr,
-               int *x, int *y, int *w, int *h,
+               int *x, int *y, int *w, int *h, int *nBitsPerPixel,
                expStringClass *dataPvStr,
                expStringClass *widthPvStr,
                expStringClass *heightPvStr,
@@ -701,6 +755,7 @@ public:
         loadW ( "heightPvStr", heightPvStr, (char *) "" ); 
         loadW ( "dataWidth", dataWidth);
         loadW ( "pvBasedDataSize", pvBasedDataSize);
+        loadW ( "nBitsPerPixel", nBitsPerPixel );
         loadW ( "endObjectProperties" );
         loadW ( "" );
   
@@ -753,11 +808,27 @@ static int libRecIndex = 0;
 
 static libRecType libRec[] = 
 {
-    { "TwoDProfileMonitor", global_str2, "New Monitor" }
+    { "TwoDProfileMonitorClass", global_str2, "Hoff Video" }
 };
 
 extern "C" 
 {
+
+    char *version ( void ) {
+
+    static char *v = VERSION;
+
+      return v;
+
+    }
+
+    char *author ( void ) {
+
+    static char *a = "Lawrence T. Hoff (hoff@bnl.gov)";
+
+      return a;
+
+    }
 
     int firstRegRecord (char **className,
                         char **typeName,
@@ -838,6 +909,8 @@ TwoDProfileMonitor::TwoDProfileMonitor (void) : activeGraphicClass ()
 { 
   
     constructCommon ();
+    checkBaseClassVersion( activeGraphicClass::MAJOR_VERSION, name );
+
 }
 
 
@@ -858,7 +931,10 @@ TwoDProfileMonitor::TwoDProfileMonitor (const TwoDProfileMonitor &s)
     heightPvStr.setRaw (s.heightPvStr.rawString);
 
     pvBasedDataSize = s.pvBasedDataSize;
-    dataWidth = s.dataWidth; 
+    dataWidth = s.dataWidth;
+
+    doAccSubs( dataPvStr );
+
 }
 
 TwoDProfileMonitor::~TwoDProfileMonitor (void) {
@@ -885,7 +961,7 @@ int TwoDProfileMonitor::activate ( int pass,
         if ( !opComplete ) {
 	  _edmDebug();
           img = new imageClass( actWin->d, actWin->ci->getColorMap(),
-           actWin->executeGc.normGC(), w, h );
+           actWin->executeGc.normGC(), w, h, nBitsPerPixel );
           opComplete = 1;
         }
 
@@ -1079,6 +1155,7 @@ void TwoDProfileMonitor::editApply (Widget w,
     me->y = me->yBuf;
     me->w = me->wBuf;
     me->h = me->hBuf;
+    me->nBitsPerPixel = me->nBitsPerPixelBuf;
     me->sboxX = me->xBuf;
     me->sboxY = me->yBuf;
     me->sboxW = me->wBuf;
@@ -1153,11 +1230,13 @@ void TwoDProfileMonitor::editCommon ( activeWindowClass *actWin,
     yBuf = y;
     wBuf = w;
     hBuf = h;
+    nBitsPerPixelBuf = nBitsPerPixel;
 
     ef.addTextField ("X", 30, &xBuf);
     ef.addTextField ("Y", 30, &yBuf);
     ef.addTextField ("Widget Width", 30, &wBuf);
     ef.addTextField ("Widget Height", 30, &hBuf);
+    ef.addTextField ("Bits per pixel", 30, &nBitsPerPixelBuf);
     // copy out, we'll copy in during "Apply"
     strncpy (dataPvBuf, dataPvStr.getRaw (), sizeof (dataPvBuf) - 1);
     ef.addTextField ("Data PV", 30, dataPvBuf, sizeof (dataPvBuf) - 1);
@@ -1205,6 +1284,7 @@ int TwoDProfileMonitor::createInteractive (activeWindowClass *actWin,
     this->y = y;
     this->w = w;
     this->h = h;
+    this->nBitsPerPixel = VIDEO_NBITSPERPIXEL_DEFAULT;
 
     draw ();
   
@@ -1223,8 +1303,9 @@ int TwoDProfileMonitor::createFromFile (FILE *fptr,
     // use tag class and name to read from file
     TwoDProfileMonitorTags tag;
   
+    nBitsPerPixel = 8;  
     if ( !(1 & tag.read ( this,
-                          fptr, &x, &y, &w, &h, &dataPvStr,
+                          fptr, &x, &y, &w, &h, &nBitsPerPixel, &dataPvStr,
                           &widthPvStr, &heightPvStr,
                           &dataWidth, &pvBasedDataSize ) ) )
     {
@@ -1252,7 +1333,7 @@ int TwoDProfileMonitor::save ( FILE *fptr )
 {
     // use tag class to serialize data
     TwoDProfileMonitorTags tag;
-    return tag.write ( fptr, &x, &y, &w, &h, &dataPvStr,
+    return tag.write ( fptr, &x, &y, &w, &h, &nBitsPerPixel, &dataPvStr,
                        &widthPvStr, &heightPvStr,
                        &dataWidth, &pvBasedDataSize );
   
@@ -1294,7 +1375,7 @@ int TwoDProfileMonitor::drawActive (void)
 {
 
   if ( img->validImage() ) {
-    XPutImage( actWin->d, XtWindow(actWin->executeWidget),
+    XPutImage( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), img->ximage(),
      0, 0, x, y, w, h );
   }
@@ -1511,6 +1592,3 @@ void TwoDProfileMonitor::sizeUpdate (ProcessVariable *pv,
     me->actWin->appCtx->proc->unlock ();
 #endif
 }
-
-
-

@@ -345,6 +345,7 @@ activeArcClass::activeArcClass ( void ) {
 
   name = new char[strlen("activeArcClass")+1];
   strcpy( name, "activeArcClass" );
+  checkBaseClassVersion( activeGraphicClass::MAJOR_VERSION, name );
   visibility = 0;
   prevVisibility = -1;
   visInverted = 0;
@@ -426,6 +427,11 @@ activeGraphicClass *ago = (activeGraphicClass *) this;
   eBuf = NULL;
 
   setBlinkFunction( (void *) doBlink );
+
+  doAccSubs( alarmPvExpStr );
+  doAccSubs( visPvExpStr );
+  doAccSubs( minVisString, 39 );
+  doAccSubs( maxVisString, 39 );
 
 }
 
@@ -541,17 +547,36 @@ char title[32], *ptr;
   ef.addOption( activeArcClass_str14, activeArcClass_str15, &eBuf->bufLineStyle );
   ef.addColorButton( activeArcClass_str16, actWin->ci, &eBuf->lineCb, &eBuf->bufLineColor );
   ef.addToggle( activeArcClass_str17, &eBuf->bufLineColorMode );
+
   ef.addToggle( activeArcClass_str18, &eBuf->bufFill );
+  fillEntry = ef.getCurItem();
   ef.addOption( activeArcClass_str19, activeArcClass_str20, &eBuf->bufFillMode );
+  fillModeEntry = ef.getCurItem();
+  fillEntry->addDependency( fillModeEntry );
   ef.addColorButton( activeArcClass_str21, actWin->ci, &eBuf->fillCb, &eBuf->bufFillColor );
+  fillColorEntry = ef.getCurItem();
+  fillEntry->addDependency( fillColorEntry );
   ef.addToggle( activeArcClass_str22, &eBuf->bufFillColorMode );
+  fillAlarmSensEntry = ef.getCurItem();
+  fillEntry->addDependency( fillAlarmSensEntry );
+  fillEntry->addDependencyCallbacks();
+
   ef.addTextField( activeArcClass_str23, 30, eBuf->bufAlarmPvName,
    PV_Factory::MAX_PV_NAME );
+
   ef.addTextField( activeArcClass_str24, 30, eBuf->bufVisPvName,
    PV_Factory::MAX_PV_NAME );
+  invisPvEntry = ef.getCurItem();
   ef.addOption( " ", activeArcClass_str25, &eBuf->bufVisInverted );
+  visInvEntry = ef.getCurItem();
+  invisPvEntry->addDependency( visInvEntry );
   ef.addTextField( activeArcClass_str26, 30, eBuf->bufMinVisString, 39 );
+  minVisEntry = ef.getCurItem();
+  invisPvEntry->addDependency( minVisEntry );
   ef.addTextField( activeArcClass_str27, 30, eBuf->bufMaxVisString, 39 );
+  maxVisEntry = ef.getCurItem();
+  invisPvEntry->addDependency( maxVisEntry );
+  invisPvEntry->addDependencyCallbacks();
 
   return 1;
 
@@ -1173,7 +1198,7 @@ int blink = 0;
       actWin->executeGc.setFG( lineColor.getDisconnectedIndex(), &blink );
       actWin->executeGc.setLineWidth( 1 );
       actWin->executeGc.setLineStyle( LineSolid );
-      XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+      XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
        actWin->executeGc.normGC(), x, y, w, h );
       actWin->executeGc.restoreFg();
       needToEraseUnconnected = 1;
@@ -1183,7 +1208,7 @@ int blink = 0;
   else if ( needToEraseUnconnected ) {
     actWin->executeGc.setLineWidth( 1 );
     actWin->executeGc.setLineStyle( LineSolid );
-    XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.eraseGC(), x, y, w, h );
     needToEraseUnconnected = 0;
   }
@@ -1205,14 +1230,14 @@ int blink = 0;
     }
     //actWin->executeGc.setFG( fillColor.getColor() );
     actWin->executeGc.setFG( fillColor.getIndex(), &blink );
-    XFillArc( actWin->d, XtWindow(actWin->executeWidget),
+    XFillArc( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x, y, w, h, startAngle, totalAngle );
   }
 
   if ( lineVisibility ) {
     //actWin->executeGc.setFG( lineColor.getColor() );
     actWin->executeGc.setFG( lineColor.getIndex(), &blink );
-    XDrawArc( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawArc( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x, y, w, h, startAngle, totalAngle );
   }
 
@@ -1241,10 +1266,10 @@ int activeArcClass::eraseUnconditional ( void )
     actWin->executeGc.setArcModeChord();
   }
 
-  XDrawArc( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawArc( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.eraseGC(), x, y, w, h, startAngle, totalAngle );
 
-  XFillArc( actWin->d, XtWindow(actWin->executeWidget),
+  XFillArc( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.eraseGC(), x, y, w, h, startAngle, totalAngle );
 
   actWin->executeGc.setLineStyle( LineSolid );
@@ -1276,14 +1301,34 @@ int activeArcClass::eraseActive ( void )
     actWin->executeGc.setArcModeChord();
   }
 
-  XDrawArc( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawArc( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.eraseGC(), x, y, w, h, startAngle, totalAngle );
 
-  XFillArc( actWin->d, XtWindow(actWin->executeWidget),
+  XFillArc( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.eraseGC(), x, y, w, h, startAngle, totalAngle );
 
   actWin->executeGc.setLineStyle( LineSolid );
   actWin->executeGc.setLineWidth( 1 );
+
+  return 1;
+
+}
+
+int activeArcClass::expandTemplate (
+  int numMacros,
+  char *macros[],
+  char *expansions[] )
+{
+
+expStringClass tmpStr;
+
+  tmpStr.setRaw( alarmPvExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  alarmPvExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( visPvExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  visPvExpStr.setRaw( tmpStr.getExpanded() );
 
   return 1;
 
@@ -1898,7 +1943,7 @@ void activeArcClass::updateColors (
   double colorValue )
 {
 
-int index, change;
+int index, change=0;
 
   index = actWin->ci->evalRule( lineColor.pixelIndex(), colorValue );
 
@@ -1983,7 +2028,7 @@ int activeArcClass::flip (
   char direction ) // 'H' or 'V'
 {
 
-int stat;
+int stat = 1;
 double angle, totAngle, diff;
 
   if ( efStartAngle.isNull() ) {
@@ -2111,6 +2156,55 @@ void activeArcClass::getPvs (
   *n = 2;
   pvs[0] = alarmPvId;
   pvs[1] = visPvId;
+
+}
+
+char *activeArcClass::getSearchString (
+  int i
+) {
+
+  if ( i == 0 ) {
+    return alarmPvExpStr.getRaw();
+  }
+  else if ( i == 1 ) {
+    return visPvExpStr.getRaw();
+  }
+  else if ( i == 2 ) {
+    return minVisString;
+  }
+  else if ( i == 3 ) {
+    return maxVisString;
+  }
+  else {
+    return NULL;
+  }
+
+}
+
+void activeArcClass::replaceString (
+  int i,
+  int max,
+  char *string
+) {
+
+  if ( i == 0 ) {
+    alarmPvExpStr.setRaw( string );
+  }
+  else if ( i == 1 ) {
+    visPvExpStr.setRaw( string );
+  }
+  else if ( i == 2 ) {
+    int l = max;
+    if ( 39 < max ) l = 39;
+    strncpy( minVisString, string, l );
+    minVisString[l] = 0;
+  }
+  else if ( i == 3 ) {
+    int l = max;
+    if ( 39 < max ) l = 39;
+    strncpy( maxVisString, string, l );
+    maxVisString[l] = 0;
+  }
 
 }
 

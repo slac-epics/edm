@@ -6,13 +6,15 @@ ifdef EPICS_HOST_ARCH
 #====================================================================
 # Required by EDM on Solaris at SLAC
 #====================================================================
-PNG_LIB=/afs/slac/package/graphics/png/1.0.14/sun4x_57/lib
-PNG_INC=/afs/slac/package/graphics/png/1.0.14/common/include
+#PNG_LIB=/afs/slac/package/graphics/png/1.0.14/sun4x_57/lib
+#PNG_INC=/afs/slac/package/graphics/png/1.0.14/common/include
+PNG_LIB=/usr/lib
+PNG_INC=/usr/include
 
    SHARED_LIBRARIES = YES
 
    USR_CXXFLAGS_Linux += -DSINGLE_THREADED=1 -D__epics__=1
-   USR_CXXFLAGS_Darwin += -DSINGLE_THREADED=1 -D__epics__=1
+   USR_CXXFLAGS_Darwin += -DSINGLE_THREADED=1 -D__epics__=1 -Wno-long-long
    USR_CXXFLAGS_solaris +=  -D__solaris__ -DSINGLE_THREADED=1 -D__epics__=1
    USR_CXXFLAGS_hpux11_11_mt += -DHP_UX=1111 -DSINGLE_THREADED=1 -D__epics__=1
 
@@ -20,22 +22,21 @@ PNG_INC=/afs/slac/package/graphics/png/1.0.14/common/include
    USR_LIBS += EdmBase cfcaa62e-8199-11d3-a77f-00104b8742df
 
    USR_LIBS_Linux += Xm Xt Xp Xtst X11
-   USR_SYS_LIBS_Linux += pthread dl png
-   
+   USR_SYS_LIBS_Linux += pthread dl png z
+
    USR_LIBS_Darwin += Xm Xt Xp Xtst X11
-   USR_SYS_LIBS_Darwin += pthread dl png
+   USR_SYS_LIBS_Darwin += pthread dl png z
 
    USR_LIBS_solaris +=  Xm Xt Xmu X11 Xext
    USR_SYS_LIBS_solaris += pthread dl rt png z
 
    USR_LIBS_hpux11_11_mt = Xm Xt X11 Xext
-   USR_SYS_LIBS_hpux11_11_mt = pthread png
-   
-   
+   USR_SYS_LIBS_hpux11_11_mt = pthread png z
+
    LIBRARY = 57d79238-2924-420b-ba67-dfbecdf03fcd
 
    INSTALL_INCLUDE = $(INSTALL_LOCATION)/include/edm
-   USR_INCLUDES += -I../../util -I../../lib -I../../pvlib
+   USR_INCLUDES += -I../../util -I../../lib
 
    USR_INCLUDES += -I$(MOTIF_INC) -I$(X11_INC)
    USR_INCLUDES_solaris += -I$(PNG_INC)

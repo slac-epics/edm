@@ -18,6 +18,7 @@
 
 #include "reg_libEdmBase.str"
 #include "environment.str"
+#include "edm.version"
 
 typedef struct libRecTag {
   char *className;
@@ -38,7 +39,7 @@ static libRecType libRec[] = {
   { "activeMeterClass", global_str2, reg_str8 },
   { "activeBarClass", global_str2, reg_str9 },
   { "activeMessageBoxClass", global_str2, reg_str10 },
-  { "xyGraphClass", global_str2, "X-Y Graph" },
+  { "xyGraphClass", global_str2, reg_str30 },
   { "activeXTextDspClass", global_str5, reg_str24 },
   { "activeXTextDspClass:noedit", global_str2, reg_str12 },
   { "activeSliderClass", global_str5, reg_str13 },
@@ -55,16 +56,25 @@ static libRecType libRec[] = {
   { "shellCmdClass", global_str5, reg_str20 },
   { "pvInspectorClass", global_str2, reg_str26 },
   { "activeTableClass", global_str2, reg_str27 },
-  { "activeCoefTableClass", global_str2, reg_str29 }
+  { "activeCoefTableClass", global_str2, reg_str29 },
+  { "activeMpStrobeClass", global_str5, reg_str31 }
 };
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+char *version ( void ) {
+
+static char *v = VERSION;
+
+  return v;
+
+}
+
 char *author ( void ) {
 
-static char *a = "John Sinclair (sinclair@mail.phy.ornl.gov)";
+static char *a = "John Sinclair (sinclairjw@ornl.gov)";
 
   return a;
 

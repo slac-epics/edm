@@ -1,3 +1,4 @@
+
 //  edm - extensible display manager
 
 //  Copyright (C) 1999 John W. Sinclair
@@ -52,6 +53,7 @@
 #include "undo.h"
 #include "msg_dialog.h"
 #include "pv_action.h"
+#include "dimDialog.h"
 
 #include "tag_pkg.h"
 
@@ -59,12 +61,27 @@
 #include "thread.h"
 #include "avl.h"
 
+#define AWC_MAXTMPLPARAMS 30
+#define AWC_TMPLPARAMSIZE 35
+#define AWC_MAXTEMPLINFO 600
+
 #define AWC_MAJOR_VERSION 4
 #define AWC_MINOR_VERSION 0
 #define AWC_RELEASE 1
 
 #define AWC_EDIT 1
 #define AWC_EXECUTE 2
+
+#define AWC_BGPIXMAP_PER_ENV_VAR 0
+#define AWC_BGPIXMAP_NEVER 1
+#define AWC_BGPIXMAP_ALWAYS 2
+
+#define AWC_INIT 1000
+#define AWC_START_EXECUTE 1001
+#define AWC_COMPLETE_EXECUTE 1002
+#define AWC_START_DEACTIVATE 1003
+#define AWC_COMPLETE_DEACTIVATE 1004
+#define AWC_TERMINATED 1005
 
 #define AWC_POPUP_RAISE 101
 #define AWC_POPUP_LOWER 102
@@ -124,6 +141,11 @@
 #define AWC_POPUP_DUMP_PVLIST 156
 #define AWC_POPUP_OPEN_SELF 157
 #define AWC_POPUP_SHOW_MACROS 158
+#define AWC_POPUP_INSERT_TEMPLATE 159
+#define AWC_POPUP_TOGGLE_VIEW_DIMS 160
+#define AWC_POPUP_RECORD_DIMS 161
+#define AWC_POPUP_SET_PASTE_INDEX 162
+#define AWC_POPUP_SAR 163
 
 #define AWC_NONE_SELECTED 1
 #define AWC_ONE_SELECTED 2
@@ -181,6 +203,11 @@ static void awc_do_save_and_exit_cb (
   XtPointer call );
 
 static void awc_do_save_new_path_cb (
+  Widget w,
+  XtPointer client,
+  XtPointer call );
+
+static void awc_templateFileSelectOk_cb (
   Widget w,
   XtPointer client,
   XtPointer call );
@@ -260,6 +287,70 @@ static void awc_pvlistFileSelectKill_cb (
   XtPointer client,
   XtPointer call );
 
+static void awc_tedit_ok (
+  Widget w,
+  XtPointer client,
+  XtPointer call );
+
+static void awc_tedit_apply (
+  Widget w,
+  XtPointer client,
+  XtPointer call );
+
+static void awc_tedit_cancel (
+  Widget w,
+  XtPointer client,
+  XtPointer call );
+
+static int getCurReplaceIndex (
+  activeWindowClass *awo
+);
+
+static void awc_editReplace_ok (
+  Widget w,
+  XtPointer client,
+  XtPointer call );
+
+static void awc_editReplace_apply (
+  Widget w,
+  XtPointer client,
+  XtPointer call );
+
+static void awc_editReplace_cancel (
+  Widget w,
+  XtPointer client,
+  XtPointer call );
+
+static void awc_editSaR_ok (
+  Widget w,
+  XtPointer client,
+  XtPointer call );
+
+static void awc_editSaR_apply (
+  Widget w,
+  XtPointer client,
+  XtPointer call );
+
+static void awc_editSaR_cancel (
+  Widget w,
+  XtPointer client,
+  XtPointer call );
+
+static void awc_editSetAcc_ok (
+  Widget w,
+  XtPointer client,
+  XtPointer call );
+
+static void awc_editSetAcc_apply (
+  Widget w,
+  XtPointer client,
+  XtPointer call );
+
+static void awc_editSetAcc_cancel (
+  Widget w,
+  XtPointer client,
+  XtPointer call );
+
 static void awc_edit_ok (
   Widget w,
   XtPointer client,
@@ -271,6 +362,11 @@ static void awc_edit_apply (
   XtPointer call );
 
 static void awc_edit_cancel (
+  Widget w,
+  XtPointer client,
+  XtPointer call );
+
+static void awc_edit_ok1 (
   Widget w,
   XtPointer client,
   XtPointer call );
@@ -357,6 +453,7 @@ static void action_cb (
 
 class appContextClass;
 class activeGraphicClass;
+class dimDialogClass;
 
 typedef struct widgetAndPointerTag {
   Widget w;
@@ -423,11 +520,75 @@ typedef struct pvDefTag {
   ProcessVariable *id;
 } pvDefType, *pvDefPtr;
 
+typedef struct refPointTag {
+  char label[31+1];
+  int x;
+  int y;
+} refPointType, *refPointPtr;
+
+typedef struct refRectTag {
+  char label[31+1];
+  int x;
+  int y;
+  int w;
+  int h;
+} refRectType, *refRectPtr;
+
+typedef struct showDimBufTag {
+  int init;
+  int x;
+  int y;
+  double dist;
+  double theta;
+  double relTheta;
+  int objX;
+  int objY;
+  int objW;
+  int objH;
+  int objTopDist;
+  int objBotDist;
+  int objLeftDist;
+  int objRightDist;
+  int prev_x;
+  int prev_y;
+  double prev_dist;
+  double prev_theta;
+  double prev_relTheta;
+  int prev_objX;
+  int prev_objY;
+  int prev_objW;
+  int prev_objH;
+  int prev_objTopDist;
+  int prev_objBotDist;
+  int prev_objLeftDist;
+  int prev_objRightDist;
+} showDimBufType, *showDimBufPtr;
+
+static char stdEdlFileExt[63+1] = ".edl";
+static char defEdlFileExt[63+1] = ".edl";
+static char defEdlFileSearchMask[63+1] = "*.edl";
+
 class activeWindowClass {
 
 unknownTagList unknownTags;
 
 public:
+
+dimDialogClass *dimDialog;
+int viewDims;
+
+showDimBufType showDimBuf;
+int numRefPoints;
+refPointType refPoint[2];
+int recordedRefRect;
+int numRefRects;
+refRectType refRect[2];
+XtIntervalId showDimTimer;
+
+//static char stdEdlFileExt[63+1];
+
+
+int clearEpicsPvTypeDefault;
 
 static const int NUM_PER_PENDIO = 1000;
 
@@ -493,6 +654,11 @@ friend void awc_do_save_new_path_cb (
   XtPointer client,
   XtPointer call );
 
+friend void awc_templateFileSelectOk_cb (
+  Widget w,
+  XtPointer client,
+  XtPointer call );
+
 friend void awc_fileSelectOk_cb (
   Widget w,
   XtPointer client,
@@ -551,6 +717,70 @@ friend void awc_pvlistFaveFileSelectOk_cb (
 friend void *pv_poll_thread (
   THREAD_HANDLE h );
 
+friend void awc_tedit_ok (
+  Widget w,
+  XtPointer client,
+  XtPointer call );
+
+friend void awc_tedit_apply (
+  Widget w,
+  XtPointer client,
+  XtPointer call );
+
+friend void awc_tedit_cancel (
+  Widget w,
+  XtPointer client,
+  XtPointer call );
+
+friend int getCurReplaceIndex (
+  activeWindowClass *awo
+);
+
+friend void awc_editReplace_ok (
+  Widget w,
+  XtPointer client,
+  XtPointer call );
+
+friend void awc_editReplace_apply (
+  Widget w,
+  XtPointer client,
+  XtPointer call );
+
+friend void awc_editReplace_cancel (
+  Widget w,
+  XtPointer client,
+  XtPointer call );
+
+friend void awc_editSaR_ok (
+  Widget w,
+  XtPointer client,
+  XtPointer call );
+
+friend void awc_editSaR_apply (
+  Widget w,
+  XtPointer client,
+  XtPointer call );
+
+friend void awc_editSaR_cancel (
+  Widget w,
+  XtPointer client,
+  XtPointer call );
+
+friend void awc_editSetAcc_ok (
+  Widget w,
+  XtPointer client,
+  XtPointer call );
+
+friend void awc_editSetAcc_apply (
+  Widget w,
+  XtPointer client,
+  XtPointer call );
+
+friend void awc_editSetAcc_cancel (
+  Widget w,
+  XtPointer client,
+  XtPointer call );
+
 friend void awc_edit_ok (
   Widget w,
   XtPointer client,
@@ -562,6 +792,11 @@ friend void awc_edit_apply (
   XtPointer call );
 
 friend void awc_edit_cancel (
+  Widget w,
+  XtPointer client,
+  XtPointer call );
+
+friend void awc_edit_ok1 (
   Widget w,
   XtPointer client,
   XtPointer call );
@@ -684,6 +919,18 @@ char id[31+1], bufId[31+1];
 char title[127+1], bufTitle[127+1], restoreTitle[127+1];
 int showName;
 
+int accVal, bufAccVal;
+
+int efSaRW, efSaRH, efSaRLargestH;
+int sarCaseInsensivite, sarUseRegExpr;
+char *sar1, *sar2;
+activeGraphicListPtr sarCurSel;
+
+int efReplaceW, efReplaceH, efReplaceLargestH;
+char *replaceOld, *replaceNew;
+int curReplaceIndex;
+int seachStatus;
+
 cursorClass cursor;
 
 Widget drawWidget, executeWidget, fileSelectBox, schemeSelectBox,
@@ -724,10 +971,17 @@ int coordsShow;
 eventListPtr eventHead;
 eventListPtr limEventHead;
 pollListPtr pollHead;
-int mode; // AW_EDIT or AW_EXECUTE
+int mode; // AWC_EDIT or AWC_EXECUTE
+int windowState; // AWC_INIT, AWC_START_EXECUTE, AWC_COMPLETE_EXECUTE,
+                 // AWC_START_DEACTIVATE, AWC_COMPLETE_DEACTIVATE
 int waiting;
 int change;
 int exit_after_save;
+
+char paramValue[AWC_MAXTMPLPARAMS][AWC_TMPLPARAMSIZE+1];
+char bufParamValue[AWC_MAXTMPLPARAMS][AWC_TMPLPARAMSIZE+1];
+int bufNumParamValues, numParamValues;
+char templInfo[AWC_MAXTEMPLINFO+1], *bufTemplInfo;
 
 int list_array_size;
 activeGraphicListType *list_array;
@@ -743,6 +997,8 @@ Widget b1OneSelectPopup, b1ManySelectPopup, b1NoneSelectPopup,
  editCb1, editCbM, dragPopup, undoPb1, undoPb2, undoPb3, setSchemePd,
  setSchemeCb;
 
+int b2NoneSelectX;
+int b2NoneSelectY;
 int state;
 int savedState;
 int oldState;
@@ -764,7 +1020,11 @@ colorButtonClass fgCb;
 
 int bgColor, bufBgColor;
 colorButtonClass bgCb;
+int usePixmap;
 Pixmap bgPixmap;
+int pixmapW, pixmapH;
+int needCopy, needFullCopy;
+int pixmapX0, pixmapX1, pixmapY0, pixmapY1;
 
 int defaultTextFgColor, bufDefaultTextFgColor;
 colorButtonClass defaultTextFgCb;
@@ -828,7 +1088,7 @@ int allSelectedBtnFontTagFlag;
 int allSelectedBtnAlignment;
 int allSelectedBtnAlignmentFlag;
 
-entryFormClass ef;
+entryFormClass ef, *ef1, tef, efSetAcc, efSaR, efReplace;
 confirmDialogClass confirm, confirm1;
 
 int noRefresh;
@@ -854,6 +1114,10 @@ int numMacros;
 int actualNumMacros;
 char **macros;
 char **expansions;
+
+int numTemplateMacros;
+char **templateMacros;
+char **templateExpansions;
 
 int haveComments;
 char fileName[255+1], fileRev[31+1], fileNameAndRev[287+1], newPath[255+1];
@@ -905,15 +1169,85 @@ int loadFailure;
 
 int bufDisableScroll, disableScroll;
 
+int bufBgPixmapFlag, bgPixmapFlag; // 0=per env var, 1=never use, 2=always use
+
 pvActionClass *pvAction;
 
 int ctlKeyPressed;
+
+int invalidFile, invalidBgColor;
+
+int reloadRequestFlag;
+
+bool frozen;
 
 activeWindowClass ( void );
 
 ~activeWindowClass ( void );
 
+static char* stdExt ( void ) {
+
+  return stdEdlFileExt;
+
+}
+
+static char* defExt ( void ) {
+
+char *envPtr;
+static int init = 1;
+
+  if ( init ) {
+    init = 0;
+    envPtr = getenv( environment_str32 );
+    if ( envPtr ) {
+      strncpy( defEdlFileExt, envPtr, 62 );
+      defEdlFileExt[62] = 0;
+    }
+  }
+
+  return defEdlFileExt;
+
+}
+
+static char* defMask ( void ) {
+
+char *envPtr;
+static int init = 1;
+
+  if ( init ) {
+    init = 0;
+    envPtr = getenv( environment_str32 );
+    if ( envPtr ) {
+      strcpy( defEdlFileSearchMask, "*" );
+      Strncat( defEdlFileSearchMask, envPtr, 63 );
+      defEdlFileSearchMask[63] = 0;
+    }
+  }
+
+  return defEdlFileSearchMask;
+
+}
+
 int okToDeactivate ( void );
+
+void initCopy( void );
+
+void updateCopyRegion (
+  int _x0,
+  int _y0,
+  int _w,
+  int _h
+);
+
+void doCopy ( void );
+
+void doMinCopy ( void );
+
+Drawable drawable (
+  Widget w
+);
+
+int okToPreReexecute ( void );
 
 char *idName( void );
 
@@ -1140,6 +1474,20 @@ int old_load (
   int x,
   int y );
 
+int loadDummy (
+  int x,
+  int y,
+  int setPosition );
+
+int getTemplateMacros ( void );
+
+void deleteTemplateMacros ( void );
+
+int loadTemplate (
+  int x,
+  int y,
+  char *fname );
+
 int loadGeneric (
   int x,
   int y,
@@ -1253,6 +1601,12 @@ void discardCommentsAndVersion (
   int *_minor,
   int *_release );
 
+int loadWinDummy (
+  FILE *f,
+  int _x,
+  int _y,
+  int setPosition );
+
 int loadWinGeneric (
   FILE *f,
   int _x,
@@ -1338,7 +1692,7 @@ int remDefExeNode (
 /*  int remDefExeNode ( */
 /*    void **node ); */
 
-void processObjects ( void );
+int processObjects ( void );
 
 /* new new new */
 
@@ -1349,6 +1703,14 @@ void storeFileNameForSymbols (
   char *inName );
 
 FILE *openAny (
+  char *name,
+  char *mode );
+
+FILE *openAnyTemplate (
+  char *name,
+  char *mode );
+
+FILE *openAnyTemplateParam (
   char *name,
   char *mode );
 
@@ -1424,6 +1786,8 @@ void openExecuteSysFile (
 
 void reloadSelf ( void );
 
+void requestReload ( void );
+
 int isExecuteMode ( void );
 
 int xPos ( void );
@@ -1447,6 +1811,10 @@ int sameAncestorName (
 void reconfig ( void );
 
 void clip ( void );
+
+void freeze(bool);
+
+bool is_frozen(void);
 
 char endSignature[15+1];
 

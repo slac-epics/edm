@@ -386,6 +386,7 @@ archivePlotClass::archivePlotClass ( void ) {
 
   name = new char[strlen("2d80926b_bf54_4096_ab21_af7d725f15a2")+1];
   strcpy( name, "2d80926b_bf54_4096_ab21_af7d725f15a2" );
+  checkBaseClassVersion( activeGraphicClass::MAJOR_VERSION, name );
   activeMode = 0;
   connection.setMaxPvs( 12 );
   xMin = 0.0;
@@ -1029,9 +1030,9 @@ int clipStat;
 
   // bg
   actWin->executeGc.setFG( bgColor.pixelColor() );
-  XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+  XFillRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x, y, w, h );
-  XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x, y, w, h );
 
   actWin->executeGc.setFG( lineColor.getColor() );
@@ -1051,7 +1052,7 @@ int clipStat;
            ( _y0 <= 0xffff ) &&
            ( ixarray[i] <= 0xffff ) &&
            ( iyarray[i] <= 0xffff ) ) {
-        XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+        XDrawLine( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.normGC(), _x0, _y0,
          ixarray[i], iyarray[i] );
       }
@@ -1067,10 +1068,10 @@ int clipStat;
            ( _y0 <= 0xffff ) &&
            ( ixarray[i] <= 0xffff ) &&
            ( iyarray[i] <= 0xffff ) ) {
-        XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+        XDrawLine( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.normGC(), _x0, _y0,
          ixarray[i], _y0 );
-        XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+        XDrawLine( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.normGC(), ixarray[i], _y0,
          ixarray[i], iyarray[i] );
       }
@@ -1097,10 +1098,10 @@ int archivePlotClass::eraseActive ( void ) {
   actWin->executeGc.setLineWidth( 1 );
   actWin->executeGc.setLineStyle( LineSolid );
 
-  XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+  XFillRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.eraseGC(), x, y, w, h );
 
-  XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.eraseGC(), x, y, w, h );
 
   return 1;
@@ -1111,6 +1112,66 @@ void archivePlotClass::bufInvalidate ( void )
 {
 
   bufferInvalid = 1;
+
+}
+
+int archivePlotClass::expandTemplate (
+  int numMacros,
+  char *macros[],
+  char *expansions[] )
+{
+
+expStringClass tmpStr;
+
+  tmpStr.setRaw( xMinPvExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  xMinPvExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( xMaxPvExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  xMaxPvExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( xModePvExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  xModePvExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( yMinPvExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  yMinPvExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( yMaxPvExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  yMaxPvExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( yModePvExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  yModePvExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( colorPvExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  colorPvExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( filePvExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  filePvExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( updatePvExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  updatePvExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( archivePvExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  archivePvExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( startTimePvExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  startTimePvExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( endTimePvExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  endTimePvExpStr.setRaw( tmpStr.getExpanded() );
+
+  return 1;
 
 }
 
@@ -1822,7 +1883,7 @@ double dx0, dy0, dx1, dy1;
   actWin->executeGc.setLineWidth( 1 );
   actWin->executeGc.setLineStyle( LineSolid );
 
-  XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.xorGC(), x+xx0, y+h-yy1, xx1-xx0, yy1-yy0 );
 
   actWin->executeGc.restoreFg();
@@ -2001,7 +2062,7 @@ void archivePlotClass::btnDrag (
 
     // erase old
 
-    XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.xorGC(), x+xx0, y+h-yy1, xx1-xx0, yy1-yy0 );
 
   }
@@ -2030,7 +2091,7 @@ void archivePlotClass::btnDrag (
     yy1 = y0;
   }
 
-  XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.xorGC(), x+xx0, y+h-yy1, xx1-xx0, yy1-yy0 );
 
   actWin->executeGc.restoreFg();
@@ -2210,7 +2271,7 @@ double xRange;
         ix = x + (int) ( ( oldMarkerX - xMin ) / xRange * w );
         iy0 = y;
         iy1 = y + h;
-        XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+        XDrawLine( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.xorGC(), ix, iy0, ix, iy1 );
 
       }
@@ -2222,7 +2283,7 @@ double xRange;
       ix = x + (int) ( ( markerX - xMin ) / xRange * w );
       iy0 = y;
       iy1 = y + h;
-      XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+      XDrawLine( actWin->d, drawable(actWin->executeWidget),
        actWin->executeGc.xorGC(), ix, iy0, ix, iy1 );
 
       markerDrawn = 1;
@@ -2264,7 +2325,7 @@ double xRange;
 
         clipStat = actWin->executeGc.addXorXClipRectangle( xR );
 
-        XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+        XDrawLine( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.xorGC(), ix, iy0, ix, iy1 );
 
         if ( clipStat & 1 ) actWin->executeGc.removeXorXClipRectangle();

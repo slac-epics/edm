@@ -26,6 +26,7 @@
 #include <math.h>
 #include "app_pkg.h"
 #include "act_win.h"
+#include "lookup.h"
 
 #include "thread.h"
 #include "crc.h"
@@ -49,6 +50,362 @@ int i;
 
 }
 
+static void mon_pv (
+  ProcessVariable *pv,
+  void *userarg
+) {
+
+}
+
+static void update_pv (
+  ProcessVariable *pv,
+  void *userarg
+) {
+
+}
+
+static char *getPvValSync (
+  char *name
+) {
+
+
+// get pv value synchronously
+
+char *val = NULL;
+char buf[255+1];
+int len;
+ProcessVariable *pvId = NULL;
+
+  pvId = the_PV_Factory->create( name );
+  if ( pvId ) {
+
+    pvId->add_conn_state_callback( mon_pv, NULL );
+    pvId->add_value_callback( update_pv, NULL );
+    pend_io( 5.0 );
+    pend_event( 0.0001 );
+
+    if ( pvId->is_valid() ) {
+
+      if ( pvId->get_type().type == ProcessVariable::Type::real ) {
+        snprintf( buf, 255, "%-g", pvId->get_double() );
+        len = strlen( buf );
+      }
+      else if ( pvId->get_type().type == ProcessVariable::Type::integer ) {
+        snprintf( buf, 255, "%-d", pvId->get_int() );
+        len = strlen( buf );
+      }
+      else {
+        len = pvId->get_string( buf, 255 );
+        len = strlen( buf );
+      }
+
+      if ( len ) {
+        val = new char[len+1];
+        strncpy( val, buf, len );
+        val[len] = 0;
+      }
+
+    }
+
+    pvId->remove_value_callback( mon_pv, NULL );
+    pvId->remove_conn_state_callback( mon_pv, NULL );
+    pvId->release();
+    pvId = NULL;
+
+  }
+
+  return val;
+
+}
+
+static void showObjectDimensions (
+  XtPointer client,
+  XtIntervalId *id
+) {
+
+activeWindowClass *awo = (activeWindowClass *) client;
+activeGraphicListPtr cur;
+int doUpdate, distMode, x0, y0;
+
+  if ( !awo->dimDialog ) {
+    awo->dimDialog = new dimDialogClass;
+    awo->dimDialog->create( awo );
+  }
+
+  if ( awo->viewDims ) {
+    awo->dimDialog->popup();
+  }
+  else {
+    awo->dimDialog->popdown();
+    return;
+  }
+
+  awo->showDimBuf.objTopDist = 0;
+  awo->showDimBuf.objBotDist = 0;
+  awo->showDimBuf.objLeftDist = 0;
+  awo->showDimBuf.objRightDist = 0;
+
+  awo->numRefRects = 0;
+
+  cur = awo->selectedHead->selFlink;
+  if ( cur != awo->selectedHead ) { // use first selected object
+
+    awo->numRefRects = 1;
+    cur->node->getSelBoxDims( &(awo->refRect[0].x), &(awo->refRect[0].y),
+     &(awo->refRect[0].w), &(awo->refRect[0].h) );
+
+  }
+
+  if ( awo->numRefRects == 1 ) {
+
+    awo->showDimBuf.objX = awo->refRect[0].x;
+    awo->showDimBuf.objY = awo->refRect[0].y;
+    awo->showDimBuf.objW = awo->refRect[0].w;
+    awo->showDimBuf.objH = awo->refRect[0].h;
+
+    if ( awo->recordedRefRect ) {
+
+      distMode = awo->dimDialog->getDistMode();
+
+      switch ( distMode ) {
+      case 0:
+	x0 = awo->refRect[0].x;
+	y0 = awo->refRect[0].y;
+	break;
+      case 1:
+	x0 = awo->refRect[0].x + awo->refRect[0].w;
+	y0 = awo->refRect[0].y;
+	break;
+      case 2:
+	x0 = awo->refRect[0].x;
+	y0 = awo->refRect[0].y + awo->refRect[0].h;
+	break;
+      case 3:
+	x0 = awo->refRect[0].x + awo->refRect[0].w;
+	y0 = awo->refRect[0].y + awo->refRect[0].h;
+	break;
+      default:
+	x0 = awo->refRect[0].x;
+	y0 = awo->refRect[0].y;
+      }
+
+      awo->showDimBuf.objTopDist = awo->refRect[0].y - awo->refRect[1].y;
+      awo->showDimBuf.objBotDist = awo->refRect[0].y - awo->refRect[1].y -
+       awo->refRect[1].h;
+      awo->showDimBuf.objLeftDist = awo->refRect[0].x - awo->refRect[1].x;
+      awo->showDimBuf.objRightDist = awo->refRect[0].x - awo->refRect[1].x -
+       awo->refRect[1].w;
+
+      awo->showDimBuf.objTopDist = y0 - awo->refRect[1].y;
+      awo->showDimBuf.objBotDist = y0 - awo->refRect[1].y - awo->refRect[1].h;
+      awo->showDimBuf.objLeftDist = x0 - awo->refRect[1].x;
+      awo->showDimBuf.objRightDist = x0 - awo->refRect[1].x - awo->refRect[1].w;
+
+    }
+
+  }
+  else {
+
+    awo->showDimBuf.objX = 0;
+    awo->showDimBuf.objY = 0;
+    awo->showDimBuf.objW = 0;
+    awo->showDimBuf.objH = 0;
+
+  }
+
+  if ( ( awo->state != AWC_MOVING_POINT ) &&
+       ( awo->state != AWC_MOVING_CREATE_POINT ) &&
+       ( awo->state != AWC_CREATING_POINTS ) &&
+       ( awo->state != AWC_EDITING_POINTS ) ) {
+
+    awo->showDimBuf.dist = 0;
+    awo->showDimBuf.theta = 0;
+    awo->showDimBuf.relTheta = 0;
+
+  }
+
+  doUpdate = 0;
+
+  if ( awo->showDimBuf.init || ( awo->showDimBuf.x != awo->showDimBuf.prev_x ) ) {
+    awo->showDimBuf.prev_x = awo->showDimBuf.x;
+    doUpdate = 1;
+  }
+
+  if ( awo->showDimBuf.init || ( awo->showDimBuf.y != awo->showDimBuf.prev_y ) ) {
+    awo->showDimBuf.prev_y = awo->showDimBuf.y;
+    doUpdate = 1;
+  }
+
+  if ( awo->showDimBuf.init || ( awo->showDimBuf.dist != awo->showDimBuf.prev_dist ) ) {
+    awo->showDimBuf.prev_dist = awo->showDimBuf.dist;
+    doUpdate = 1;
+  }
+
+  if ( awo->showDimBuf.init || ( awo->showDimBuf.theta != awo->showDimBuf.prev_theta ) ) {
+    awo->showDimBuf.prev_theta = awo->showDimBuf.theta;
+    doUpdate = 1;
+  }
+
+  if ( awo->showDimBuf.init || ( awo->showDimBuf.relTheta != awo->showDimBuf.prev_relTheta ) ) {
+    awo->showDimBuf.prev_relTheta = awo->showDimBuf.relTheta;
+    doUpdate = 1;
+  }
+
+  if ( awo->showDimBuf.init || ( awo->showDimBuf.objX != awo->showDimBuf.prev_objX ) ) {
+    awo->showDimBuf.prev_objX = awo->showDimBuf.objX;
+    doUpdate = 1;
+  }
+
+  if ( awo->showDimBuf.init || ( awo->showDimBuf.objY != awo->showDimBuf.prev_objY ) ) {
+    awo->showDimBuf.prev_objY = awo->showDimBuf.objY;
+    doUpdate = 1;
+  }
+
+  if ( awo->showDimBuf.init || ( awo->showDimBuf.objW != awo->showDimBuf.prev_objW ) ) {
+    awo->showDimBuf.prev_objW = awo->showDimBuf.objW;
+    doUpdate = 1;
+  }
+
+  if ( awo->showDimBuf.init || ( awo->showDimBuf.objH != awo->showDimBuf.prev_objH ) ) {
+    awo->showDimBuf.prev_objH = awo->showDimBuf.objH;
+    doUpdate = 1;
+  }
+
+  if ( awo->showDimBuf.init ||
+       ( awo->showDimBuf.objTopDist != awo->showDimBuf.prev_objTopDist ) ) {
+    awo->showDimBuf.prev_objTopDist = awo->showDimBuf.objTopDist;
+    doUpdate = 1;
+  }
+
+  if ( awo->showDimBuf.init ||
+       ( awo->showDimBuf.objBotDist != awo->showDimBuf.prev_objBotDist ) ) {
+    awo->showDimBuf.prev_objBotDist = awo->showDimBuf.objBotDist;
+    doUpdate = 1;
+  }
+
+  if ( awo->showDimBuf.init ||
+       ( awo->showDimBuf.objLeftDist != awo->showDimBuf.prev_objLeftDist ) ) {
+    awo->showDimBuf.prev_objLeftDist = awo->showDimBuf.objLeftDist;
+    doUpdate = 1;
+  }
+
+  if ( awo->showDimBuf.init ||
+       ( awo->showDimBuf.objRightDist != awo->showDimBuf.prev_objRightDist ) ) {
+    awo->showDimBuf.prev_objRightDist = awo->showDimBuf.objRightDist;
+    doUpdate = 1;
+  }
+
+  awo->showDimBuf.init = 0;
+
+  if ( doUpdate ) {
+
+    awo->dimDialog->setX( awo->showDimBuf.x );
+    awo->dimDialog->setY( awo->showDimBuf.y );
+    awo->dimDialog->setLen( awo->showDimBuf.dist );
+    awo->dimDialog->setAngle( awo->showDimBuf.theta );
+    awo->dimDialog->setRelAngle( awo->showDimBuf.relTheta );
+    awo->dimDialog->setObjX( awo->showDimBuf.objX );
+    awo->dimDialog->setObjY( awo->showDimBuf.objY );
+    awo->dimDialog->setObjW( awo->showDimBuf.objW );
+    awo->dimDialog->setObjH( awo->showDimBuf.objH );
+    awo->dimDialog->setObjTopDist( awo->showDimBuf.objTopDist );
+    awo->dimDialog->setObjBotDist( awo->showDimBuf.objBotDist );
+    awo->dimDialog->setObjLeftDist( awo->showDimBuf.objLeftDist );
+    awo->dimDialog->setObjRightDist( awo->showDimBuf.objRightDist );
+
+  }
+
+  awo->showDimTimer = appAddTimeOut( awo->appCtx->appContext(),
+   250, showObjectDimensions, awo );
+
+}
+
+static void setPointDimensions (
+  activeWindowClass *awo,
+  int x,
+  int y
+) {
+
+double hyp1, theta1, hyp2, theta2, adiff;
+int xx, yy, ww, hh;
+
+  awo->showDimBuf.x = x;
+  awo->showDimBuf.y = y;
+
+  if ( awo->numRefPoints == 2 ) {
+
+    xx = awo->refPoint[0].x - awo->refPoint[1].x;
+    yy = awo->refPoint[1].y - awo->refPoint[0].y;
+    ww = abs( xx );
+    hh = abs( yy );
+    hyp1 =
+     sqrt( (double) xx * (double) xx +
+           (double) yy * (double) yy );
+    if ( fabs(hyp1) > 0.001 ) {
+      theta1 = asin ( (double) yy / hyp1 ) * 57.29578;
+      if ( awo->refPoint[0].x < awo->refPoint[1].x ) theta1 = 180 - theta1;
+      if ( theta1 < 0 ) {
+        theta1 = 360 + theta1;
+      }
+    }
+    else {
+      theta1 = 0;
+    }
+
+    xx = x - awo->refPoint[1].x;
+    yy = awo->refPoint[1].y - y;
+    ww = abs( xx );
+    hh = abs( yy );
+    hyp2 =
+     sqrt( (double) xx * (double) xx +
+           (double) yy * (double) yy );
+    if ( fabs(hyp2) > 0.001 ) {
+      theta2 = asin ( (double) yy / hyp2 ) * 57.29578;
+      if ( x < awo->refPoint[1].x ) theta2 = 180 - theta2;
+      if ( theta2 < 0 ) {
+        theta2 = 360 + theta2;
+      }
+    }
+    else {
+      theta2 = 0;
+    }
+
+    adiff = theta2 - theta1;
+    if ( adiff < 0 ) adiff = 360 + adiff;
+
+    awo->showDimBuf.dist = hyp2;
+    awo->showDimBuf.theta = theta2;
+    awo->showDimBuf.relTheta = adiff;
+
+  }
+  else if ( awo->numRefPoints == 1 ) {
+
+    xx = x - awo->refPoint[1].x;
+    yy = awo->refPoint[1].y - y;
+    ww = abs( xx );
+    hh = abs( yy );
+    hyp2 =
+     sqrt( (double) xx * (double) xx +
+           (double) yy * (double) yy );
+    if ( fabs(hyp2) > 0.001 ) {
+      theta2 = asin ( (double) yy / hyp2 ) * 57.29578;
+      if ( x < awo->refPoint[1].x ) theta2 = 180 - theta2;
+      if ( theta2 < 0 ) {
+        theta2 = 360 + theta2;
+      }
+    }
+    else {
+      theta2 = 0;
+    }
+
+    awo->showDimBuf.dist = hyp2;
+    awo->showDimBuf.theta = theta2;
+    awo->showDimBuf.relTheta = 0.0;
+
+  }
+
+}
+
 void printErrMsg (
   const char *fileName,
   int lineNum,
@@ -68,7 +425,7 @@ static void extractName(
   char *fileName, 
   char *name ) {
 
-int i, l;
+int i, l, more;
 char *gotOne;
 
   gotOne = strstr( fileName, "/" );
@@ -76,14 +433,25 @@ char *gotOne;
 
     strncpy( name, fileName, 255 );
 
-    // remove extension
+    // remove extension if .edl (default one)
     l = strlen( name );
 
-    for ( i=0; i<l; i++ ) {
+    more = 1;
+    for ( i=l-1; (i>=0) && more; i-- ) {
+
       if ( name[i] == '.' ) {
-        name[i] = 0;
-        return;
+
+	more = 0;
+
+        if ( l-i >= 4 ) {
+          //if ( strcmp( &name[i], ".edl" ) == 0 ) {
+          if ( strcmp( &name[i], activeWindowClass::defExt() ) == 0 ) {
+	    name[i] = 0;
+	  }
+	}
+
       }
+
     }
 
     return;
@@ -104,15 +472,26 @@ char *gotOne;
 
   }
 
-  // remove extension
+  // remove extension if .edl (default one)
   l = strlen( name );
 
-  for ( i=0; i<l; i++ ) {
-    if ( name[i] == '.' ) {
-      name[i] = 0;
-      return;
+    more = 1;
+    for ( i=l-1; (i>=0) && more; i-- ) {
+
+      if ( name[i] == '.' ) {
+
+	more = 0;
+
+        if ( l-i >= 3 ) {
+          //if ( strcmp( &name[i], ".edl" ) == 0 ) {
+          if ( strcmp( &name[i], activeWindowClass::defExt() ) == 0 ) {
+	    name[i] = 0;
+	  }
+	}
+
+      }
+
     }
-  }
 
 }
 
@@ -495,6 +874,456 @@ activeWindowClass *awo = (activeWindowClass *) client;
 
 }
 
+static void awc_tedit_apply (
+  Widget w,
+  XtPointer client,
+  XtPointer call )
+{
+
+activeWindowClass *awo = (activeWindowClass *) client;
+
+}
+
+static void awc_tedit_ok (
+  Widget w,
+  XtPointer client,
+  XtPointer call )
+{
+
+activeWindowClass *awo = (activeWindowClass *) client;
+int num_selected;
+activeGraphicListPtr curSel;
+
+  awc_tedit_apply( w, client, call );
+  awo->tef.popdown();
+
+  awo->loadTemplate( awo->b2NoneSelectX, awo->b2NoneSelectY,
+   awo->fileNameForSym );
+
+  awo->operationComplete();
+  awo->deleteTemplateMacros();
+
+  // determine new state
+  num_selected = 0;
+
+  curSel = awo->selectedHead->selFlink;
+  while ( ( curSel != awo->selectedHead ) &&
+          ( num_selected < 2 ) ) {
+
+    num_selected++;
+    curSel = curSel->selFlink;
+
+  }
+
+  if ( num_selected == 0 ) {
+    awo->state = AWC_NONE_SELECTED;
+    awo->updateMasterSelection();
+  }
+  else if ( num_selected == 1 ) {
+    awo->state = AWC_ONE_SELECTED;
+    awo->useFirstSelectedAsReference = 1;
+    awo->updateMasterSelection();
+  }
+  else {
+    awo->state = AWC_MANY_SELECTED;
+    awo->updateMasterSelection();
+  }
+
+  awo->clear();
+  awo->refresh();
+
+}
+
+static void awc_tedit_cancel (
+  Widget w,
+  XtPointer client,
+  XtPointer call )
+{
+
+activeWindowClass *awo = (activeWindowClass *) client;
+
+  awo->tef.popdown();
+  awo->deleteTemplateMacros();
+  awo->operationComplete();
+
+}
+
+static int getCurReplaceIndex (
+  activeWindowClass *awo
+) {
+
+bool more = true;
+bool found = false;
+int status;
+
+  do {
+
+    if ( awo->sarCurSel != awo->selectedHead ) {
+
+      (awo->curReplaceIndex)++;
+
+      char *str = awo->sarCurSel->node->getSearchString(
+       awo->curReplaceIndex );
+
+      if ( !str ) {
+
+        awo->curReplaceIndex = -1;
+        awo->sarCurSel = awo->sarCurSel->selFlink;
+
+      }
+      else if ( !blank(str) ) {
+
+        //fprintf( stderr, "index = %-d, got [%s]\n", awo->curReplaceIndex, str );
+        if ( awo->replaceOld ) {
+          strncpy( awo->replaceOld, str, 10000 );
+          awo->replaceOld[10000] = 0;
+	}
+
+        status = doSearchReplace( awo->sarCaseInsensivite, awo->sarUseRegExpr,
+         awo->sar1, awo->sar2, 10000, awo->replaceOld, awo->replaceNew );
+
+        if ( status == 0 ) {
+	  found = true;
+          more = false;
+	}
+
+      }
+
+    }
+    else {
+
+      more = false;
+
+    }
+
+  } while ( more );
+
+  if ( found ) {
+    return 0;
+  }
+
+  return -1;
+
+}
+
+static void awc_editReplace_apply ( // this is used as a skip action
+  Widget w,
+  XtPointer client,
+  XtPointer call ) {
+
+activeWindowClass *awo = (activeWindowClass *) client;
+
+  awo->efReplace.popdown();
+
+  awo->seachStatus = getCurReplaceIndex( awo );
+
+  if ( !awo->seachStatus ) {
+
+    awo->efReplaceW = 300;
+    awo->efReplaceH = 300;
+    awo->efReplaceLargestH = 300;
+
+    awo->efReplace.create( awo->top, awo->appCtx->ci.getColorMap(),
+     &awo->appCtx->entryFormX,
+     &awo->appCtx->entryFormY, &awo->efReplaceW, &awo->efReplaceH,
+     &awo->efReplaceLargestH, activeWindowClass_str227,
+     NULL, NULL, NULL );
+
+    awo->efReplace.addTextField( (char *) activeWindowClass_str225, 45, awo->sar1, 255 );
+    //Widget curw = (awo->efReplace.getCurItem())->activeW;
+    //XtVaSetValues( curw, XmNsensitive, False, 0, NULL );
+    awo->efReplace.addTextField( (char *) activeWindowClass_str226, 45, awo->sar2, 255 );
+    //curw = (awo->efReplace.getCurItem())->activeW;
+    //XtVaSetValues( curw, XmNsensitive, False, 0, NULL );
+    awo->efReplace.addTextField( (char *) activeWindowClass_str228, 45, awo->replaceOld, 255 );
+    //curw = (awo->efReplace.getCurItem())->activeW;
+    //XtVaSetValues( curw, XmNsensitive, False, 0, NULL );
+    awo->efReplace.addTextField( (char *) activeWindowClass_str229, 45, awo->replaceNew, 255 );
+    awo->efReplace.finished( awc_editReplace_ok,
+     awc_editReplace_apply,
+     awc_editReplace_cancel, awo );
+    XmString str = XmStringCreateLocalized( activeWindowClass_str231 ); // Skip
+    Widget apply = awo->efReplace.getApplyWidget();
+    XtVaSetValues( apply, XmNlabelString, str, 0, NULL );
+    XmStringFree( str );
+
+    awo->efReplace.popup();
+
+  }
+  else {
+
+    awo->operationComplete();
+    awo->clear();
+    awo->refresh();
+
+  }
+
+}
+
+static void awc_editReplace_ok (
+  Widget w,
+  XtPointer client,
+  XtPointer call ) {
+
+activeWindowClass *awo = (activeWindowClass *) client;
+
+  awo->efReplace.popdown();
+
+  if ( awo->sarCurSel->node ) {
+    enableAccumulator();
+    doAccSubs( awo->replaceNew, 10000 );
+    incAccumulator();
+    disableAccumulator();
+    //fprintf( stderr, "set index %-d to [%s]\n", awo->curReplaceIndex, awo->replaceNew );
+    awo->sarCurSel->node->replaceString( awo->curReplaceIndex, 10000, awo->replaceNew );
+    awo->clear();
+    awo->refresh();
+    awo->setChanged();
+  }
+
+  awo->seachStatus = getCurReplaceIndex( awo );
+
+  if ( !awo->seachStatus ) {
+
+    awo->efReplaceW = 300;
+    awo->efReplaceH = 300;
+    awo->efReplaceLargestH = 300;
+
+    awo->efReplace.create( awo->top, awo->appCtx->ci.getColorMap(),
+     &awo->appCtx->entryFormX,
+     &awo->appCtx->entryFormY, &awo->efReplaceW, &awo->efReplaceH,
+     &awo->efReplaceLargestH, activeWindowClass_str227,
+     NULL, NULL, NULL );
+
+    awo->efReplace.addTextField( (char *) activeWindowClass_str225, 45, awo->sar1, 255 );
+    //Widget curw = (awo->efReplace.getCurItem())->activeW;
+    //XtVaSetValues( curw, XmNsensitive, False, 0, NULL );
+    awo->efReplace.addTextField( (char *) activeWindowClass_str226, 45, awo->sar2, 255 );
+    //curw = (awo->efReplace.getCurItem())->activeW;
+    //XtVaSetValues( curw, XmNsensitive, False, 0, NULL );
+    awo->efReplace.addTextField( (char *) activeWindowClass_str228, 45, awo->replaceOld, 255 );
+    //curw = (awo->efReplace.getCurItem())->activeW;
+    //XtVaSetValues( curw, XmNsensitive, False, 0, NULL );
+    awo->efReplace.addTextField( (char *) activeWindowClass_str229, 45, awo->replaceNew, 255 );
+    awo->efReplace.finished( awc_editReplace_ok,
+     awc_editReplace_apply,
+     awc_editReplace_cancel, awo );
+    XmString str = XmStringCreateLocalized( activeWindowClass_str231 ); // Skip
+    Widget apply = awo->efReplace.getApplyWidget();
+    XtVaSetValues( apply, XmNlabelString, str, 0, NULL );
+    XmStringFree( str );
+
+    awo->efReplace.popup();
+
+  }
+  else {
+
+    awo->operationComplete();
+    awo->clear();
+    awo->refresh();
+
+  }
+
+}
+
+static void awc_editReplace_cancel (
+  Widget w,
+  XtPointer client,
+  XtPointer call ) {
+
+activeWindowClass *awo = (activeWindowClass *) client;
+
+  awo->efReplace.popdown();
+
+  awo->operationComplete();
+  awo->clear();
+  awo->refresh();
+
+}
+
+static void awc_editSaR_apply ( // used as replace all action
+  Widget w,
+  XtPointer client,
+  XtPointer call )
+{
+
+activeWindowClass *awo = (activeWindowClass *) client;
+
+  awo->efSaR.popdown();
+
+  awo->curReplaceIndex = -1;
+  if ( !awo->replaceOld ) {
+    awo->replaceOld = new char[10000+1];
+    strcpy( awo->replaceOld, "" );
+  }
+  if ( !awo->replaceNew ) {
+    awo->replaceNew = new char[10000+1];
+    strcpy( awo->replaceNew, "" );
+  }
+
+  awo->seachStatus = getCurReplaceIndex( awo );
+
+  if ( awo->seachStatus ) { // no match
+
+    awo->efReplaceW = 300;
+    awo->efReplaceH = 300;
+    awo->efReplaceLargestH = 300;
+
+    awo->efReplace.create( awo->top, awo->appCtx->ci.getColorMap(),
+     &awo->appCtx->entryFormX,
+     &awo->appCtx->entryFormY, &awo->efReplaceW, &awo->efReplaceH,
+     &awo->efReplaceLargestH, activeWindowClass_str227,
+     NULL, NULL, NULL );
+
+      awo->efReplace.addLabel( activeWindowClass_str230 );
+      awo->efReplace.finished( awc_editReplace_ok, awo );
+
+    awo->efReplace.popup();
+
+  }
+  else {
+
+    enableAccumulator();
+
+    do {
+
+      if ( awo->sarCurSel->node ) {
+        doAccSubs( awo->replaceNew, 10000 );
+        //fprintf( stderr, "set index %-d to [%s]\n", awo->curReplaceIndex, awo->replaceNew );
+        awo->sarCurSel->node->replaceString( awo->curReplaceIndex, 10000, awo->replaceNew );
+        awo->setChanged();
+      }
+
+      awo->seachStatus = getCurReplaceIndex( awo );
+
+      incAccumulator();
+
+    } while ( !awo->seachStatus );
+
+    disableAccumulator();
+
+    awo->clear();
+    awo->refresh();
+    awo->setChanged();
+    awo->operationComplete();
+
+  }
+
+}
+
+static void awc_editSaR_ok (
+  Widget w,
+  XtPointer client,
+  XtPointer call )
+{
+
+activeWindowClass *awo = (activeWindowClass *) client;
+
+  awo->efSaR.popdown();
+
+  awo->curReplaceIndex = -1;
+  if ( !awo->replaceOld ) {
+    awo->replaceOld = new char[10000+1];
+    strcpy( awo->replaceOld, "" );
+  }
+  if ( !awo->replaceNew ) {
+    awo->replaceNew = new char[10000+1];
+    strcpy( awo->replaceNew, "" );
+  }
+
+  awo->seachStatus = getCurReplaceIndex( awo );
+
+  awo->efReplaceW = 300;
+  awo->efReplaceH = 300;
+  awo->efReplaceLargestH = 300;
+
+  awo->efReplace.create( awo->top, awo->appCtx->ci.getColorMap(),
+   &awo->appCtx->entryFormX,
+   &awo->appCtx->entryFormY, &awo->efReplaceW, &awo->efReplaceH,
+   &awo->efReplaceLargestH, activeWindowClass_str227,
+   NULL, NULL, NULL );
+
+  if ( awo->seachStatus ) {
+    awo->efReplace.addLabel( activeWindowClass_str230 );
+    awo->efReplace.finished( awc_editReplace_ok, awo );
+  }
+  else {
+    awo->efReplace.addTextField( (char *) activeWindowClass_str225, 45, awo->sar1, 255 );
+    //Widget curw = (awo->efReplace.getCurItem())->activeW;
+    //XtVaSetValues( curw, XmNsensitive, False, 0, NULL );
+    awo->efReplace.addTextField( (char *) activeWindowClass_str226, 45, awo->sar2, 255 );
+    //curw = (awo->efReplace.getCurItem())->activeW;
+    //XtVaSetValues( curw, XmNsensitive, False, 0, NULL );
+    awo->efReplace.addTextField( (char *) activeWindowClass_str228, 45, awo->replaceOld, 255 );
+    //curw = (awo->efReplace.getCurItem())->activeW;
+    //XtVaSetValues( curw, XmNsensitive, False, 0, NULL );
+    awo->efReplace.addTextField( (char *) activeWindowClass_str229, 45, awo->replaceNew, 255 );
+    awo->efReplace.finished( awc_editReplace_ok,
+     awc_editReplace_apply,
+     awc_editReplace_cancel, awo );
+    XmString str = XmStringCreateLocalized( activeWindowClass_str231 );
+    Widget apply = awo->efReplace.getApplyWidget();
+    XtVaSetValues( apply, XmNlabelString, str, 0, NULL );
+    XmStringFree( str );
+  }
+
+  awo->efReplace.popup();
+
+}
+
+static void awc_editSaR_cancel (
+  Widget w,
+  XtPointer client,
+  XtPointer call )
+{
+
+activeWindowClass *awo = (activeWindowClass *) client;
+
+  awo->efSaR.popdown();
+  awo->operationComplete();
+
+}
+
+static void awc_editSetAcc_apply (
+  Widget w,
+  XtPointer client,
+  XtPointer call )
+{
+
+activeWindowClass *awo = (activeWindowClass *) client;
+
+  awo->accVal = awo->bufAccVal;
+  setAccumulator( awo->accVal );
+
+}
+
+static void awc_editSetAcc_ok (
+  Widget w,
+  XtPointer client,
+  XtPointer call )
+{
+
+activeWindowClass *awo = (activeWindowClass *) client;
+
+  awc_editSetAcc_apply( w, client, call );
+  awo->efSetAcc.popdown();
+  awo->operationComplete();
+
+}
+
+static void awc_editSetAcc_cancel (
+  Widget w,
+  XtPointer client,
+  XtPointer call )
+{
+
+activeWindowClass *awo = (activeWindowClass *) client;
+
+  awo->efSetAcc.popdown();
+  awo->operationComplete();
+
+}
+
 static void awc_edit_apply (
   Widget w,
   XtPointer client,
@@ -503,7 +1332,7 @@ static void awc_edit_apply (
 
 activeWindowClass *awo = (activeWindowClass *) client;
 
-int n;
+int i, n;
 Arg args[4];
 
   strncpy( awo->defaultFontTag, awo->defaultFm.currentFontTag(), 127 );
@@ -544,6 +1373,12 @@ Arg args[4];
   strncpy( awo->defaultPvType, awo->bufDefaultPvType, 15 );
 
   awo->gridSpacing = awo->bufGridSpacing;
+
+  strcpy( awo->templInfo, awo->bufTemplInfo );
+
+  for ( i=0; i<AWC_MAXTMPLPARAMS; i++ ) {
+    strcpy( awo->paramValue[i], awo->bufParamValue[i] );
+  }
 
 #ifndef ADD_SCROLLED_WIN
   n = 0;
@@ -608,6 +1443,8 @@ Arg args[4];
   awo->disableScroll = 0;
 #endif
 
+  awo->bgPixmapFlag = awo->bufBgPixmapFlag;
+
   awo->activateCallbackFlag = awo->bufActivateCallbackFlag;
   awo->deactivateCallbackFlag = awo->bufDeactivateCallbackFlag;
 
@@ -643,6 +1480,18 @@ activeWindowClass *awo = (activeWindowClass *) client;
   awo->refresh();
   awo->ef.popdown();
   awo->operationComplete();
+
+}
+
+static void awc_edit_ok1 (
+  Widget w,
+  XtPointer client,
+  XtPointer call )
+{
+
+activeWindowClass *awo = (activeWindowClass *) client;
+
+  awo->ef1->popdownNoDestroy();
 
 }
 
@@ -895,6 +1744,119 @@ activeWindowClass *awo = (activeWindowClass *) client;
   awo->refresh();
   awo->ef.popdown();
   awo->operationComplete();
+
+}
+
+static void awc_templateFileSelectOk_cb (
+  Widget w,
+  XtPointer client,
+  XtPointer call )
+{
+
+char *fName;
+activeWindowClass *awo = (activeWindowClass *) client;
+XmFileSelectionBoxCallbackStruct *cbs =
+ (XmFileSelectionBoxCallbackStruct *) call;
+int i, stat, num_selected;
+activeGraphicListPtr curSel;
+
+  if ( !XmStringGetLtoR( cbs->value, XmFONTLIST_DEFAULT_TAG, &fName ) ) {
+    goto done;
+  }
+
+  if ( !*fName ) {
+    XtFree( fName );
+    goto done;
+  }
+
+  strncpy( awo->fileNameForSym, fName, 255 );
+  awo->fileNameForSym[255] = 0;
+
+  awo->numTemplateMacros = 0;
+  awo->templateMacros = NULL;
+  awo->templateExpansions = NULL;
+
+  stat = awo->getTemplateMacros();
+  if ( !( stat & 1 ) ) {
+    awo->operationComplete();
+    goto done;
+  }
+
+  if ( awo->numTemplateMacros > 0 ) {
+
+    awo->tef.create( awo->top, awo->appCtx->ci.getColorMap(),
+     &awo->appCtx->entryFormX,
+     &awo->appCtx->entryFormY, &awo->appCtx->entryFormW,
+     &awo->appCtx->entryFormH, &awo->appCtx->largestH,
+     activeWindowClass_str216, NULL, NULL, NULL );
+
+    if ( !(awo->bufTemplInfo) ) {
+      awo->bufTemplInfo = new char[AWC_MAXTEMPLINFO+1];
+    }
+    awo->tef.addReadonlyTextBox( "Info", 32, 10, awo->bufTemplInfo,
+     AWC_MAXTEMPLINFO );
+
+    awo->tef.addLabel( " " );
+    awo->tef.addSeparator();
+    awo->tef.addLabel( " " );
+
+    for ( i=0; i<awo->numTemplateMacros; i++ ) {
+      awo->tef.addTextField( awo->templateMacros[i],
+       35, awo->templateExpansions[i], AWC_TMPLPARAMSIZE );
+    }
+
+    awo->tef.finished( awc_tedit_ok, awc_tedit_apply, awc_tedit_cancel, awo );
+    awo->tef.popup();
+
+  }
+  else {
+
+    awo->loadTemplate( awo->b2NoneSelectX, awo->b2NoneSelectY,
+     awo->fileNameForSym );
+
+    awo->operationComplete();
+    awo->deleteTemplateMacros();
+
+    // determine new state
+    num_selected = 0;
+
+    curSel = awo->selectedHead->selFlink;
+    while ( ( curSel != awo->selectedHead ) &&
+            ( num_selected < 2 ) ) {
+
+      num_selected++;
+      curSel = curSel->selFlink;
+
+    }
+
+    if ( num_selected == 0 ) {
+      awo->state = AWC_NONE_SELECTED;
+      awo->updateMasterSelection();
+    }
+    else if ( num_selected == 1 ) {
+      awo->state = AWC_ONE_SELECTED;
+      awo->useFirstSelectedAsReference = 1;
+      awo->updateMasterSelection();
+    }
+    else {
+      awo->state = AWC_MANY_SELECTED;
+      awo->updateMasterSelection();
+    }
+
+    awo->clear();
+    awo->refresh();
+
+  }
+
+done:
+
+  XtRemoveCallback( w, XmNcancelCallback,
+   awc_fileSelectCancel_cb, (void *) awo );
+  XtRemoveCallback( w, XmNokCallback,
+   awc_templateFileSelectOk_cb, (void *) awo );
+
+  XtUnmanageChild( w ); // it's ok to unmanage a child again
+  XtDestroyWidget( w );
 
 }
 
@@ -2105,6 +3067,1033 @@ int deltaY, botmost, stat;
 
 }
 
+static void alignSizeBoth (
+  activeWindowClass *awo )
+{
+
+activeGraphicListPtr cur, curSel, topmostNode;
+int topmost, width, height, stat;
+
+  awo->undoObj.startNewUndoList( activeWindowClass_str173 );
+  cur = awo->selectedHead->selFlink;
+  while ( cur != awo->selectedHead ) {
+    stat = cur->node->addUndoResizeNode( &(awo->undoObj) );
+    cur = cur->selFlink;
+  }
+
+  awo->setChanged();
+
+  if ( awo->useFirstSelectedAsReference ) {
+
+    // use the first selected node as the width & height value
+
+    curSel = awo->selectedHead->selFlink;
+    topmostNode = curSel;
+
+  }
+  else {
+
+    // use the topmost node as the width & height value
+
+    curSel = awo->selectedHead->selFlink;
+    topmost = curSel->node->getY0();
+    topmostNode = curSel;
+    while ( curSel != awo->selectedHead ) {
+
+      if ( curSel->node->getY0() < topmost ) {
+        topmost = curSel->node->getY0();
+        topmostNode = curSel;
+      }
+
+      curSel = curSel->selFlink;
+
+    }
+
+  }
+
+  width = topmostNode->node->getW();
+  height = topmostNode->node->getH();
+
+  curSel = awo->selectedHead->selFlink;
+  while ( curSel != awo->selectedHead ) {
+
+    curSel->node->eraseSelectBoxCorners();
+    curSel->node->erase();
+
+    curSel->node->resizeAbs( -1, -1, width, height );
+    curSel->node->resizeSelectBoxAbs( -1, -1, width, height );
+
+    curSel = curSel->selFlink;
+
+  }
+
+  awo->refresh();
+
+}
+
+
+
+
+static void alignSizeWidth (
+  activeWindowClass *awo )
+{
+
+activeGraphicListPtr cur, curSel, topmostNode;
+int topmost, width, stat;
+
+  awo->undoObj.startNewUndoList( activeWindowClass_str173 );
+  cur = awo->selectedHead->selFlink;
+  while ( cur != awo->selectedHead ) {
+    stat = cur->node->addUndoResizeNode( &(awo->undoObj) );
+    cur = cur->selFlink;
+  }
+
+  awo->setChanged();
+
+  if ( awo->useFirstSelectedAsReference ) {
+
+    // use the first selected node as the width value
+
+    curSel = awo->selectedHead->selFlink;
+    topmostNode = curSel;
+
+  }
+  else {
+
+    // use the topmost node as the width value
+
+    curSel = awo->selectedHead->selFlink;
+    topmost = curSel->node->getY0();
+    topmostNode = curSel;
+    while ( curSel != awo->selectedHead ) {
+
+      if ( curSel->node->getY0() < topmost ) {
+        topmost = curSel->node->getY0();
+        topmostNode = curSel;
+      }
+
+      curSel = curSel->selFlink;
+
+    }
+
+  }
+
+  width = topmostNode->node->getW();
+
+  curSel = awo->selectedHead->selFlink;
+  while ( curSel != awo->selectedHead ) {
+
+    curSel->node->eraseSelectBoxCorners();
+    curSel->node->erase();
+
+    curSel->node->resizeAbs( -1, -1, width, -1 );
+    curSel->node->resizeSelectBoxAbs( -1, -1, width, -1 );
+
+    curSel = curSel->selFlink;
+
+  }
+
+  awo->refresh();
+
+}
+
+
+
+
+
+
+static void alignSizeHeight (
+  activeWindowClass *awo )
+{
+
+activeGraphicListPtr cur, curSel, leftmostNode;
+int leftmost, height, stat;
+
+  awo->undoObj.startNewUndoList( activeWindowClass_str173 );
+  cur = awo->selectedHead->selFlink;
+  while ( cur != awo->selectedHead ) {
+    stat = cur->node->addUndoResizeNode( &(awo->undoObj) );
+    cur = cur->selFlink;
+  }
+
+  awo->setChanged();
+
+  if ( awo->useFirstSelectedAsReference ) {
+
+    // use the first selected node as the height value
+
+    curSel = awo->selectedHead->selFlink;
+    leftmostNode = curSel;
+
+  }
+  else {
+
+    // use the leftmost node as the height value
+
+    curSel = awo->selectedHead->selFlink;
+    leftmost = curSel->node->getX0();
+    leftmostNode = curSel;
+    while ( curSel != awo->selectedHead ) {
+
+      if ( curSel->node->getX0() < leftmost ) {
+        leftmost = curSel->node->getX0();
+        leftmostNode = curSel;
+      }
+
+      curSel = curSel->selFlink;
+
+    }
+
+  }
+
+  height = leftmostNode->node->getH();
+
+  curSel = awo->selectedHead->selFlink;
+  while ( curSel != awo->selectedHead ) {
+
+    curSel->node->eraseSelectBoxCorners();
+    curSel->node->erase();
+
+    curSel->node->resizeAbs( -1, -1, -1, height );
+    curSel->node->resizeSelectBoxAbs( -1, -1, -1, height );
+
+    curSel = curSel->selFlink;
+
+  }
+
+  awo->refresh();
+
+}
+
+
+
+
+
+
+
+static void distribVert (
+  activeWindowClass *awo )
+{
+
+activeGraphicListPtr cur, curSel;
+int i, n, minY, maxY, curY0, curY1, curX0, stat;
+double space, totalSpace, resid, dY0;
+
+      awo->undoObj.startNewUndoList( activeWindowClass_str174 );
+      cur = awo->selectedHead->selFlink;
+      while ( cur != awo->selectedHead ) {
+        stat = cur->node->addUndoMoveNode( &(awo->undoObj) );
+        cur = cur->selFlink;
+      }
+
+      awo->setChanged();
+
+      totalSpace = 0.0;
+      n = 0;
+      curSel = awo->selectedHead->selFlink;
+      minY = curSel->node->getY0();
+      maxY = curSel->node->getY1();
+      while ( curSel != awo->selectedHead ) {
+
+        totalSpace += curSel->node->getY1() - curSel->node->getY0();
+
+        if ( curSel->node->getY0() < minY ) minY = curSel->node->getY0();
+        if ( curSel->node->getY1() > maxY ) maxY = curSel->node->getY1();
+
+        n++;
+
+        curSel = curSel->selFlink;
+
+      }
+
+      if ( n > awo->list_array_size ) {
+        delete[] awo->list_array;
+        awo->list_array_size = n;
+        awo->list_array = new activeGraphicListType[n];
+        awo->list_array->defExeFlink = NULL;
+        awo->list_array->defExeBlink = NULL;
+      }
+
+      i = 0;
+      curSel = awo->selectedHead->selFlink;
+      while ( curSel != awo->selectedHead ) {
+
+        if ( i < n ) {
+          awo->list_array[i] = *curSel;
+          i++;
+        }
+
+        curSel = curSel->selFlink;
+
+      }
+
+      qsort( (void *) awo->list_array, n,
+       sizeof( activeGraphicListType ), qsort_compare_y_func );
+
+      if ( n >= 2 ) {
+        space = ( (double) maxY - (double) minY - totalSpace ) /
+         ( (double) n - 1.0 );
+      }
+      else {
+        space = 0.0;
+      }
+
+      curY0 = (awo->list_array[0]).node->getY0();
+      curY1 = (awo->list_array[0]).node->getY1();
+      resid = 0.0;
+
+      for ( i=1; i<n-1; i++ ) {
+
+        curX0 = (awo->list_array[i]).node->getX0();
+        dY0 = (double) curY1 + space;
+        curY0 = (int) rint(dY0);
+        resid = resid + dY0 - curY0;
+        if ( resid > 1.0 ) {
+          curY0 += 1;
+          resid -= 1.0;
+        }
+        else if ( resid < -1.0 ) {
+          curY0 -= 1;
+          resid += 1.0;
+        }
+
+        (awo->list_array[i]).node->moveAbs( curX0, curY0 );
+        (awo->list_array[i]).node->moveSelectBoxAbs( curX0, curY0 );
+        curY1 = (awo->list_array[i]).node->getY1();
+
+      }
+
+      awo->clear();
+      awo->refresh();
+
+}
+
+
+static void distribMidptVert (
+  activeWindowClass *awo )
+{
+
+activeGraphicListPtr cur, curSel;
+int i, n, minY, maxY, curY0, curY1, curX0, stat;
+double space, dY0;
+
+      awo->undoObj.startNewUndoList( activeWindowClass_str174 );
+      cur = awo->selectedHead->selFlink;
+      while ( cur != awo->selectedHead ) {
+        stat = cur->node->addUndoMoveNode( &(awo->undoObj) );
+        cur = cur->selFlink;
+      }
+
+      awo->setChanged();
+
+      n = 0;
+      curSel = awo->selectedHead->selFlink;
+      minY = curSel->node->getYMid();
+      maxY = curSel->node->getYMid();
+      while ( curSel != awo->selectedHead ) {
+
+        if ( curSel->node->getYMid() < minY ) minY = curSel->node->getYMid();
+        if ( curSel->node->getYMid() > maxY ) maxY = curSel->node->getYMid();
+
+        n++;
+
+        curSel = curSel->selFlink;
+
+      }
+
+      if ( n > awo->list_array_size ) {
+        delete[] awo->list_array;
+        awo->list_array_size = n;
+        awo->list_array = new activeGraphicListType[n];
+        awo->list_array->defExeFlink = NULL;
+        awo->list_array->defExeBlink = NULL;
+      }
+
+      i = 0;
+      curSel = awo->selectedHead->selFlink;
+      while ( curSel != awo->selectedHead ) {
+
+        if ( i < n ) {
+          awo->list_array[i] = *curSel;
+          i++;
+        }
+
+        curSel = curSel->selFlink;
+
+      }
+
+      qsort( (void *) awo->list_array, n,
+       sizeof( activeGraphicListType ), qsort_compare_y_func );
+
+      if ( n >= 2 ) {
+        space = ( (double) maxY - (double) minY ) / ( (double) n - 1 );
+      }
+      else {
+        space = 0.0;
+      }
+
+      curY1 = (awo->list_array[0]).node->getYMid();
+
+      for ( i=1; i<n-1; i++ ) {
+
+        curX0 = (awo->list_array[i]).node->getXMid();
+        dY0 = (double) curY1 + space * (double) i;
+        curY0 = (int) rint(dY0);
+
+        (awo->list_array[i]).node->moveMidpointAbs( curX0, curY0 );
+        (awo->list_array[i]).node->moveSelectBoxMidpointAbs( curX0, curY0 );
+
+      }
+
+      awo->clear();
+      awo->refresh();
+
+}
+
+
+static void distribHorz (
+  activeWindowClass *awo )
+{
+
+activeGraphicListPtr cur, curSel;
+int i, n, minX, maxX, curY0, curX0, curX1, stat;
+double space, totalSpace, resid, dX0;
+
+      awo->undoObj.startNewUndoList( activeWindowClass_str174 );
+      cur = awo->selectedHead->selFlink;
+      while ( cur != awo->selectedHead ) {
+        stat = cur->node->addUndoMoveNode( &(awo->undoObj) );
+        cur = cur->selFlink;
+      }
+
+      awo->setChanged();
+
+      totalSpace = 0.0;
+      n = 0;
+      curSel = awo->selectedHead->selFlink;
+      minX = curSel->node->getX0();
+      maxX = curSel->node->getX1();
+      while ( curSel != awo->selectedHead ) {
+
+        totalSpace += curSel->node->getX1() - curSel->node->getX0();
+
+        if ( curSel->node->getX0() < minX ) minX = curSel->node->getX0();
+        if ( curSel->node->getX1() > maxX ) maxX = curSel->node->getX1();
+
+        n++;
+
+        curSel = curSel->selFlink;
+
+      }
+
+      if ( n > awo->list_array_size ) {
+        delete[] awo->list_array;
+        awo->list_array_size = n;
+        awo->list_array = new activeGraphicListType[n];
+        awo->list_array->defExeFlink = NULL;
+        awo->list_array->defExeBlink = NULL;
+      }
+
+      i = 0;
+      curSel = awo->selectedHead->selFlink;
+      while ( curSel != awo->selectedHead ) {
+
+        if ( i < n ) {
+          awo->list_array[i] = *curSel;
+          i++;
+        }
+
+        curSel = curSel->selFlink;
+
+      }
+
+      qsort( (void *) awo->list_array, n,
+       sizeof( activeGraphicListType ), qsort_compare_x_func );
+
+      if ( n >= 2 ) {
+        space = ( (double) maxX - (double) minX - totalSpace ) /
+         ( (double) n - 1.0 );
+      }
+      else {
+        space = 0.0;
+      }
+
+      curX0 = (awo->list_array[0]).node->getX0();
+      curX1 = (awo->list_array[0]).node->getX1();
+      resid = 0.0;
+
+      for ( i=1; i<n-1; i++ ) {
+
+        curY0 = (awo->list_array[i]).node->getY0();
+        dX0 = (double) curX1 + space;
+        curX0 = (int) rint(dX0);
+        resid = resid + dX0 - curX0;
+        if ( resid > 1.0 ) {
+          curX0 += 1;
+          resid -= 1.0;
+        }
+        else if ( resid < -1.0 ) {
+          curX0 -= 1;
+          resid += 1.0;
+        }
+
+        (awo->list_array[i]).node->moveAbs( curX0, curY0 );
+        (awo->list_array[i]).node->moveSelectBoxAbs( curX0, curY0 );
+        curX1 = (awo->list_array[i]).node->getX1();
+
+      }
+
+      awo->clear();
+      awo->refresh();
+
+}
+
+
+static void distribMidptHorz (
+  activeWindowClass *awo )
+{
+
+activeGraphicListPtr cur, curSel;
+int i, n, minX, maxX, curY0, curX0, curX1, stat;
+double space, dX0;
+
+      awo->undoObj.startNewUndoList( activeWindowClass_str174 );
+      cur = awo->selectedHead->selFlink;
+      while ( cur != awo->selectedHead ) {
+        stat = cur->node->addUndoMoveNode( &(awo->undoObj) );
+        cur = cur->selFlink;
+      }
+
+      awo->setChanged();
+
+      n = 0;
+      curSel = awo->selectedHead->selFlink;
+      minX = curSel->node->getXMid();
+      maxX = curSel->node->getXMid();
+      while ( curSel != awo->selectedHead ) {
+
+        if ( curSel->node->getXMid() < minX ) minX = curSel->node->getXMid();
+        if ( curSel->node->getXMid() > maxX ) maxX = curSel->node->getXMid();
+
+        n++;
+
+        curSel = curSel->selFlink;
+
+      }
+
+      if ( n > awo->list_array_size ) {
+        delete[] awo->list_array;
+        awo->list_array_size = n;
+        awo->list_array = new activeGraphicListType[n];
+        awo->list_array->defExeFlink = NULL;
+        awo->list_array->defExeBlink = NULL;
+      }
+
+      i = 0;
+      curSel = awo->selectedHead->selFlink;
+      while ( curSel != awo->selectedHead ) {
+
+        if ( i < n ) {
+          awo->list_array[i] = *curSel;
+          i++;
+        }
+
+        curSel = curSel->selFlink;
+
+      }
+
+      qsort( (void *) awo->list_array, n,
+       sizeof( activeGraphicListType ), qsort_compare_x_func );
+
+      if ( n >= 2 ) {
+        space = ( (double) maxX - (double) minX ) / ( (double) n - 1 );
+      }
+      else {
+        space = 0;
+      }
+
+      curX1 = (awo->list_array[0]).node->getXMid();
+
+      for ( i=1; i<n-1; i++ ) {
+
+        curY0 = (awo->list_array[i]).node->getYMid();
+        dX0 = (double) curX1 + space * (double) i;
+        curX0 = (int) rint(dX0);
+
+        (awo->list_array[i]).node->moveMidpointAbs( curX0, curY0 );
+        (awo->list_array[i]).node->moveSelectBoxMidpointAbs( curX0, curY0 );
+
+      }
+
+      awo->clear();
+      awo->refresh();
+
+}
+
+static void distrib2D (
+  activeWindowClass *awo )
+{
+
+activeGraphicListPtr cur, next, curSel, twoDimHead1, twoDimHead2;
+int i, n, incY, curMidY, minY, maxY, topY, bottomY, incX, minX, maxX,
+ midX=0, curMidX, leftX, rightX, nCols, nRows, maxRows, listEmpty, stat;
+
+      awo->undoObj.startNewUndoList( activeWindowClass_str174 );
+      cur = awo->selectedHead->selFlink;
+      while ( cur != awo->selectedHead ) {
+        stat = cur->node->addUndoMoveNode( &(awo->undoObj) );
+        cur = cur->selFlink;
+      }
+
+      awo->setChanged();
+
+      // init 2 lists
+
+      twoDimHead1 = new activeGraphicListType;
+      twoDimHead1->flink = twoDimHead1;
+      twoDimHead1->blink = twoDimHead1;
+
+      twoDimHead2 = new activeGraphicListType;
+      twoDimHead2->flink = twoDimHead2;
+      twoDimHead2->blink = twoDimHead2;
+
+      // count nodes as n and find geometrical extent
+      n = 0;
+      curSel = awo->selectedHead->selFlink;
+      minX = curSel->node->getX0();
+      maxX = curSel->node->getX1();
+      minY = curSel->node->getY0();
+      maxY = curSel->node->getY1();
+      leftX = curSel->node->getXMid();
+      rightX = curSel->node->getXMid();
+      topY = curSel->node->getYMid();
+      bottomY = curSel->node->getYMid();
+      while ( curSel != awo->selectedHead ) {
+
+        if ( curSel->node->getX0() < minX ) {
+          minX = curSel->node->getX0();
+          leftX = curSel->node->getXMid();
+	}
+        if ( curSel->node->getX1() > maxX ) {
+          maxX = curSel->node->getX1();
+          rightX = curSel->node->getXMid();
+	}
+        if ( curSel->node->getY0() < minY ) {
+          minY = curSel->node->getY0();
+          topY = curSel->node->getYMid();
+	}
+        if ( curSel->node->getY1() > maxY ) {
+          maxY = curSel->node->getY1();
+          bottomY = curSel->node->getYMid();
+	}
+
+        n++;
+
+        cur = new activeGraphicListType;
+        cur->node = curSel->node;
+        // insert at tail
+        cur->blink = twoDimHead1->blink;
+        twoDimHead1->blink->flink = cur;
+        twoDimHead1->blink = cur;
+        cur->flink = twoDimHead1;
+
+        curSel = curSel->selFlink;
+
+      }
+
+      // find num rows, cols
+      nCols = maxRows = 0;
+      cur = twoDimHead1->flink;
+      listEmpty = 0;
+
+      while ( !listEmpty ) {
+
+        // find left most
+        cur = twoDimHead1->flink;
+        if (  cur != twoDimHead1 ) {
+          minX = cur->node->getX0();
+          midX = cur->node->getXMid();
+        }
+        cur = cur->flink;
+        while ( cur != twoDimHead1 ) {
+          if (  cur->node->getX0() <  minX ) {
+            minX = cur->node->getX0();
+            midX = cur->node->getXMid();
+	  }
+          cur = cur->flink;
+        }
+
+        nCols++;
+        nRows = 0;
+        // now find all nodes for this column; a node is in this
+        // column if [X0,X1] contains midX from above; count the
+        // rows and update max rows
+        cur = twoDimHead1->flink;
+        while (  cur != twoDimHead1 ) {
+          next = cur->flink;
+          if ( ( cur->node->getX0() <= midX ) &&
+               ( cur->node->getX1() >= midX ) ) {
+            nRows++;
+            // remove node from cur list
+            cur->blink->flink = cur->flink;
+            cur->flink->blink = cur->blink;
+            // insert this node to other list
+            cur->blink = twoDimHead2->blink;
+            twoDimHead2->blink->flink = cur;
+            twoDimHead2->blink = cur;
+            cur->flink = twoDimHead2;
+	  }
+          cur = next;
+	}
+        if ( nRows > maxRows ) maxRows = nRows;
+
+        // are there more rows on current list?
+        listEmpty = ( twoDimHead1->flink == twoDimHead1 );
+
+      }
+
+      if ( nCols > 1 ) {
+        incX = ( rightX - leftX ) / ( nCols - 1 );
+      }
+      else {
+        incX = 1;
+      }
+
+      if ( maxRows > 1 ) {
+        incY = ( bottomY - topY ) / ( maxRows - 1 );
+      }
+      else {
+        incY = 1;
+      }
+
+      // if necessary, reallocate work array
+      if ( maxRows > awo->list_array_size ) {
+        delete[] awo->list_array;
+        awo->list_array_size = maxRows;
+        awo->list_array = new activeGraphicListType[maxRows];
+        awo->list_array->defExeFlink = NULL;
+        awo->list_array->defExeBlink = NULL;
+      }
+
+      // now, pull out each column, sort and then adjust node position
+      // (note that all nodes have been moved to the 2nd list)
+
+      curMidX = leftX;
+      nCols = 0;
+      cur = twoDimHead2->flink;
+      listEmpty = 0;
+
+      while ( !listEmpty ) {
+
+        // find left most
+        cur = twoDimHead2->flink;
+        if (  cur != twoDimHead2 ) {
+          minX = cur->node->getX0();
+          midX = cur->node->getXMid();
+        }
+        cur = cur->flink;
+        while ( cur != twoDimHead2 ) {
+          if (  cur->node->getX0() <  minX ) {
+            minX = cur->node->getX0();
+            midX = cur->node->getXMid();
+	  }
+          cur = cur->flink;
+        }
+
+        nRows = 0;
+        // now find all nodes for this column; a node is in this
+        // column if [X0,X1] contains midX from above;
+        cur = twoDimHead2->flink;
+        while (  cur != twoDimHead2 ) {
+
+          next = cur->flink;
+
+          if ( ( cur->node->getX0() <= midX ) &&
+               ( cur->node->getX1() >= midX ) ) {
+
+            // adjust x postion
+            cur->node->moveMidpointAbs( curMidX, cur->node->getYMid() );
+            cur->node->moveSelectBoxMidpointAbs(
+             curMidX, cur->node->getYMid() );
+
+            awo->list_array[nRows] = *cur;
+
+            // remove node from cur list
+            cur->blink->flink = cur->flink;
+            cur->flink->blink = cur->blink;
+            // insert this node to other list
+            cur->blink = twoDimHead1->blink;
+            twoDimHead1->blink->flink = cur;
+            twoDimHead1->blink = cur;
+            cur->flink = twoDimHead1;
+
+            nRows++;
+
+	  }
+
+          cur = next;
+
+	}
+
+        // sort the array and adjust y postion
+        qsort( (void *) awo->list_array, nRows,
+         sizeof( activeGraphicListType ), qsort_compare_y_func );
+
+        curMidY = topY;
+        for ( i=0; i<nRows; i++ ) {
+          awo->list_array[i].node->moveMidpointAbs(
+           awo->list_array[i].node->getXMid(), curMidY );
+          awo->list_array[i].node->moveSelectBoxMidpointAbs(
+           awo->list_array[i].node->getXMid(), curMidY );
+          curMidY += incY;
+	}
+
+        nCols++;
+        curMidX += incX;
+
+        // are there more rows on current list?
+        listEmpty = ( twoDimHead2->flink == twoDimHead2 );
+
+      }
+
+      // Discard head and list nodes
+      // (note that all nodes have been moved back to the 1st list)
+      cur = twoDimHead1->flink;
+      while (  cur != twoDimHead1 ) {
+        next = cur->flink;
+        delete cur;
+        cur = next;
+      }
+      delete twoDimHead1;
+      delete twoDimHead2;
+
+      // finally, update the display
+      awo->clear();
+      awo->refresh();
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+static void alignCenter (
+  activeWindowClass *awo )
+{
+
+activeGraphicListPtr cur, curSel, topmostNode;
+int topmost, midX, midY, stat;
+
+  awo->undoObj.startNewUndoList( activeWindowClass_str175 );
+  cur = awo->selectedHead->selFlink;
+  while ( cur != awo->selectedHead ) {
+    stat = cur->node->addUndoMoveNode( &(awo->undoObj) );
+    cur = cur->selFlink;
+  }
+
+  awo->setChanged();
+
+  if ( awo->useFirstSelectedAsReference ) {
+
+    // use the first selected node as the x axis value
+
+    curSel = awo->selectedHead->selFlink;
+    topmostNode = curSel;
+
+  }
+  else {
+
+    // use the topmost node as the x axis value
+
+    curSel = awo->selectedHead->selFlink;
+    topmost = curSel->node->getY0();
+    topmostNode = curSel;
+    while ( curSel != awo->selectedHead ) {
+
+      if ( curSel->node->getY0() < topmost ) {
+        topmost = curSel->node->getY0();
+        topmostNode = curSel;
+      }
+
+      curSel = curSel->selFlink;
+
+    }
+
+  }
+
+  midX = topmostNode->node->getXMid();
+  midY = topmostNode->node->getYMid();
+
+  curSel = awo->selectedHead->selFlink;
+  while ( curSel != awo->selectedHead ) {
+
+    curSel->node->eraseSelectBoxCorners();
+    curSel->node->erase();
+
+    curSel->node->moveMidpointAbs( midX, midY );
+    curSel->node->moveSelectBoxMidpointAbs( midX, midY );
+
+    curSel = curSel->selFlink;
+
+  }
+
+  awo->refresh();
+
+}
+
+static void alignCenterVert (
+  activeWindowClass *awo )
+{
+
+activeGraphicListPtr cur, curSel, topmostNode;
+int topmost, midX, midY, stat;
+
+  awo->undoObj.startNewUndoList( activeWindowClass_str175 );
+  cur = awo->selectedHead->selFlink;
+  while ( cur != awo->selectedHead ) {
+    stat = cur->node->addUndoMoveNode( &(awo->undoObj) );
+    cur = cur->selFlink;
+  }
+
+  awo->setChanged();
+
+  if ( awo->useFirstSelectedAsReference ) {
+
+    // use the first selected node as the x axis value
+
+    curSel = awo->selectedHead->selFlink;
+    topmostNode = curSel;
+
+  }
+  else {
+
+    // use the topmost node as the x axis value
+
+    curSel = awo->selectedHead->selFlink;
+    topmost = curSel->node->getY0();
+    topmostNode = curSel;
+    while ( curSel != awo->selectedHead ) {
+
+      if ( curSel->node->getY0() < topmost ) {
+        topmost = curSel->node->getY0();
+        topmostNode = curSel;
+      }
+
+      curSel = curSel->selFlink;
+
+    }
+
+  }
+
+  midX = topmostNode->node->getXMid();
+
+  curSel = awo->selectedHead->selFlink;
+  while ( curSel != awo->selectedHead ) {
+
+    curSel->node->eraseSelectBoxCorners();
+    curSel->node->erase();
+
+    midY = curSel->node->getYMid();
+    curSel->node->moveMidpointAbs( midX, midY );
+    curSel->node->moveSelectBoxMidpointAbs( midX, midY );
+
+    curSel = curSel->selFlink;
+
+  }
+
+  awo->refresh();
+
+}
+
+static void alignCenterHorz (
+  activeWindowClass *awo )
+{
+
+activeGraphicListPtr cur, curSel, leftmostNode;
+int leftmost, midX, midY, stat;
+
+      awo->undoObj.startNewUndoList( activeWindowClass_str175 );
+      cur = awo->selectedHead->selFlink;
+      while ( cur != awo->selectedHead ) {
+        stat = cur->node->addUndoMoveNode( &(awo->undoObj) );
+        cur = cur->selFlink;
+      }
+
+      awo->setChanged();
+
+      if ( awo->useFirstSelectedAsReference ) {
+
+        // use the first selected node as the y axis value
+
+        curSel = awo->selectedHead->selFlink;
+        leftmostNode = curSel;
+
+      }
+      else {
+
+        // use the leftmost node as the y axis value
+
+        curSel = awo->selectedHead->selFlink;
+        leftmost = curSel->node->getX0();
+        leftmostNode = curSel;
+        while ( curSel != awo->selectedHead ) {
+
+          if ( curSel->node->getX0() < leftmost ) {
+            leftmost = curSel->node->getX0();
+            leftmostNode = curSel;
+          }
+
+          curSel = curSel->selFlink;
+
+        }
+
+      }
+
+      midY = leftmostNode->node->getYMid();
+
+      curSel = awo->selectedHead->selFlink;
+      while ( curSel != awo->selectedHead ) {
+
+        curSel->node->eraseSelectBoxCorners();
+        curSel->node->erase();
+
+        midX = curSel->node->getXMid();
+        curSel->node->moveMidpointAbs( midX, midY );
+        curSel->node->moveSelectBoxMidpointAbs( midX, midY );
+
+        curSel = curSel->selFlink;
+
+      }
+
+      awo->refresh();
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 static void do_selectAll (
   activeWindowClass *awo )
 {
@@ -2720,6 +4709,8 @@ int newX, newY, locMinX, locMinY, locDeltaX, locDeltaY;
 
   }
 
+  enableAccumulator();
+
   curCut = awo->appCtx->cutHead1->blink;
   while ( curCut != awo->appCtx->cutHead1 ) {
 
@@ -2794,6 +4785,9 @@ int newX, newY, locMinX, locMinY, locDeltaX, locDeltaY;
 
   awo->refresh();
 
+  incAccumulator();
+  disableAccumulator();
+
   return;
 
 }
@@ -2829,11 +4823,36 @@ struct {
 
 Atom wm_delete_window;
 
+int efSetAccW = 300;
+int efSetAccH = 300;
+int efSetAccLargestH = 300;
+
   block = (popupBlockPtr) client;
   item = (long) block->ptr;
   awo = (activeWindowClass *) block->awo;
 
   switch ( item ) {
+
+    case AWC_POPUP_SET_PASTE_INDEX:
+
+      awo->savedState = awo->state;
+
+      awo->state = AWC_WAITING;
+      awo->currentEf = NULL;
+
+      awo->efSetAcc.create( awo->top, awo->appCtx->ci.getColorMap(),
+       &awo->appCtx->entryFormX,
+       &awo->appCtx->entryFormY, &efSetAccW, &efSetAccH,
+       &efSetAccLargestH, activeWindowClass_str222,
+       NULL, NULL, NULL );
+
+      awo->bufAccVal = getAccumulator();
+      awo->efSetAcc.addTextField( activeWindowClass_str223, 25, &awo->bufAccVal );
+      awo->efSetAcc.finished( awc_editSetAcc_ok, awo );
+
+      awo->efSetAcc.popup();
+
+      break;
 
     case AWC_POPUP_SELECT_ALL:
 
@@ -3605,7 +5624,8 @@ Atom wm_delete_window;
 	strncpy( awo->newPath, awo->appCtx->curPath, 255 );
         awo->newPath[255] = 0;
         Strncat( awo->newPath, name, 255 );
-        Strncat( awo->newPath, ".edl", 255 );
+        //Strncat( awo->newPath, ".edl", 255 );
+        Strncat( awo->newPath, activeWindowClass::defExt(), 255 );
         strcpy( saveMsg, activeWindowClass_str197 );
         Strncat( saveMsg, awo->newPath, 255 );
         Strncat( saveMsg, "?", 255 );
@@ -3618,6 +5638,60 @@ Atom wm_delete_window;
         awo->confirm1.finished();
         awo->confirm1.popup();
       }
+
+      break;
+
+    case AWC_POPUP_INSERT_TEMPLATE:
+
+      awo->savedState = awo->state;
+      awo->state = AWC_WAITING;
+
+      XtVaGetValues( awo->appCtx->fileSelectBoxWidgetId(),
+       XmNpattern, &xmStr1,
+       NULL );
+
+      xmStr2 = NULL;
+
+      n = 0;
+      XtSetArg( args[n], XmNpattern, xmStr1 ); n++;
+
+      if ( strcmp( awo->appCtx->curPath, "" ) != 0 ) {
+        xmStr2 = XmStringCreateLocalized( awo->appCtx->curPath );
+        XtSetArg( args[n], XmNdirectory, xmStr2 ); n++;
+      }
+
+      awo->fileSelectBox = XmCreateFileSelectionDialog( awo->top,
+       "templateopenfileselect", args, n );
+
+      XmStringFree( xmStr1 );
+      if ( xmStr2 ) XmStringFree( xmStr2 );
+
+      XtAddCallback( awo->fileSelectBox, XmNcancelCallback,
+       awc_fileSelectCancel_cb, (void *) awo );
+      XtAddCallback( awo->fileSelectBox, XmNokCallback,
+       awc_templateFileSelectOk_cb, (void *) awo );
+
+      // -----------------------------------------------------
+
+      awo->wpFileSelect.w = awo->fileSelectBox;
+      awo->wpFileSelect.client = (void *) awo;
+
+      wm_delete_window = XmInternAtom( XtDisplay(awo->top),
+       "WM_DELETE_WINDOW", False );
+
+      XmAddWMProtocolCallback( XtParent(awo->fileSelectBox),
+       wm_delete_window, awc_fileSelectKill_cb, &awo->wpFileSelect );
+
+      XtVaSetValues( XtParent(awo->fileSelectBox), XmNdeleteResponse,
+       XmDO_NOTHING, NULL );
+
+      // -----------------------------------------------------
+
+      XtManageChild( awo->fileSelectBox );
+
+      XSetWindowColormap( awo->d,
+       XtWindow(XtParent(awo->fileSelectBox)),
+       awo->appCtx->ci.getColorMap() );
 
       break;
 
@@ -3910,6 +5984,7 @@ Atom wm_delete_window;
       awo->bufDefaultTopShadowColor = awo->defaultTopShadowColor;
       awo->bufDefaultBotShadowColor = awo->defaultBotShadowColor;
       awo->bufDefaultOffsetColor = awo->defaultOffsetColor;
+      awo->bufBgPixmapFlag = awo->bgPixmapFlag;
 
       awo->ef.create( awo->top, awo->appCtx->ci.getColorMap(),
        &awo->appCtx->entryFormX,
@@ -3944,6 +6019,9 @@ Atom wm_delete_window;
         awo->ef.addToggle( activeWindowClass_str203, &awo->bufDisableScroll );
       }
 #endif
+      awo->ef.addOption( activeWindowClass_str212, activeWindowClass_str213,
+       &awo->bufBgPixmapFlag );
+
       awo->ef.addColorButton( activeWindowClass_str33, awo->ci, &awo->defaultTextFgCb,
        &awo->bufDefaultTextFgColor );
       awo->ef.addColorButton( activeWindowClass_str34, awo->ci, &awo->defaultFg1Cb,
@@ -3970,8 +6048,80 @@ Atom wm_delete_window;
       awo->ef.addToggle( activeWindowClass_str42, &awo->bufActivateCallbackFlag );
       awo->ef.addToggle( activeWindowClass_str43,
        &awo->bufDeactivateCallbackFlag );
+
+      awo->ef.addEmbeddedEf(activeWindowClass_str218 , "...", &awo->ef1 );
+
+      //-----------------------------------------------------------------------
+
+      awo->ef1->create( awo->top, awo->appCtx->ci.getColorMap(),
+       &awo->appCtx->entryFormX,
+       &awo->appCtx->entryFormY, &awo->appCtx->entryFormW,
+       &awo->appCtx->entryFormH, &awo->appCtx->largestH,
+       activeWindowClass_str216, NULL, NULL, NULL );
+
+      if ( !(awo->bufTemplInfo) ) {
+        awo->bufTemplInfo = new char[AWC_MAXTEMPLINFO+1];
+      }
+      strcpy( awo->bufTemplInfo, awo->templInfo );
+      awo->ef1->addTextBox( "Info", 32, 10, awo->bufTemplInfo,
+       AWC_MAXTEMPLINFO );
+
+      awo->ef1->addLabel( " " );
+      awo->ef1->addSeparator();
+      awo->ef1->addLabel( " " );
+
+      for ( i=0; i<AWC_MAXTMPLPARAMS; i++ ) {
+        //awo->ef1->beginLeftSubForm();
+        char paramName[15+1];
+        snprintf( paramName, 15, "    %s%-d", activeWindowClass_str219, i+1 );
+        strcpy( awo->bufParamValue[i], awo->paramValue[i] );
+        awo->ef1->addTextField( paramName, 35, awo->bufParamValue[i],
+         AWC_MAXTMPLPARAMS );
+        //awo->ef1->endSubForm();
+      }
+
+      awo->ef1->finished( awc_edit_ok1, awo );
+
+      //-----------------------------------------------------------------------
+
       awo->ef.finished( awc_edit_ok, awc_edit_apply, awc_edit_cancel, awo );
       awo->ef.popup();
+
+      break;
+
+    case AWC_POPUP_TOGGLE_VIEW_DIMS:
+
+      if ( !awo->dimDialog ) {
+        awo->dimDialog = new dimDialogClass;
+        awo->dimDialog->create( awo );
+      }
+
+      if ( awo->viewDims ) {
+        awo->viewDims = 0;
+        XtRemoveTimeOut( awo->showDimTimer );
+        awo->showDimTimer = 0;
+        awo->dimDialog->popdown();
+      }
+      else {
+        awo->viewDims = 1;
+	awo->dimDialog->popup();
+        awo->showDimBuf.init = 1;
+        awo->showDimBuf.x = 0;
+        awo->showDimBuf.y = 0;
+        awo->showDimBuf.dist = 0;
+        awo->showDimBuf.theta = 0;
+        awo->showDimBuf.relTheta = 0;
+        awo->showDimBuf.objX = 0;
+        awo->showDimBuf.objY = 0;
+        awo->showDimBuf.objW = 0;
+        awo->showDimBuf.objH = 0;
+        awo->showDimBuf.objTopDist = 0;
+        awo->showDimBuf.objBotDist = 0;
+        awo->showDimBuf.objLeftDist = 0;
+        awo->showDimBuf.objRightDist = 0;
+        awo->showDimTimer = appAddTimeOut( awo->appCtx->appContext(),
+         250, showObjectDimensions, awo );
+      }
 
       break;
 
@@ -4060,6 +6210,17 @@ activeGraphicListPtr curSel;
 
         printErrMsg( __FILE__, __LINE__, "Inconsistent select state" );
 
+      }
+
+      break;
+
+    case AWC_POPUP_RECORD_DIMS:
+
+      curSel = awo->selectedHead->selFlink;
+      if ( curSel != awo->selectedHead ) {
+        awo->recordedRefRect = 1;
+        curSel->node->getSelBoxDims( &(awo->refRect[1].x),
+         &(awo->refRect[1].y), &(awo->refRect[1].w), &(awo->refRect[1].h) );
       }
 
       break;
@@ -4321,20 +6482,57 @@ static void b2ReleaseManySelect_cb (
 
 activeWindowClass *awo;
 popupBlockPtr block;
-int i, leftmost, topmost, n,
- curY0, curY1, curX0, curX1, minY, maxY, minX, maxX, midX, midY,
- stat, width, height, maxRows, nRows, nCols, listEmpty,
- leftX, rightX, topY, bottomY, incX, incY, curMidX, curMidY;
+int stat;
 long item;
-double space, totalSpace, dY0, dX0, resid;
-activeGraphicListPtr cur, curSel, topmostNode, leftmostNode,
- twoDimHead1, twoDimHead2, next;
+XmString str;
+Widget apply;
 
   block = (popupBlockPtr) client;
   item = (long) block->ptr;
   awo = (activeWindowClass *) block->awo;
 
   switch ( item ) {
+
+    case AWC_POPUP_SAR:
+
+      awo->savedState = awo->state;
+
+      awo->state = AWC_WAITING;
+      awo->currentEf = NULL;
+
+      awo->sarCurSel = awo->selectedHead->selFlink;
+
+      awo->efSaRW = 300;
+      awo->efSaRH = 300;
+      awo->efSaRLargestH = 300;
+
+      awo->efSaR.create( awo->top, awo->appCtx->ci.getColorMap(),
+       &awo->appCtx->entryFormX,
+       &awo->appCtx->entryFormY, &awo->efSaRW, &awo->efSaRH,
+       &awo->efSaRLargestH, activeWindowClass_str224,
+       NULL, NULL, NULL );
+
+      if ( !awo->sar1 ) {
+        awo->sar1 = new char[255+1];
+        strcpy( awo->sar1, "" );
+      }
+      if ( !awo->sar2 ) {
+        awo->sar2 = new char[255+1];
+        strcpy( awo->sar2, "" );
+      }
+      awo->efSaR.addTextField( (char *) activeWindowClass_str225, 45, awo->sar1, 255 );
+      awo->efSaR.addTextField( (char *) activeWindowClass_str226, 45, awo->sar2, 255 );
+      awo->efSaR.addToggle( (char *) activeWindowClass_str233, &awo->sarCaseInsensivite );
+      awo->efSaR.addToggle( (char *) activeWindowClass_str234, &awo->sarUseRegExpr );
+      awo->efSaR.finished( awc_editSaR_ok, awc_editSaR_apply, awc_editSaR_cancel, awo );
+      str = XmStringCreateLocalized( activeWindowClass_str232 ); // All
+      apply = awo->efSaR.getApplyWidget();
+      XtVaSetValues( apply, XmNlabelString, str, 0, NULL );
+      XmStringFree( str );
+
+      awo->efSaR.popup();
+
+      break;
 
     case AWC_POPUP_DESELECT:
 
@@ -4601,360 +6799,43 @@ activeGraphicListPtr cur, curSel, topmostNode, leftmostNode,
 
     case AWC_POPUP_ALIGN_CENTER:
 
-      awo->undoObj.startNewUndoList( activeWindowClass_str175 );
-      cur = awo->selectedHead->selFlink;
-      while ( cur != awo->selectedHead ) {
-        stat = cur->node->addUndoMoveNode( &(awo->undoObj) );
-        cur = cur->selFlink;
-      }
-
-      awo->setChanged();
-
-      if ( awo->useFirstSelectedAsReference ) {
-
-        // use the first selected node as the x axis value
-
-        curSel = awo->selectedHead->selFlink;
-        topmostNode = curSel;
-
-      }
-      else {
-
-        // use the topmost node as the x axis value
-
-        curSel = awo->selectedHead->selFlink;
-        topmost = curSel->node->getY0();
-        topmostNode = curSel;
-        while ( curSel != awo->selectedHead ) {
-
-          if ( curSel->node->getY0() < topmost ) {
-            topmost = curSel->node->getY0();
-            topmostNode = curSel;
-          }
-
-          curSel = curSel->selFlink;
-
-        }
-
-      }
-
-      midX = topmostNode->node->getXMid();
-      midY = topmostNode->node->getYMid();
-
-      curSel = awo->selectedHead->selFlink;
-      while ( curSel != awo->selectedHead ) {
-
-        curSel->node->eraseSelectBoxCorners();
-        curSel->node->erase();
-
-        curSel->node->moveMidpointAbs( midX, midY );
-        curSel->node->moveSelectBoxMidpointAbs( midX, midY );
-
-        curSel = curSel->selFlink;
-
-      }
-
-      awo->refresh();
-
+      alignCenter( awo );
       break;
 
     case AWC_POPUP_ALIGN_CENTER_VERT:
 
-      awo->undoObj.startNewUndoList( activeWindowClass_str175 );
-      cur = awo->selectedHead->selFlink;
-      while ( cur != awo->selectedHead ) {
-        stat = cur->node->addUndoMoveNode( &(awo->undoObj) );
-        cur = cur->selFlink;
-      }
-
-      awo->setChanged();
-
-      if ( awo->useFirstSelectedAsReference ) {
-
-        // use the first selected node as the x axis value
-
-        curSel = awo->selectedHead->selFlink;
-        topmostNode = curSel;
-
-      }
-      else {
-
-        // use the topmost node as the x axis value
-
-        curSel = awo->selectedHead->selFlink;
-        topmost = curSel->node->getY0();
-        topmostNode = curSel;
-        while ( curSel != awo->selectedHead ) {
-
-          if ( curSel->node->getY0() < topmost ) {
-            topmost = curSel->node->getY0();
-            topmostNode = curSel;
-          }
-
-          curSel = curSel->selFlink;
-
-        }
-
-      }
-
-      midX = topmostNode->node->getXMid();
-
-      curSel = awo->selectedHead->selFlink;
-      while ( curSel != awo->selectedHead ) {
-
-        curSel->node->eraseSelectBoxCorners();
-        curSel->node->erase();
-
-        midY = curSel->node->getYMid();
-        curSel->node->moveMidpointAbs( midX, midY );
-        curSel->node->moveSelectBoxMidpointAbs( midX, midY );
-
-        curSel = curSel->selFlink;
-
-      }
-
-      awo->refresh();
-
+      alignCenterVert( awo );
       break;
 
     case AWC_POPUP_ALIGN_CENTER_HORZ:
 
-      awo->undoObj.startNewUndoList( activeWindowClass_str175 );
-      cur = awo->selectedHead->selFlink;
-      while ( cur != awo->selectedHead ) {
-        stat = cur->node->addUndoMoveNode( &(awo->undoObj) );
-        cur = cur->selFlink;
-      }
-
-      awo->setChanged();
-
-      if ( awo->useFirstSelectedAsReference ) {
-
-        // use the first selected node as the y axis value
-
-        curSel = awo->selectedHead->selFlink;
-        leftmostNode = curSel;
-
-      }
-      else {
-
-        // use the leftmost node as the y axis value
-
-        curSel = awo->selectedHead->selFlink;
-        leftmost = curSel->node->getX0();
-        leftmostNode = curSel;
-        while ( curSel != awo->selectedHead ) {
-
-          if ( curSel->node->getX0() < leftmost ) {
-            leftmost = curSel->node->getX0();
-            leftmostNode = curSel;
-          }
-
-          curSel = curSel->selFlink;
-
-        }
-
-      }
-
-      midY = leftmostNode->node->getYMid();
-
-      curSel = awo->selectedHead->selFlink;
-      while ( curSel != awo->selectedHead ) {
-
-        curSel->node->eraseSelectBoxCorners();
-        curSel->node->erase();
-
-        midX = curSel->node->getXMid();
-        curSel->node->moveMidpointAbs( midX, midY );
-        curSel->node->moveSelectBoxMidpointAbs( midX, midY );
-
-        curSel = curSel->selFlink;
-
-      }
-
-      awo->refresh();
+      alignCenterHorz( awo );
+      break;
 
       break;
 
 
     case AWC_POPUP_ALIGN_SIZE:
 
-      awo->undoObj.startNewUndoList( activeWindowClass_str173 );
-      cur = awo->selectedHead->selFlink;
-      while ( cur != awo->selectedHead ) {
-        stat = cur->node->addUndoResizeNode( &(awo->undoObj) );
-        cur = cur->selFlink;
-      }
-
-      awo->setChanged();
-
-      if ( awo->useFirstSelectedAsReference ) {
-
-        // use the first selected node as the width & height value
-
-        curSel = awo->selectedHead->selFlink;
-        topmostNode = curSel;
-
-      }
-      else {
-
-        // use the topmost node as the width & height value
-
-        curSel = awo->selectedHead->selFlink;
-        topmost = curSel->node->getY0();
-        topmostNode = curSel;
-        while ( curSel != awo->selectedHead ) {
-
-          if ( curSel->node->getY0() < topmost ) {
-            topmost = curSel->node->getY0();
-            topmostNode = curSel;
-          }
-
-          curSel = curSel->selFlink;
-
-        }
-
-      }
-
-      width = topmostNode->node->getW();
-      height = topmostNode->node->getH();
-
-      curSel = awo->selectedHead->selFlink;
-      while ( curSel != awo->selectedHead ) {
-
-        curSel->node->eraseSelectBoxCorners();
-        curSel->node->erase();
-
-        curSel->node->resizeAbs( -1, -1, width, height );
-        curSel->node->resizeSelectBoxAbs( -1, -1, width, height );
-
-        curSel = curSel->selFlink;
-
-      }
-
-      awo->refresh();
-
+      alignSizeBoth( awo );
       break;
 
     case AWC_POPUP_ALIGN_SIZE_HORZ:
 
-      awo->undoObj.startNewUndoList( activeWindowClass_str173 );
-      cur = awo->selectedHead->selFlink;
-      while ( cur != awo->selectedHead ) {
-        stat = cur->node->addUndoResizeNode( &(awo->undoObj) );
-        cur = cur->selFlink;
-      }
-
-      awo->setChanged();
-
-      if ( awo->useFirstSelectedAsReference ) {
-
-        // use the first selected node as the width value
-
-        curSel = awo->selectedHead->selFlink;
-        topmostNode = curSel;
-
-      }
-      else {
-
-        // use the topmost node as the width value
-
-        curSel = awo->selectedHead->selFlink;
-        topmost = curSel->node->getY0();
-        topmostNode = curSel;
-        while ( curSel != awo->selectedHead ) {
-
-          if ( curSel->node->getY0() < topmost ) {
-            topmost = curSel->node->getY0();
-            topmostNode = curSel;
-          }
-
-          curSel = curSel->selFlink;
-
-        }
-
-      }
-
-      width = topmostNode->node->getW();
-
-      curSel = awo->selectedHead->selFlink;
-      while ( curSel != awo->selectedHead ) {
-
-        curSel->node->eraseSelectBoxCorners();
-        curSel->node->erase();
-
-        curSel->node->resizeAbs( -1, -1, width, -1 );
-        curSel->node->resizeSelectBoxAbs( -1, -1, width, -1 );
-
-        curSel = curSel->selFlink;
-
-      }
-
-      awo->refresh();
-
+      alignSizeWidth( awo );
       break;
 
     case AWC_POPUP_ALIGN_SIZE_VERT:
 
-      awo->undoObj.startNewUndoList( activeWindowClass_str173 );
-      cur = awo->selectedHead->selFlink;
-      while ( cur != awo->selectedHead ) {
-        stat = cur->node->addUndoResizeNode( &(awo->undoObj) );
-        cur = cur->selFlink;
-      }
-
-      awo->setChanged();
-
-      if ( awo->useFirstSelectedAsReference ) {
-
-        // use the first selected node as the height value
-
-        curSel = awo->selectedHead->selFlink;
-        leftmostNode = curSel;
-
-      }
-      else {
-
-        // use the leftmost node as the height value
-
-        curSel = awo->selectedHead->selFlink;
-        leftmost = curSel->node->getX0();
-        leftmostNode = curSel;
-        while ( curSel != awo->selectedHead ) {
-
-          if ( curSel->node->getX0() < leftmost ) {
-            leftmost = curSel->node->getX0();
-            leftmostNode = curSel;
-          }
-
-          curSel = curSel->selFlink;
-
-        }
-
-      }
-
-      height = leftmostNode->node->getH();
-
-      curSel = awo->selectedHead->selFlink;
-      while ( curSel != awo->selectedHead ) {
-
-        curSel->node->eraseSelectBoxCorners();
-        curSel->node->erase();
-
-        curSel->node->resizeAbs( -1, -1, -1, height );
-        curSel->node->resizeSelectBoxAbs( -1, -1, -1, height );
-
-        curSel = curSel->selFlink;
-
-      }
-
-      awo->refresh();
-
+      alignSizeHeight( awo );
       break;
-
 
     case AWC_POPUP_DISTRIBUTE_VERTICALLY:
 
+      distribVert( awo );
+      break;
+
+#if 0
       awo->undoObj.startNewUndoList( activeWindowClass_str174 );
       cur = awo->selectedHead->selFlink;
       while ( cur != awo->selectedHead ) {
@@ -5043,9 +6924,14 @@ activeGraphicListPtr cur, curSel, topmostNode, leftmostNode,
       awo->refresh();
 
       break;
+#endif
 
     case AWC_POPUP_DISTRIBUTE_MIDPT_VERTICALLY:
 
+      distribMidptVert( awo );
+      break;
+
+#if 0
       awo->undoObj.startNewUndoList( activeWindowClass_str174 );
       cur = awo->selectedHead->selFlink;
       while ( cur != awo->selectedHead ) {
@@ -5118,9 +7004,14 @@ activeGraphicListPtr cur, curSel, topmostNode, leftmostNode,
       awo->refresh();
 
       break;
+#endif
 
     case AWC_POPUP_DISTRIBUTE_HORIZONTALLY:
 
+      distribHorz( awo );
+      break;
+
+#if 0
       awo->undoObj.startNewUndoList( activeWindowClass_str174 );
       cur = awo->selectedHead->selFlink;
       while ( cur != awo->selectedHead ) {
@@ -5209,9 +7100,14 @@ activeGraphicListPtr cur, curSel, topmostNode, leftmostNode,
       awo->refresh();
 
       break;
+#endif
 
     case AWC_POPUP_DISTRIBUTE_MIDPT_HORIZONTALLY:
 
+      distribMidptHorz( awo );
+      break;
+
+#if 0
       awo->undoObj.startNewUndoList( activeWindowClass_str174 );
       cur = awo->selectedHead->selFlink;
       while ( cur != awo->selectedHead ) {
@@ -5284,10 +7180,14 @@ activeGraphicListPtr cur, curSel, topmostNode, leftmostNode,
       awo->refresh();
 
       break;
-
+#endif
 
     case AWC_POPUP_DISTRIBUTE_MIDPT_BOTH:
 
+      distrib2D( awo );
+      break;
+
+#if 0
       awo->undoObj.startNewUndoList( activeWindowClass_str174 );
       cur = awo->selectedHead->selFlink;
       while ( cur != awo->selectedHead ) {
@@ -5351,22 +7251,6 @@ activeGraphicListPtr cur, curSel, topmostNode, leftmostNode,
 
       }
 
-      // debug
-      //width = maxX - minX;
-      //height = maxY - minY;
-      //awo->drawGc.saveFg();
-      //awo->drawGc.setFG( BlackPixel( awo->d, DefaultScreen(awo->d) ) );
-      //XDrawRectangle( awo->d, XtWindow(awo->drawWidget),
-      // awo->drawGc.normGC(), minX, minY, width, height );
-
-      // debug
-      //cur = twoDimHead1->flink;
-      //while ( cur != twoDimHead1 ) {
-      //  fprintf( stderr, "x=%-d, y=%-d\n", cur->node->getX0(),
-      //   cur->node->getY0() );
-      //  cur = cur->flink;
-      //}
-
       // find num rows, cols
       nCols = maxRows = 0;
       cur = twoDimHead1->flink;
@@ -5418,8 +7302,6 @@ activeGraphicListPtr cur, curSel, topmostNode, leftmostNode,
 
       }
 
-      //fprintf( stderr, "num cols = %-d, max rows = %-d\n", nCols, maxRows );
-
       if ( nCols > 1 ) {
         incX = ( rightX - leftX ) / ( nCols - 1 );
       }
@@ -5433,8 +7315,6 @@ activeGraphicListPtr cur, curSel, topmostNode, leftmostNode,
       else {
         incY = 1;
       }
-
-      //fprintf( stderr, "incX = %-d, incY = %-d\n", incX, incY );
 
       // if necessary, reallocate work array
       if ( maxRows > awo->list_array_size ) {
@@ -5587,7 +7467,7 @@ activeGraphicListPtr cur, curSel, topmostNode, leftmostNode,
       awo->refresh();
 
       break;
-
+#endif
 
     case AWC_POPUP_CHANGE_DSP_PARAMS:
 
@@ -5837,19 +7717,19 @@ activeWindowClass *awo;
           XtVaSetValues(awo->drawWidget,
            XmNwidth, (Dimension)ce->width,
            XmNheight, (Dimension)ce->height,
-           0);
+	   NULL);
 
           if ( awo->scroll ) {
             XtVaSetValues(awo->scroll,
              XmNwidth, (Dimension)ce->width,
              XmNheight, (Dimension)ce->height,
-             0);
+             NULL);
           }
 
           XtVaSetValues(awo->top,
            XmNwidth, (Dimension)ce->width,
            XmNheight, (Dimension)ce->height,
-           0);
+           NULL);
 
         }
 
@@ -5889,7 +7769,7 @@ activeWindowClass *awo;
         XtVaSetValues(awo->drawWidget,
          XmNwidth, (Dimension)awo->w,
          XmNheight, (Dimension)awo->h,
-         0);
+         NULL);
 
       }
       else {
@@ -5898,13 +7778,13 @@ activeWindowClass *awo;
           XtVaSetValues(awo->scroll,
            XmNwidth, (Dimension)awo->w,
            XmNheight, (Dimension)awo->h,
-           0);
+           NULL);
 	}
 
         XtVaSetValues(awo->drawWidget,
          XmNwidth, (Dimension)awo->w,
          XmNheight, (Dimension)awo->h,
-         0);
+         NULL);
 
       }
 
@@ -6074,6 +7954,11 @@ Boolean  nothingDone = False;
       stat = awo->currentPointObject->movePointRel( awo->currentPoint,
        xInc, yInc );
 
+      if ( awo->viewDims ) {
+        setPointDimensions( awo, awo->currentPoint->x,
+         awo->currentPoint->y );
+      }
+
       goto done;
 
     }
@@ -6162,6 +8047,72 @@ Boolean  nothingDone = False;
       if ( ( awo->state == AWC_ONE_SELECTED ) ||
 	   ( awo->state == AWC_MANY_SELECTED ) ) {
         do_ungroup( awo );
+      }
+    }
+    else if ( key == XK_R ) {
+      curSel = awo->selectedHead->selFlink;
+      if ( curSel != awo->selectedHead ) {
+        awo->recordedRefRect = 1;
+        curSel->node->getSelBoxDims( &(awo->refRect[1].x),
+         &(awo->refRect[1].y), &(awo->refRect[1].w), &(awo->refRect[1].h) );
+      }
+    }
+    else if ( key == XK_r ) {
+      awo->recordedRefRect = 0;
+    }
+    else if ( key == XK_plus ) {
+      if ( awo->state == AWC_MANY_SELECTED ) {
+        alignCenter( awo );
+      }
+    }
+    else if ( key == XK_minus ) {
+      if ( awo->state == AWC_MANY_SELECTED ) {
+        alignCenterHorz( awo );
+      }
+    }
+    else if ( key == XK_bar ) {
+      if ( awo->state == AWC_MANY_SELECTED ) {
+        alignCenterVert( awo );
+      }
+    }
+    else if ( key == XK_b ) {
+      if ( awo->state == AWC_MANY_SELECTED ) {
+        alignSizeBoth( awo );
+      }
+    }
+    else if ( key == XK_h ) {
+      if ( awo->state == AWC_MANY_SELECTED ) {
+        alignSizeHeight( awo );
+      }
+    }
+    else if ( key == XK_w ) {
+      if ( awo->state == AWC_MANY_SELECTED ) {
+        alignSizeWidth( awo );
+      }
+    }
+    else if ( key == XK_2 ) {
+      if ( awo->state == AWC_MANY_SELECTED ) {
+        distrib2D( awo );
+      }
+    }
+    else if ( key == XK_e ) {
+      if ( awo->state == AWC_MANY_SELECTED ) {
+        distribVert( awo );
+      }
+    }
+    else if ( key == XK_E ) {
+      if ( awo->state == AWC_MANY_SELECTED ) {
+        distribMidptVert( awo );
+      }
+    }
+    else if ( key == XK_f ) {
+      if ( awo->state == AWC_MANY_SELECTED ) {
+        distribHorz( awo );
+      }
+    }
+    else if ( key == XK_F ) {
+      if ( awo->state == AWC_MANY_SELECTED ) {
+        distribMidptHorz( awo );
       }
     }
     else {
@@ -7171,7 +9122,9 @@ Boolean  nothingDone = False;
             awo->currentPoint =
               awo->currentPointObject->selectPoint( be->x, be->y );
 
-            if ( awo->currentPoint ) awo->state = AWC_MOVING_CREATE_POINT;
+            if ( awo->currentPoint ) {
+              awo->state = AWC_MOVING_CREATE_POINT;
+	    }
 
           }
 
@@ -8137,12 +10090,19 @@ Boolean  nothingDone = False;
 
               awo->state = AWC_EDITING_POINTS;
               awo->usingArrowKeys = 0;
+              if ( awo->currentPointObject ) {
+                awo->currentPointObject->deselectAllPoints();
+	      }
               break;
 
 	    case AWC_MOVING_CREATE_POINT:
 
               awo->state = AWC_CREATING_POINTS;
               awo->usingArrowKeys = 0;
+              if ( awo->currentPointObject ) {
+                awo->currentPointObject->deselectAllPoints();
+	      }
+
               break;
 
 	    case AWC_EDITING_POINTS:
@@ -8151,6 +10111,8 @@ Boolean  nothingDone = False;
 
 	    case AWC_NONE_SELECTED:
 
+              awo->b2NoneSelectX = be->x;
+              awo->b2NoneSelectY = be->y;
               XmMenuPosition( awo->b2NoneSelectPopup, be );
               XtManageChild( awo->b2NoneSelectPopup );
 
@@ -8429,6 +10391,12 @@ Boolean  nothingDone = False;
     if ( awo->state == AWC_WAITING ) goto done;
 
     me = (XMotionEvent *) e;
+
+    if ( !awo->usingArrowKeys ) {
+      if ( awo->viewDims ) {
+        setPointDimensions( awo, (int) me->x, (int) me->y );
+      }
+    }
 
     if ( awo->appCtx->viewXy ) {
 
@@ -9654,7 +11622,7 @@ Boolean nothingDone = False;
 
     }
     else if ( ( be->button == 2 ) &&
-         !( be->state & ShiftMask ) &&
+         ( be->state & ShiftMask ) &&
          ( be->state & ControlMask ) ) {
 
       cur = awo->head->blink;
@@ -9681,6 +11649,9 @@ Boolean nothingDone = False;
 
     }
     else if ( ( be->button == 2 ) && ( be->state & ShiftMask ) ) {
+      // do nothing
+    }
+    else if ( ( be->button == 2 ) && ( be->state & ControlMask ) ) {
       // do nothing
     }
     else {
@@ -9897,7 +11868,6 @@ Boolean nothingDone = False;
 
       case Button2:
 
-
         if ( ( be->state & ShiftMask ) && !( be->state & ControlMask ) ) {
 
 //========== Shift B2 Release ===================================
@@ -9908,13 +11878,6 @@ Boolean nothingDone = False;
         else if ( !( be->state & ShiftMask ) && ( be->state & ControlMask ) ) {
 
 //========== Ctrl B2 Release ===================================
-
-//========== Ctrl B2 Release ===================================
-
-        }
-        else if ( ( be->state & ShiftMask ) && ( be->state & ControlMask ) ) {
-
-//========== Shift-Ctrl B2 Release =============================
 
           foundPvAction = 0;
 
@@ -9963,6 +11926,13 @@ Boolean nothingDone = False;
             cur = cur->blink;
 
           }
+
+//========== Ctrl B2 Release ===================================
+
+        }
+        else if ( ( be->state & ShiftMask ) && ( be->state & ControlMask ) ) {
+
+//========== Shift-Ctrl B2 Release =============================
 
 //========== Shift-Ctrl B2 Release =============================
 
@@ -10243,6 +12213,50 @@ done:
 
 activeWindowClass::activeWindowClass ( void ) : unknownTags() {
 
+char *str;
+int i;
+
+  curReplaceIndex = -1;
+  replaceOld = NULL;
+  replaceNew = NULL;
+  sar1 = NULL;
+  sar2 = NULL;
+  sarCaseInsensivite = 1;
+  sarUseRegExpr = 0;
+  accVal = bufAccVal = 0;
+
+  numRefPoints = numRefRects = recordedRefRect = 0;
+  showDimTimer = 0;
+  dimDialog = NULL;
+  viewDims = 0;
+
+  strcpy( templInfo, "" );
+  bufTemplInfo = NULL;
+
+  for ( i=0; i<AWC_MAXTMPLPARAMS; i++ ) {
+    strcpy( paramValue[i], "" );
+  }
+
+  invalidBgColor = 0;
+  invalidFile = 0;
+
+  usePixmap = -1; // -1 means unknown, will be determined on execute
+  bgPixmap = (Pixmap) NULL;
+  pixmapW = pixmapH = -1;
+  needCopy = 0;
+  pixmapX0 = pixmapX1 = pixmapY0 = pixmapY1 = 0;
+  bgPixmapFlag = 0;
+
+  windowState = AWC_INIT;
+
+  str = getenv( environment_str20 );
+  if ( str ) {
+    clearEpicsPvTypeDefault = 1;
+  }
+  else {
+    clearEpicsPvTypeDefault = 0;
+  }
+
   strcpy( startSignature, "edmActiveWindow" );
   strcpy( endSignature, "wodniWevitcAmde" );
 
@@ -10454,22 +12468,173 @@ activeWindowClass::activeWindowClass ( void ) : unknownTags() {
 
   ctlKeyPressed = 0;
 
+  b2NoneSelectX = b2NoneSelectY = 0;
+
+  reloadRequestFlag = 0;
+
+  frozen = false;
+
+}
+
+void activeWindowClass::initCopy ( void ) {
+
+  pixmapX0 = w;
+  pixmapY0 = h;
+  pixmapX1 = 0;
+  pixmapY1 = 0;
+
+}
+
+void activeWindowClass::updateCopyRegion (
+  int _x0,
+  int _y0,
+  int _w,
+  int _h
+) {
+
+int _x1, _y1;
+
+  _x1 = _x0 + _w;
+  _y1 = _y0 + _h;
+
+  if ( pixmapX0 > _x0 ) pixmapX0 = _x0;
+  if ( pixmapX1 < _x1 ) pixmapX1 = _x1;
+  if ( pixmapY0 > _y0 ) pixmapY0 = _y0;
+  if ( pixmapY1 < _y1 ) pixmapY1 = _y1;
+
+}
+
+void activeWindowClass::doCopy ( void ) {
+
+  if ( mode == AWC_EDIT ) {
+    needCopy = 0;
+    return;
+  }
+
+  if ( needCopy ) {
+
+    //printf( "full copy\n" );
+    //printf( "[ %-d, %-d, %-d, %-d ]\n",
+    // pixmapX0, pixmapX1, pixmapY0, pixmapY1 );
+
+    needCopy = 0;
+    needFullCopy = 0;
+
+    if ( bgPixmap ) {
+      //printf( "do copy\n" );
+      XCopyArea( d, bgPixmap,
+       XtWindow(executeWidget), executeGc.normGC(),
+       0, 0, w, h, 0, 0 );
+      initCopy();
+    }
+
+  }
+
+}
+
+void activeWindowClass::doMinCopy ( void ) {
+
+  if ( mode == AWC_EDIT ) {
+    needCopy = 0;
+    needFullCopy = 0;
+    return;
+  }
+
+  if ( needFullCopy ) {
+    doCopy();
+    return;
+  }
+
+  pixmapX0 -= 10;
+  if ( pixmapX0 < 0 ) pixmapX0 = 0;
+
+  pixmapX1 += 10;
+  if ( pixmapX1 > w ) pixmapX1 = w;
+
+  pixmapY0 -= 10;
+  if ( pixmapY0 < 0 ) pixmapY0 = 0;
+
+  pixmapY1 += 10;
+  if ( pixmapY1 > h ) pixmapY1 = h;
+
+  int pixW = pixmapX1 - pixmapX0 + 1;
+  int pixH = pixmapY1 - pixmapY0 + 1;
+
+  if ( pixW < 1 ) return;
+  if ( pixH < 1 ) return;
+
+  if ( needCopy ) {
+
+    needCopy = 0;
+
+    if ( bgPixmap ) {
+      //printf( "do copy\n" );
+      XCopyArea( d, bgPixmap,
+       XtWindow(executeWidget), executeGc.normGC(),
+       pixmapX0, pixmapY0, pixW, pixH, pixmapX0, pixmapY0 );
+      initCopy();
+    }
+
+  }
+
+}
+
+Drawable activeWindowClass::drawable (
+  Widget w
+) {
+
+  if ( bgPixmap ) {
+    return (Drawable) bgPixmap;
+  }
+  else {
+    return (Drawable) XtWindow(executeWidget);
+  }
+
 }
 
 int activeWindowClass::okToDeactivate ( void ) {
 
 activeGraphicListPtr cur, next;
 
-  if ( mode != AWC_EXECUTE ) return 1;
+  if ( loadFailure ) return 1;
 
   cur = head->flink;
   while ( cur != head ) {
     next = cur->flink;
-    if ( !cur->node->activateComplete() ) return 0;
+    if ( cur->node ) {
+      if ( !cur->node->activateComplete() ) return 0;
+    }
     cur = next;
   }
 
-  return 1;
+  if ( windowState == AWC_COMPLETE_EXECUTE ) {
+    return 1;
+  }
+
+  return 0;
+
+}
+
+int activeWindowClass::okToPreReexecute ( void ) {
+
+activeGraphicListPtr cur, next;
+
+  if ( loadFailure ) return 1;
+
+  cur = head->flink;
+  while ( cur != head ) {
+    next = cur->flink;
+    if ( cur->node ) {
+      if ( !cur->node->activateBeforePreReexecuteComplete() ) return 0;
+    }
+    cur = next;
+  }
+
+  if ( windowState == AWC_COMPLETE_EXECUTE ) {
+    return 1;
+  }
+
+  return 0;
 
 }
 
@@ -10563,6 +12728,46 @@ commentLinesPtr commentCur, commentNext;
 pvDefPtr pvDefCur, pvDefNext;
 
   //if ( !isEmbedded ) fprintf( stderr, "Destroy - [%s]\n", fileNameForSym );
+
+  windowState = AWC_TERMINATED;
+
+  if ( sar1 ) {
+    delete[] sar1;
+    sar1 = NULL;
+  }
+
+  if ( sar2 ) {
+    delete[] sar2;
+    sar2 = NULL;
+  }
+
+  if ( replaceOld ) {
+    delete[] replaceOld;
+    replaceOld = NULL;
+  }
+
+  if ( replaceNew ) {
+    delete[] replaceNew;
+    replaceNew = NULL;
+  }
+
+  if ( bufTemplInfo ) {
+    delete[] bufTemplInfo;
+    bufTemplInfo = NULL;
+  }
+
+  if ( top ) XtUnmapWidget( top );  //??????? XtUnmapWidget
+
+  if ( dimDialog ) {
+    if ( showDimTimer ) {
+      XtRemoveTimeOut( showDimTimer );
+      showDimTimer = 0;
+    }
+    viewDims = 0;
+    dimDialog->destroy();
+    delete dimDialog;
+    dimDialog = NULL;
+  }
 
   if ( dragPopup ) {
     XtDestroyWidget( dragPopup );
@@ -10697,7 +12902,7 @@ pvDefPtr pvDefCur, pvDefNext;
 
   if ( drawWidget ) {
     XtRemoveEventHandler( drawWidget,
-     KeyPressMask|KeyReleaseMask|ButtonPressMask|
+     KeyPressMask|KeyReleaseMask|ButtonPressMask|PointerMotionMask|
      ButtonReleaseMask|Button1MotionMask|
      Button2MotionMask|Button3MotionMask|ExposureMask, False,
      drawWinEventHandler, (XtPointer) this );
@@ -10743,7 +12948,9 @@ pvDefPtr pvDefCur, pvDefNext;
 
   if ( objNameDialogCreated ) objNameDialog.destroy();
 
+#if 1
   if ( top ) XtDestroyWidget( top );
+#endif
 
   // need to deallocate widget address used for top if this was an
   // embedded window
@@ -10753,6 +12960,12 @@ pvDefPtr pvDefCur, pvDefNext;
   }
 
   delete pvAction;
+
+  if ( bgPixmap ) {
+    XFreePixmap( d, bgPixmap );
+    bgPixmap = (Pixmap) NULL;
+    pixmapW = pixmapH = -1;
+  }
 
 }
 
@@ -10793,6 +13006,7 @@ void activeWindowClass::setTitle ( void ) {
 XTextProperty xtext;
 char *cptr;
 char *none = activeWindowClass_str83;
+char t[255+1];
 
   strncpy( fileNameAndRev, fileName, 255 );
   fileNameAndRev[255] = 0;
@@ -10831,7 +13045,15 @@ char *none = activeWindowClass_str83;
       }
     }
     else {
-      cptr = expStrTitle.getExpanded();
+      //cptr = expStrTitle.getExpanded();
+      strncpy( t, expStrTitle.getExpanded(), 255 );
+      t[255] = 0;
+      if ( invalidFile ) {
+        Strncat( t, " (", 255 );
+        Strncat( t, activeWindowClass_str214, 255 );
+        Strncat( t, ")", 255 );
+      }
+      cptr = t;
     }
 
   }
@@ -11313,11 +13535,11 @@ char tmp[10];
 #ifndef ADD_SCROLLED_WIN
   if ( !parent ) {
 
-    top = XtVaAppCreateShell( "edm", "edm", topLevelShellWidgetClass,
-     d,
+    top = XtVaCreatePopupShell( "edm", topLevelShellWidgetClass,
+     appCtx->apptop(),
      XmNmappedWhenManaged, False,
      XmNmwmDecorations, windowDecorations,
-     XmNresizePolicy, XmRESIZE_GROW,
+     XmNresizePolicy, XmRESIZE_NONE,
      NULL );
 
     drawWidget = XtVaCreateManagedWidget( "screen", xmDrawingAreaWidgetClass,
@@ -11325,7 +13547,7 @@ char tmp[10];
      XmNwidth, w,
      XmNheight, h,
      XmNmappedWhenManaged, False,
-     XmNresizePolicy, XmRESIZE_GROW,
+     XmNresizePolicy, XmRESIZE_NONE,
      NULL );
 
   }
@@ -11348,7 +13570,7 @@ char tmp[10];
      XmNwidth, w,
      XmNheight, h,
      XmNmappedWhenManaged, False,
-     XmNresizePolicy, XmRESIZE_GROW,
+     XmNresizePolicy, XmRESIZE_NONE,
      XmNbackground, embBg,
      NULL );
 
@@ -11361,8 +13583,14 @@ char tmp[10];
 
     if ( !parent ) {
 
-      top = XtVaAppCreateShell( "edm", "edm", topLevelShellWidgetClass,
-       d,
+      //top = XtVaAppCreateShell( "edm", "edm", topLevelShellWidgetClass,
+      // d,
+      // XmNmappedWhenManaged, False,
+      // XmNmwmDecorations, windowDecorations,
+      // NULL );
+
+      top = XtVaCreatePopupShell( "edm", topLevelShellWidgetClass,
+       appCtx->apptop(),
        XmNmappedWhenManaged, False,
        XmNmwmDecorations, windowDecorations,
        NULL );
@@ -11403,7 +13631,7 @@ char tmp[10];
 
       drawWidget = XtVaCreateManagedWidget( "screen", xmDrawingAreaWidgetClass,
        scroll ? scroll : top,
-       XmNresizePolicy, XmRESIZE_GROW,
+       XmNresizePolicy, XmRESIZE_NONE,
        XmNx, parent ? x : 0,
        XmNy, parent ? y : 0,
        XmNwidth, w,
@@ -11419,11 +13647,11 @@ char tmp[10];
 
     if ( !parent ) {
 
-      top = XtVaAppCreateShell( "edm", "edm", topLevelShellWidgetClass,
-       d,
+      top = XtVaCreatePopupShell( "edm", topLevelShellWidgetClass,
+       appCtx->apptop(),
        XmNmappedWhenManaged, False,
        XmNmwmDecorations, windowDecorations,
-       XmNresizePolicy, XmRESIZE_GROW,
+       XmNresizePolicy, XmRESIZE_NONE,
        NULL );
 
       drawWidget = XtVaCreateManagedWidget( "screen", xmDrawingAreaWidgetClass,
@@ -11431,7 +13659,7 @@ char tmp[10];
        XmNwidth, w,
        XmNheight, h,
        XmNmappedWhenManaged, False,
-       XmNresizePolicy, XmRESIZE_GROW,
+       XmNresizePolicy, XmRESIZE_NONE,
        NULL );
 
     }
@@ -11454,7 +13682,7 @@ char tmp[10];
        XmNwidth, w,
        XmNheight, h,
        XmNmappedWhenManaged, False,
-       XmNresizePolicy, XmRESIZE_GROW,
+       XmNresizePolicy, XmRESIZE_NONE,
        XmNbackground, embBg,
        NULL );
 
@@ -11486,10 +13714,12 @@ char tmp[10];
   }
 
   XtAddEventHandler( drawWidget,
-   KeyPressMask|KeyReleaseMask|ButtonPressMask|
+   KeyPressMask|KeyReleaseMask|ButtonPressMask|PointerMotionMask|
    ButtonReleaseMask|Button1MotionMask|
    Button2MotionMask|Button3MotionMask|ExposureMask, False,
    drawWinEventHandler, (XtPointer) this );
+
+  windowState = AWC_COMPLETE_DEACTIVATE;
 
   return 1;
 
@@ -12149,6 +14379,29 @@ Arg args[3];
    (XtPointer) &curBlockListNode->block );
 
 
+  str = XmStringCreateLocalized( activeWindowClass_str222 );
+
+  pb = XtVaCreateManagedWidget( "pb", xmPushButtonWidgetClass,
+   b2NoneSelectPopup,
+   XmNlabelString, str,
+   NULL );
+
+  XmStringFree( str );
+
+  curBlockListNode = new popupBlockListType;
+  curBlockListNode->block.w = pb;
+  curBlockListNode->block.ptr = (void *) AWC_POPUP_SET_PASTE_INDEX;
+  curBlockListNode->block.awo = this;
+
+  curBlockListNode->blink = popupBlockHead->blink;
+  popupBlockHead->blink->flink = curBlockListNode;
+  popupBlockHead->blink = curBlockListNode;
+  curBlockListNode->flink = popupBlockHead;
+
+  XtAddCallback( pb, XmNactivateCallback, b2ReleaseNoneSelect_cb,
+   (XtPointer) &curBlockListNode->block );
+
+
   str = XmStringCreateLocalized( activeWindowClass_str96 );
 
   pb = XtVaCreateManagedWidget( "pb", xmPushButtonWidgetClass,
@@ -12161,6 +14414,29 @@ Arg args[3];
   curBlockListNode = new popupBlockListType;
   curBlockListNode->block.w = pb;
   curBlockListNode->block.ptr = (void *) AWC_POPUP_PROPERTIES;
+  curBlockListNode->block.awo = this;
+
+  curBlockListNode->blink = popupBlockHead->blink;
+  popupBlockHead->blink->flink = curBlockListNode;
+  popupBlockHead->blink = curBlockListNode;
+  curBlockListNode->flink = popupBlockHead;
+
+  XtAddCallback( pb, XmNactivateCallback, b2ReleaseNoneSelect_cb,
+   (XtPointer) &curBlockListNode->block );
+
+
+  str = XmStringCreateLocalized( activeWindowClass_str220 );
+
+  pb = XtVaCreateManagedWidget( "pb", xmPushButtonWidgetClass,
+   b2NoneSelectPopup,
+   XmNlabelString, str,
+   NULL );
+
+  XmStringFree( str );
+
+  curBlockListNode = new popupBlockListType;
+  curBlockListNode->block.w = pb;
+  curBlockListNode->block.ptr = (void *) AWC_POPUP_TOGGLE_VIEW_DIMS;
   curBlockListNode->block.awo = this;
 
   curBlockListNode->blink = popupBlockHead->blink;
@@ -12207,6 +14483,29 @@ Arg args[3];
    curBlockListNode = new popupBlockListType;
    curBlockListNode->block.w = pb;
    curBlockListNode->block.ptr = (void *) AWC_POPUP_OPEN;
+   curBlockListNode->block.awo = this;
+
+   curBlockListNode->blink = popupBlockHead->blink;
+   popupBlockHead->blink->flink = curBlockListNode;
+   popupBlockHead->blink = curBlockListNode;
+   curBlockListNode->flink = popupBlockHead;
+
+   XtAddCallback( pb, XmNactivateCallback, b2ReleaseNoneSelect_cb,
+    (XtPointer) &curBlockListNode->block );
+
+
+   str = XmStringCreateLocalized( activeWindowClass_str215 );
+
+   pb = XtVaCreateManagedWidget( "pb", xmPushButtonWidgetClass,
+    b2NoneSelectPopup,
+    XmNlabelString, str,
+    NULL );
+
+   XmStringFree( str );
+
+   curBlockListNode = new popupBlockListType;
+   curBlockListNode->block.w = pb;
+   curBlockListNode->block.ptr = (void *) AWC_POPUP_INSERT_TEMPLATE;
    curBlockListNode->block.awo = this;
 
    curBlockListNode->blink = popupBlockHead->blink;
@@ -12663,6 +14962,29 @@ Arg args[3];
    (XtPointer) &curBlockListNode->block );
 
 
+  str = XmStringCreateLocalized( activeWindowClass_str222 );
+
+  pb = XtVaCreateManagedWidget( "pb", xmPushButtonWidgetClass,
+   b2OneSelectPopup,
+   XmNlabelString, str,
+   NULL );
+
+  XmStringFree( str );
+
+  curBlockListNode = new popupBlockListType;
+  curBlockListNode->block.w = pb;
+  curBlockListNode->block.ptr = (void *) AWC_POPUP_SET_PASTE_INDEX;
+  curBlockListNode->block.awo = this;
+
+  curBlockListNode->blink = popupBlockHead->blink;
+  popupBlockHead->blink->flink = curBlockListNode;
+  popupBlockHead->blink = curBlockListNode;
+  curBlockListNode->flink = popupBlockHead;
+
+  XtAddCallback( pb, XmNactivateCallback, b2ReleaseNoneSelect_cb,
+   (XtPointer) &curBlockListNode->block );
+
+
   str = XmStringCreateLocalized( activeWindowClass_str111 );
 
   pb = XtVaCreateManagedWidget( "pb", xmPushButtonWidgetClass,
@@ -12914,6 +15236,52 @@ Arg args[3];
   curBlockListNode->flink = popupBlockHead;
 
   XtAddCallback( pb, XmNactivateCallback, b2ReleaseManySelect_cb,
+   (XtPointer) &curBlockListNode->block );
+
+
+  str = XmStringCreateLocalized( activeWindowClass_str224 );
+
+  pb = XtVaCreateManagedWidget( "pb", xmPushButtonWidgetClass,
+   b2OneSelectPopup,
+   XmNlabelString, str,
+   NULL );
+
+  XmStringFree( str );
+
+  curBlockListNode = new popupBlockListType;
+  curBlockListNode->block.w = pb;
+  curBlockListNode->block.ptr = (void *) AWC_POPUP_SAR;
+  curBlockListNode->block.awo = this;
+
+  curBlockListNode->blink = popupBlockHead->blink;
+  popupBlockHead->blink->flink = curBlockListNode;
+  popupBlockHead->blink = curBlockListNode;
+  curBlockListNode->flink = popupBlockHead;
+
+  XtAddCallback( pb, XmNactivateCallback, b2ReleaseManySelect_cb,
+   (XtPointer) &curBlockListNode->block );
+
+
+  str = XmStringCreateLocalized( activeWindowClass_str221 );
+
+  pb = XtVaCreateManagedWidget( "pb", xmPushButtonWidgetClass,
+   b2OneSelectPopup,
+   XmNlabelString, str,
+   NULL );
+
+  XmStringFree( str );
+
+  curBlockListNode = new popupBlockListType;
+  curBlockListNode->block.w = pb;
+  curBlockListNode->block.ptr = (void *) AWC_POPUP_RECORD_DIMS;
+  curBlockListNode->block.awo = this;
+
+  curBlockListNode->blink = popupBlockHead->blink;
+  popupBlockHead->blink->flink = curBlockListNode;
+  popupBlockHead->blink = curBlockListNode;
+  curBlockListNode->flink = popupBlockHead;
+
+  XtAddCallback( pb, XmNactivateCallback, b2ReleaseOneSelect_cb,
    (XtPointer) &curBlockListNode->block );
 
 
@@ -13170,6 +15538,29 @@ Arg args[3];
   curBlockListNode = new popupBlockListType;
   curBlockListNode->block.w = pb;
   curBlockListNode->block.ptr = (void *) AWC_POPUP_PASTE_IN_PLACE;
+  curBlockListNode->block.awo = this;
+
+  curBlockListNode->blink = popupBlockHead->blink;
+  popupBlockHead->blink->flink = curBlockListNode;
+  popupBlockHead->blink = curBlockListNode;
+  curBlockListNode->flink = popupBlockHead;
+
+  XtAddCallback( pb, XmNactivateCallback, b2ReleaseNoneSelect_cb,
+   (XtPointer) &curBlockListNode->block );
+
+
+  str = XmStringCreateLocalized( activeWindowClass_str222 );
+
+  pb = XtVaCreateManagedWidget( "pb", xmPushButtonWidgetClass,
+   b2ManySelectPopup,
+   XmNlabelString, str,
+   NULL );
+
+  XmStringFree( str );
+
+  curBlockListNode = new popupBlockListType;
+  curBlockListNode->block.w = pb;
+  curBlockListNode->block.ptr = (void *) AWC_POPUP_SET_PASTE_INDEX;
   curBlockListNode->block.awo = this;
 
   curBlockListNode->blink = popupBlockHead->blink;
@@ -13788,6 +16179,29 @@ Arg args[3];
   curBlockListNode = new popupBlockListType;
   curBlockListNode->block.w = pb;
   curBlockListNode->block.ptr = (void *) AWC_POPUP_CHANGE_PV_NAMES;
+  curBlockListNode->block.awo = this;
+
+  curBlockListNode->blink = popupBlockHead->blink;
+  popupBlockHead->blink->flink = curBlockListNode;
+  popupBlockHead->blink = curBlockListNode;
+  curBlockListNode->flink = popupBlockHead;
+
+  XtAddCallback( pb, XmNactivateCallback, b2ReleaseManySelect_cb,
+   (XtPointer) &curBlockListNode->block );
+
+
+  str = XmStringCreateLocalized( activeWindowClass_str224 );
+
+  pb = XtVaCreateManagedWidget( "pb", xmPushButtonWidgetClass,
+   b2ManySelectPopup,
+   XmNlabelString, str,
+   NULL );
+
+  XmStringFree( str );
+
+  curBlockListNode = new popupBlockListType;
+  curBlockListNode->block.w = pb;
+  curBlockListNode->block.ptr = (void *) AWC_POPUP_SAR;
   curBlockListNode->block.awo = this;
 
   curBlockListNode->blink = popupBlockHead->blink;
@@ -14523,19 +16937,101 @@ int activeWindowClass::renameToBackupFile (
   char *fname )
 {
 
-int stat;
-char tmp[511+1];
+int stat, found, min, max, num, count;
+char tmp[530+1], spec[520+1], name[511+1], ext[511+1], verstr[10+1],
+ *tk, *ctx, *nonInt;
 
-  strncpy( tmp, fname, 510 ); // leave room for ~
-  Strncat( tmp, "~", 511 );
+char *envPtr;
+int maxver = 1;
 
-  if ( fileExists( tmp ) ) {
-    stat = unlink( tmp );
-    if ( stat ) return 2; // error
+  envPtr = getenv( environment_str18 );
+
+  if ( envPtr ) {
+
+    if ( !strcasecmp( envPtr, activeWindowClass_str211 ) ) {
+      maxver = -1;
+    }
+    else {
+
+      strncpy( tmp, envPtr, 511 );
+      tmp[511] = 0;
+      num = strtol( tmp, &nonInt, 10 );
+      if ( !nonInt || !strcmp( nonInt, "" ) ) {
+	maxver = num;
+      }
+
+      if ( maxver < 1 ) maxver = 1;
+
+    }
+
   }
-  if ( fileExists( fname ) ) {
-    stat = rename( fname, tmp );
-    if ( stat ) return 4; // error
+
+  strncpy( spec, fname, 511 );
+  Strncat( spec, "-*", 520 );
+  min = max = count = 0;
+  getFirstFileNameExt( spec, 511, name, 511, ext, &found );
+  while ( found ) {
+    ctx = NULL;
+    tk = strtok_r( ext, "-", &ctx );
+    tk = strtok_r( NULL, "-", &ctx );
+    if ( tk ) {
+      num = strtol( tk, &nonInt, 10 );
+      if ( !nonInt || !strcmp( nonInt, "" ) ) {
+        count++;
+        if ( min ) {
+          if ( min > num ) min = num;
+	}
+	else {
+	  min = num;
+	}
+	if ( max < num ) max = num;
+      }
+    }
+    getNextFileNameExt( spec, 511, name, 511, ext, &found );
+  }
+
+  if ( maxver != 1 ) {
+
+    if ( ( maxver != -1 ) && count >= maxver ) {
+
+      strncpy( tmp, fname, 510 ); // leave room for version info
+      tmp[510] = 0;
+      snprintf( verstr, 10, "-%-d", min ); 
+      Strncat( tmp, verstr, 530 );
+
+      if ( fileExists( tmp ) ) {
+        stat = unlink( tmp );
+        if ( stat ) return 2; // error
+      }
+
+    }
+
+    num = max+1;
+    strncpy( tmp, fname, 510 ); // leave room for version info
+    tmp[510] = 0;
+    snprintf( verstr, 10, "-%-d", num ); 
+    Strncat( tmp, verstr, 530 );
+
+    if ( fileExists( fname ) ) {
+      stat = rename( fname, tmp );
+      if ( stat ) return 4; // error
+    }
+
+  }
+  else {
+
+    strncpy( tmp, fname, 510 ); // leave room for ~
+    Strncat( tmp, "~", 511 );
+
+    if ( fileExists( tmp ) ) {
+      stat = unlink( tmp );
+      if ( stat ) return 2; // error
+    }
+    if ( fileExists( fname ) ) {
+      stat = rename( fname, tmp );
+      if ( stat ) return 4; // error
+    }
+
   }
 
   return 1; // success
@@ -14601,15 +17097,20 @@ int stat;
 
   if ( appendExtensionFlag ) {
 
-    if ( strlen(oneFileName) > strlen(".edl") ) {
+    //if ( strlen(oneFileName) > strlen(".edl") ) {
+    if ( strlen(oneFileName) > strlen(activeWindowClass::defExt()) ) {
       if (
-       strcmp( &oneFileName[strlen(oneFileName)-strlen(".edl")], ".edl" ) !=
-       0 ) {
-        Strncat( oneFileName, ".edl", 255 );
+        //strcmp( &oneFileName[strlen(oneFileName)-strlen(".edl")],
+        // ".edl" ) != 0 ) {
+        strcmp( &oneFileName[strlen(oneFileName)-strlen(activeWindowClass::defExt())],
+         activeWindowClass::defExt() ) != 0 ) {
+        //Strncat( oneFileName, ".edl", 255 );
+        Strncat( oneFileName, activeWindowClass::defExt(), 255 );
       }
     }
     else {
-      Strncat( oneFileName, ".edl", 255 );
+      //Strncat( oneFileName, ".edl", 255 );
+      Strncat( oneFileName, activeWindowClass::defExt(), 255 );
     }
 
   }
@@ -14695,15 +17196,20 @@ tagClass tag;
 
   if ( appendExtensionFlag ) {
 
-    if ( strlen(oneFileName) > strlen(".edl") ) {
+    //if ( strlen(oneFileName) > strlen(".edl") ) {
+    if ( strlen(oneFileName) > strlen(activeWindowClass::defExt()) ) {
       if (
-       strcmp( &oneFileName[strlen(oneFileName)-strlen(".edl")], ".edl" ) !=
-       0 ) {
-        Strncat( oneFileName, ".edl", 255 );
+	//strcmp( &oneFileName[strlen(oneFileName)-strlen(".edl")],
+        // ".edl" ) != 0 ) {
+        strcmp( &oneFileName[strlen(oneFileName)-strlen(activeWindowClass::defExt())],
+         activeWindowClass::defExt() ) != 0 ) {
+        //Strncat( oneFileName, ".edl", 255 );
+        Strncat( oneFileName, activeWindowClass::defExt(), 255 );
       }
     }
     else {
-      Strncat( oneFileName, ".edl", 255 );
+      //Strncat( oneFileName, ".edl", 255 );
+      Strncat( oneFileName, activeWindowClass::defExt(), 255 );
     }
 
   }
@@ -14965,6 +17471,364 @@ int activeWindowClass::old_load (
 
 }
 
+int activeWindowClass::loadDummy (
+  int x,
+  int y,
+  int setPosition ) {
+
+FILE *f = NULL;
+activeGraphicListPtr cur, next;
+int stat;
+Widget clipWidget, hsbWidget, vsbWidget;
+
+tagClass tag;
+
+  loadFailure = 1;
+
+  tag.initLine();
+
+  // empty main list
+  cur = head->flink;
+  while ( cur != head ) {
+    next = cur->flink;
+    delete cur->node;
+    delete cur;
+    cur = next;
+  }
+
+  head->flink = head;
+  head->blink = head;
+
+  // empty cut list
+  cur = cutHead->flink;
+  while ( cur != cutHead ) {
+    next = cur->flink;
+    delete cur->node;
+    delete cur;
+    cur = next;
+  }
+
+  cutHead->flink = cutHead;
+  cutHead->blink = cutHead;
+
+  // set select list empty
+
+  selectedHead->selFlink = selectedHead;
+  selectedHead->selBlink = selectedHead;
+
+  stat = this->loadWinDummy( f, x, y, setPosition );
+
+  this->setUnchanged();
+
+  if ( scroll ) {
+
+    XtVaSetValues( scroll,
+     XmNtopShadowColor, ci->pix(defaultTopShadowColor),
+     XmNbottomShadowColor, ci->pix(defaultBotShadowColor),
+     XmNborderColor, ci->pix(bgColor),
+     XmNhighlightColor, ci->pix(bgColor),
+     XmNforeground, ci->pix(bgColor),
+     XmNbackground, ci->pix(bgColor),
+     NULL );
+
+    XtVaGetValues( scroll,
+     XmNclipWindow, &clipWidget,
+     XmNhorizontalScrollBar, &hsbWidget,
+     XmNverticalScrollBar, &vsbWidget,
+     NULL );
+
+    if ( clipWidget ) {
+      XtVaSetValues( clipWidget,
+        XmNtopShadowColor, ci->pix(defaultTopShadowColor),
+        XmNbottomShadowColor, ci->pix(defaultBotShadowColor),
+        XmNborderColor, ci->pix(bgColor),
+        XmNhighlightColor, ci->pix(bgColor),
+        XmNforeground, ci->pix(bgColor),
+        XmNbackground, ci->pix(bgColor),
+       NULL );
+    }
+
+    if ( hsbWidget ) {
+      XtVaSetValues( hsbWidget,
+        XmNtopShadowColor, ci->pix(defaultTopShadowColor),
+        XmNbottomShadowColor, ci->pix(defaultBotShadowColor),
+        XmNborderColor, ci->pix(bgColor),
+        XmNhighlightColor, ci->pix(bgColor),
+        XmNforeground, ci->pix(bgColor),
+        XmNbackground, ci->pix(bgColor),
+        XmNtroughColor, ci->pix(bgColor),
+        NULL );
+    }
+
+    if ( vsbWidget ) {
+      XtVaSetValues( vsbWidget,
+        XmNtopShadowColor, ci->pix(defaultTopShadowColor),
+        XmNbottomShadowColor, ci->pix(defaultBotShadowColor),
+        XmNborderColor, ci->pix(bgColor),
+        XmNhighlightColor, ci->pix(bgColor),
+        XmNforeground, ci->pix(bgColor),
+        XmNbackground, ci->pix(bgColor),
+        XmNtroughColor, ci->pix(bgColor),
+        NULL );
+    }
+
+  }
+
+  showName = 0;
+
+  setTitle();
+
+  exit_after_save = 0;
+
+  loadFailure = 0;
+
+  return 1;
+
+}
+
+void activeWindowClass::deleteTemplateMacros ( void ) {
+
+int i;
+
+  for ( i=0; i<numTemplateMacros; i++ ) {
+    if ( templateMacros[i] ) delete[] templateMacros[i];
+    if ( templateExpansions[i] ) delete[] templateExpansions[i];
+  }
+  delete templateMacros;
+  templateMacros = NULL;
+  delete templateExpansions;
+  templateExpansions = NULL;
+
+}
+
+int activeWindowClass::getTemplateMacros ( void ) {
+
+tagClass tag;
+FILE *f;
+int i, ii, n, winMajor, winMinor, winRelease;
+char saveParams[AWC_MAXTMPLPARAMS][AWC_TMPLPARAMSIZE+1];
+
+  numTemplateMacros = 0;
+
+  f = this->openAnyTemplate( fileNameForSym, "r" );
+  if ( !f ) {
+    return 0;
+  }
+
+  // save template params
+  for ( i=0; i<AWC_MAXTMPLPARAMS; i++ ) {
+    strcpy( saveParams[i], paramValue[i] );
+  }
+
+  // the next func reads template params into bufParamValue
+  discardWinLoadData( f, &winMajor, &winMinor, &winRelease );
+
+  // copy buf
+  for ( i=0; i<AWC_MAXTMPLPARAMS; i++ ) {
+    strcpy( paramValue[i], bufParamValue[i] );
+  }
+
+  fclose( f );
+
+  n = 0;
+  for ( i=0; i<AWC_MAXTMPLPARAMS; i++ ) {
+    if ( !blank(paramValue[i]) ) {
+      n++;
+    }
+  }
+
+  numTemplateMacros = n;
+  templateMacros = (char **) calloc( n, sizeof( char *) );
+  templateExpansions = (char **) calloc( n, sizeof( char *) );
+
+  for ( i=0, ii=0; i<AWC_MAXTMPLPARAMS; i++ ) {
+    if ( !blank(paramValue[i]) ) {
+      if ( ii < n ) {
+        templateMacros[ii] = new char[strlen(paramValue[i])+1];
+        strcpy( templateMacros[ii], paramValue[i] );
+        templateExpansions[ii] = new char[AWC_TMPLPARAMSIZE+1];
+        strcpy( templateExpansions[ii], "" );
+      }
+      ii++;
+    }
+  }
+
+  // restore template params
+  for ( i=0; i<AWC_MAXTMPLPARAMS; i++ ) {
+    strcpy( paramValue[i], saveParams[i] );
+  }
+
+  return 1;
+
+}
+
+int activeWindowClass::loadTemplate (
+  int x,
+  int y,
+  char *fname ) {
+
+FILE *f;
+activeGraphicListPtr cur;
+char *gotOne, tagName[255+1], objName[63+1], val[4095+1],
+ defName[255+1];
+int stat;
+char msg[79+1];
+int winMajor, winMinor, winRelease;
+
+int isCompound;
+tagClass tag;
+
+  tag.initLine();
+
+  // set select list empty
+
+  selectedHead->selFlink = selectedHead;
+  selectedHead->selBlink = selectedHead;
+
+  // read in file
+  f = this->openAnyTemplate( fname, "r" );
+  if ( !f ) {
+    sprintf( msg, activeWindowClass_str156, this->fileName );
+    appCtx->postMessage( msg );
+    return 0;
+  }
+
+  this->setChanged();
+
+  discardWinLoadData( f, &winMajor, &winMinor, &winRelease );
+
+  if ( winMajor > AWC_MAJOR_VERSION ) {
+    appCtx->postMessage( activeWindowClass_str191 );
+    return 0;
+  }
+
+  if ( winMajor < 4 ) {
+
+    appCtx->postMessage( activeWindowClass_str191 );
+    return 0;
+
+  }
+  else {
+
+    // read file and process each leading keyword
+    tag.init();
+    tag.loadR( "object", 63, objName );
+    tag.loadR( "pvdef", 255, defName );
+    tag.loadR( "forceLocalPvs" );
+
+    gotOne = tag.getName( tagName, 255, f );
+
+    while ( gotOne ) {
+
+      //fprintf( stderr, "name = [%s]\n", tagName );
+
+      if ( strcmp( tagName, "object" ) == 0 ) {
+
+        tag.getValue( val, 4095, f, &isCompound );
+        tag.decode( tagName, val, isCompound );
+
+        // ==============================================================
+        // Create object
+
+        //fprintf( stderr, "objName = [%s]\n", objName );
+
+        cur = new activeGraphicListType;
+        if ( !cur ) {
+          fileClose( f );
+          appCtx->postMessage(
+           activeWindowClass_str157 );
+          return 0;
+        }
+        cur->defExeFlink = NULL;
+        cur->defExeBlink = NULL;
+
+        cur->node = obj.createNew( objName );
+
+        if ( cur->node ) {
+
+          stat = cur->node->createFromFile( f, objName, this );
+          if ( !( stat & 1 ) ) {
+            return stat; // memory leak here
+	  }
+
+          cur->node->move( x, y );
+          cur->node->moveSelectBox( x, y );
+
+	  cur->node->expandTemplate( numTemplateMacros,
+	   templateMacros, templateExpansions );
+
+          cur->blink = head->blink;
+          head->blink->flink = cur;
+          head->blink = cur;
+          cur->flink = head;
+
+	  // select
+          cur->node->setSelected();
+          cur->selBlink = selectedHead->selBlink;
+          selectedHead->selBlink->selFlink = cur;
+          selectedHead->selBlink = cur;
+          cur->selFlink = selectedHead;
+
+        }
+        else {
+
+	  // Discard all content up to "endObjectProperties"
+
+          sprintf( msg, activeWindowClass_str158, tag.line(),
+           objName );
+          appCtx->postMessage( msg );
+
+          tag.init();
+          tag.loadR( "endObjectProperties", 63, objName );
+          stat = tag.readTags( f, "endObjectProperties" );
+
+	  // Start looking for leading keywords again
+          tag.init();
+          tag.loadR( "object", 63, objName );
+          tag.loadR( "pvdef", 255, defName );
+          tag.loadR( "forceLocalPvs" );
+
+        }
+
+        // ===================================
+
+        gotOne = tag.getName( tagName, 255, f );
+
+      }
+      else if ( strcmp( tagName, "pvdef" ) == 0 ) {
+
+	// discard these
+
+        tag.getValue( val, 4095, f, &isCompound );
+        tag.decode( tagName, val, isCompound );
+
+        gotOne = tag.getName( tagName, 255, f );
+
+      }
+      else if ( strcmp( tagName, "forceLocalPvs" ) == 0 ) {
+
+	// ignore this
+
+        gotOne = tag.getName( tagName, 255, f );
+
+      }
+      else {
+
+        fprintf( stderr, "Unknown tag name: [%s]\n", tagName );
+        gotOne = NULL;
+
+      }
+
+    }
+
+  }
+
+  fileClose( f );
+
+  return 1;
+
+}
+
 int activeWindowClass::loadGeneric (
   int x,
   int y,
@@ -15020,6 +17884,9 @@ tagClass tag;
   if ( !f ) {
     sprintf( msg, activeWindowClass_str156, this->fileName );
     appCtx->postMessage( msg );
+    if ( isEmbedded ) {
+      return loadDummy( x, y, setPosition );
+    }
     return 0;
   }
 
@@ -15029,6 +17896,9 @@ tagClass tag;
 
   if ( major > AWC_MAJOR_VERSION ) {
     appCtx->postMessage( activeWindowClass_str191 );
+    if ( isEmbedded ) {
+      return loadDummy( x, y, setPosition );
+    }
     return 0;
   }
 
@@ -15040,10 +17910,20 @@ tagClass tag;
     else {
       stat = this->old_loadWin( f );
     }
-    if ( !( stat & 1 ) ) return stat; // memory leak here
+    if ( !( stat & 1 ) ) {
+      if ( isEmbedded ) {
+        return loadDummy( x, y, setPosition );
+      }
+      return stat; // memory leak here
+    }
 
     stat = readUntilEndOfData( f ); // for forward compatibility
-    if ( !( stat & 1 ) ) return stat; // memory leak here
+    if ( !( stat & 1 ) ) {
+      if ( isEmbedded ) {
+        return loadDummy( x, y, setPosition );
+      }
+      return stat; // memory leak here
+    }
 
     while ( !feof(f) ) {
 
@@ -15059,6 +17939,9 @@ tagClass tag;
         if ( !cur ) {
           fileClose( f );
           appCtx->postMessage( activeWindowClass_str157 );
+          if ( isEmbedded ) {
+            return loadDummy( x, y, setPosition );
+          }
           return 0;
         }
         cur->defExeFlink = NULL;
@@ -15069,10 +17952,20 @@ tagClass tag;
         if ( cur->node ) {
 
           stat = cur->node->old_createFromFile( f, name, this );
-          if ( !( stat & 1 ) ) return stat; // memory leak here
+          if ( !( stat & 1 ) ) {
+            if ( isEmbedded ) {
+              return loadDummy( x, y, setPosition );
+            }
+            return stat; // memory leak here
+	  }
 
           stat = readUntilEndOfData( f ); // for forward compatibility
-          if ( !( stat & 1 ) ) return stat; // memory leak here
+          if ( !( stat & 1 ) ) {
+            if ( isEmbedded ) {
+              return loadDummy( x, y, setPosition );
+            }
+            return stat; // memory leak here
+	  }
 
           cur->blink = head->blink;
           head->blink->flink = cur;
@@ -15085,6 +17978,9 @@ tagClass tag;
           sprintf( msg, activeWindowClass_str158, line(),
            name );
           appCtx->postMessage( msg );
+          if ( isEmbedded ) {
+            return loadDummy( x, y, setPosition );
+          }
           return 0;
         }
 
@@ -15101,8 +17997,12 @@ tagClass tag;
     else {
       stat = this->loadWin( f );
     }
-    if ( !( stat & 1 ) ) return stat; // memory leak here
-
+    if ( !( stat & 1 ) ) {
+      if ( isEmbedded ) {
+        return loadDummy( x, y, setPosition );
+      }
+      return stat; // memory leak here
+    }
 
     if ( isEmbedded ) {
 
@@ -15117,6 +18017,9 @@ tagClass tag;
         fileClose( f );
         appCtx->postMessage(
          activeWindowClass_str157 );
+        if ( isEmbedded ) {
+          return loadDummy( x, y, setPosition );
+        }
         return 0;
       }
       cur->defExeFlink = NULL;
@@ -15142,7 +18045,10 @@ tagClass tag;
 
     }
 
-
+    if ( invalidFile ) {
+      bgColor = invalidBgColor;
+      drawGc.setBaseBG( ci->pix(bgColor) );
+    }
 
     // read file and process each leading keyword
     tag.init();
@@ -15171,6 +18077,9 @@ tagClass tag;
           fileClose( f );
           appCtx->postMessage(
            activeWindowClass_str157 );
+          if ( isEmbedded ) {
+            return loadDummy( x, y, setPosition );
+          }
           return 0;
         }
         cur->defExeFlink = NULL;
@@ -15181,7 +18090,12 @@ tagClass tag;
         if ( cur->node ) {
 
           stat = cur->node->createFromFile( f, objName, this );
-          if ( !( stat & 1 ) ) return stat; // memory leak here
+          if ( !( stat & 1 ) ) {
+            if ( isEmbedded ) {
+              return loadDummy( x, y, setPosition );
+            }
+            return stat; // memory leak here
+	  }
 
           cur->blink = head->blink;
           head->blink->flink = cur;
@@ -15431,11 +18345,12 @@ char msg[79+1];
 
   fclose( f );
 
-  // change file extension to .edl
+  // change file extension to .edl (default one)
   l = strlen(this->fileName);
   if ( l > 4 ) {
     if ( strcmp( &this->fileName[l-4], ".xch" ) == 0 ) {
-      strcpy( &this->fileName[l-4], ".edl" );
+      //strcpy( &this->fileName[l-4], ".edl" );
+      strcpy( &this->fileName[l-4], activeWindowClass::defExt() );
     }
   }
 
@@ -15706,6 +18621,86 @@ int numMuxMacros;
 char **muxMacro, **muxExpansion;
 char callbackName[63+1];
 pvDefPtr pvDefCur;
+char *envPtr;
+
+  if ( dimDialog ) {
+    viewDims = 0;
+    if ( dimDialog->dialogIsPoppedUp() ) dimDialog->popdown();
+  }
+
+  initCopy();
+
+  windowState = AWC_START_EXECUTE;
+
+  if ( bgPixmapFlag == AWC_BGPIXMAP_NEVER ) {
+    usePixmap = 0;
+  }
+  else if ( bgPixmapFlag == AWC_BGPIXMAP_ALWAYS ) {
+    usePixmap = 1;
+  }
+  else {
+    usePixmap = -1;
+  }
+
+  if ( usePixmap == -1 ) {
+    envPtr = getenv( environment_str23 );
+    if ( envPtr ) {
+      usePixmap = 1;
+    }
+    else {
+      usePixmap = 0;
+    }
+  }
+
+  if ( usePixmap ) {
+
+    needFullCopy = 0;
+
+    if ( bgPixmap ) {
+      if ( ( w != pixmapW ) || ( h != pixmapH ) ) {
+        XFreePixmap( d, bgPixmap );
+        bgPixmap = (Pixmap) NULL;
+        pixmapW = pixmapH = -1;
+      }
+    }
+
+    if ( !bgPixmap ) {
+      if ( ( w > 0 ) && ( h > 0 ) ) {
+        int screen_num, depth;
+        Display *d = appCtx->getDisplay();
+        screen_num = DefaultScreen( d );
+        depth = DefaultDepth( d, screen_num );
+        bgPixmap = XCreatePixmap( d, XtWindow(executeWidget),
+        w, h, depth );
+        pixmapW = w;
+        pixmapH = h;
+      }
+    }
+
+    if ( bgPixmap ) {
+      executeGc.saveFg();
+      executeGc.setFG( ci->pix(bgColor) );
+      executeGc.setLineWidth(1);
+      executeGc.setLineStyle( LineSolid );
+      XDrawRectangle( d, bgPixmap,
+       executeGc.normGC(), 0, 0,
+       w, h );
+      XFillRectangle( d, bgPixmap,
+       executeGc.normGC(), 0, 0,
+       w, h );
+      executeGc.restoreFg();
+    }
+
+  }
+  else {
+
+    if ( bgPixmap ) {
+      XFreePixmap( d, bgPixmap );
+      bgPixmap = (Pixmap) NULL;
+      pixmapW = pixmapH = -1;
+    }
+
+  }
 
   if ( diagnosticMode() ) {
     char diagBuf[255+1];
@@ -15721,7 +18716,9 @@ pvDefPtr pvDefCur;
     pvDefCur = pvDefCur->flink;
   }
 
-  if ( blank(defaultPvType) ) {
+  if ( blank(defaultPvType) ||
+       ( clearEpicsPvTypeDefault &&
+         ( strcmp( defaultPvType, "EPICS" ) == 0 ) ) ) {
     the_PV_Factory->clear_default_pv_type();
   }
   else {
@@ -15765,7 +18762,7 @@ pvDefPtr pvDefCur;
   cursor.setColor( ci->pix(fgColor), ci->pix(bgColor) );
 
   XtRemoveEventHandler( drawWidget,
-   KeyPressMask|KeyReleaseMask|ButtonPressMask|
+   KeyPressMask|KeyReleaseMask|ButtonPressMask|PointerMotionMask|
    ButtonReleaseMask|Button1MotionMask|
    Button2MotionMask|Button3MotionMask|ExposureMask, False,
    drawWinEventHandler, (XtPointer) this );
@@ -15782,6 +18779,8 @@ pvDefPtr pvDefCur;
     cur = cur->flink;
 
   }
+
+  frozen = false;
 
   mode = AWC_EXECUTE;
   waiting = 0; // for deferred screen close action
@@ -15853,6 +18852,8 @@ pvDefPtr pvDefCur;
 
     } while ( nTries && !( opStat & 1 ) );
 
+    pend_io( 5.0 );
+    pend_event( 0.01 );
     processAllEvents( appCtx->appContext(), d );
 
   }
@@ -15932,6 +18933,8 @@ pvDefPtr pvDefCur;
 
   refreshActive();
 
+  windowState = AWC_COMPLETE_EXECUTE;
+
   return 1;
 
 }
@@ -15944,6 +18947,8 @@ pvDefPtr pvDefCur;
 
 int numMuxMacros;
 char **muxMacro, **muxExpansion;
+
+  windowState = AWC_START_EXECUTE;
 
   if ( diagnosticMode() ) {
     char diagBuf[255+1];
@@ -15958,7 +18963,9 @@ char **muxMacro, **muxExpansion;
     pvDefCur = pvDefCur->flink;
   }
 
-  if ( blank(defaultPvType) ) {
+  if ( blank(defaultPvType) ||
+       ( clearEpicsPvTypeDefault &&
+         ( strcmp( defaultPvType, "EPICS" ) == 0 ) ) ) {
     the_PV_Factory->clear_default_pv_type();
   }
   else {
@@ -16066,6 +19073,8 @@ char **muxMacro, **muxExpansion;
 
   refreshActive();
 
+  windowState = AWC_COMPLETE_EXECUTE;
+
   return 1;
 
 }
@@ -16086,6 +19095,10 @@ pvDefPtr pvDefCur;
     appCtx->postMessage( activeWindowClass_str193 );
     return 0;
   }
+
+  frozen = false;
+
+  windowState = AWC_START_DEACTIVATE;
 
   if ( diagnosticMode() ) {
     char diagBuf[255+1];
@@ -16286,6 +19299,8 @@ pvDefPtr pvDefCur;
         }
       }
 
+      windowState = AWC_COMPLETE_DEACTIVATE;
+
       return 1;
 
     }
@@ -16300,7 +19315,7 @@ pvDefPtr pvDefCur;
   }
 
   XtAddEventHandler( drawWidget,
-   KeyPressMask|KeyReleaseMask|ButtonPressMask|
+   KeyPressMask|KeyReleaseMask|ButtonPressMask|PointerMotionMask|
    ButtonReleaseMask|Button1MotionMask|
    Button2MotionMask|Button3MotionMask|ExposureMask, False,
    drawWinEventHandler, (XtPointer) this );
@@ -16318,6 +19333,8 @@ pvDefPtr pvDefCur;
     }
   }
 
+  windowState = AWC_COMPLETE_DEACTIVATE;
+
   return 1;
 
 }
@@ -16329,6 +19346,13 @@ activeGraphicListPtr cur;
 int numSubObjects, cnt;
 
   if ( mode == AWC_EDIT ) return 1;
+
+  if ( !okToPreReexecute() ) {
+    appCtx->postMessage( activeWindowClass_str193 );
+    return 0;
+  }
+
+  windowState = AWC_START_DEACTIVATE;
 
   if ( diagnosticMode() ) {
     char diagBuf[255+1];
@@ -16360,19 +19384,49 @@ int numSubObjects, cnt;
 
   }
 
+  windowState = AWC_COMPLETE_DEACTIVATE;
+
   return 1;
 
 }
 
 int activeWindowClass::clearActive ( void ) {
 
-  XClearWindow( d, XtWindow(executeWidget) );
+  if ( bgPixmap ) {
+
+    executeGc.setLineWidth(1);
+    executeGc.setLineStyle( LineSolid );
+
+    XDrawRectangle( d, bgPixmap,
+     executeGc.eraseGC(), 0, 0,
+     w, h );
+
+    XFillRectangle( d, bgPixmap,
+     executeGc.eraseGC(), 0, 0,
+     w, h );
+
+    needCopy = 1;
+    needFullCopy = 1;
+    doCopy();
+
+  }
+  else {
+
+    XClearWindow( d, XtWindow(executeWidget) );
+
+  }
 
   return 1;
 
 }
 
 int activeWindowClass::requestSmartDrawAllActive ( void ) {
+
+  if ( bgPixmap ) {
+    needCopy = 1;
+    smartDrawAllActive();
+    return 1;
+  }
 
   appCtx->smartDrawAllActive( this );
 
@@ -16387,7 +19441,7 @@ int n = 0;
 char *envPtr;
 
   if ( gFastRefresh == -1 ) {
-    envPtr = getenv( "EDMFASTREFRESH" );
+    envPtr = getenv( environment_str21 );
     if ( envPtr ) {
       gFastRefresh = 1;
     }
@@ -16428,11 +19482,18 @@ char *envPtr;
     cur = cur->flink;
   }
 
+  needCopy = 1;
+
   return 1;
 
 }
 
 int activeWindowClass::requestActiveRefresh ( void ) {
+
+  if ( bgPixmap ) {
+    refreshActive();
+    return 1;
+  }
 
   appCtx->refreshActiveWindow( this );
 
@@ -16449,12 +19510,18 @@ int activeWindowClass::refreshActive (
 
 activeGraphicListPtr cur;
 
-  if ( noRefresh ) return 1;
+  if ( noRefresh ) {
+    needCopy = 1;
+    return 1;
+  }
 
   cur = head->flink;
   if ( cur != head ) {
     cur->node->refreshActive( _x, _y, _w, _h );
   }
+
+  needFullCopy = 1;
+  needCopy = 1;
 
   return 1;
 
@@ -16464,12 +19531,18 @@ int activeWindowClass::refreshActive ( void ) {
 
 activeGraphicListPtr cur;
 
-  if ( noRefresh ) return 1;
+  if ( noRefresh ) {
+    needCopy = 1;
+    return 1;
+  }
 
   cur = head->flink;
   if ( cur != head ) {
     cur->node->refreshActive();
   }
+
+  needFullCopy = 1;
+  needCopy = 1;
 
   return 1;
 
@@ -16623,12 +19696,24 @@ static int alignEnum[3] = {
   XmALIGNMENT_END
 };
 
+static int perEnvVar = 0;
+static char *pixmapEnumStr[3] = {
+  "perEnvVar",
+  "never",
+  "always"
+};
+static int pixmapEnum[3] = {
+  0,
+  1,
+  2
+};
+
 char *commentFile;
 FILE *cf;
 char str[255+1], *strPtr;
 
   if ( !haveComments ) {
-    commentFile = getenv( "EDMCOMMENTS" );
+    commentFile = getenv( environment_str22 );
     if ( commentFile ) {
       cf = fopen( commentFile, "r" );
       if ( cf ) {
@@ -16692,6 +19777,11 @@ char str[255+1], *strPtr;
   tag.loadBoolW( "orthoLineDraw", &orthogonal, &zero );
   tag.loadW( "pvType", defaultPvType, emptyStr );
   tag.loadBoolW( "disableScroll", &disableScroll, &zero );
+  tag.loadW( "pixmapFlag", 3, pixmapEnumStr, pixmapEnum,
+   &bgPixmapFlag, &perEnvVar );
+  tag.loadW( "templateParams", AWC_TMPLPARAMSIZE+1, (char *) paramValue,
+   AWC_MAXTMPLPARAMS, emptyStr );
+  tag.loadComplexW( "templateInfo", (char *) templInfo, emptyStr );
   tag.loadW( unknownTags );
   tag.loadW( "endScreenProperties" );
   tag.loadW( "" );
@@ -16760,7 +19850,26 @@ int numComments = 0, moreComments = 1, checkForRev = 1,
 
             if ( tk ) {
 
-              if ( strcmp( tk, "$Revision:" ) == 0 ) {
+              if ( strcmp( tk, "$InvalidBgColor:" ) == 0 ) {
+
+		invalidFile = 1;
+                invalidBgColor = 0;
+
+                checkForRev = 0; // use first rev found, don't check any more
+
+                tk = strtok_r( NULL, " \t\n#", &context2 );
+                if ( tk ) {
+                  char *nonInt;
+                  invalidBgColor = strtol( tk, &nonInt, 10 );
+                  Strncat( fileNameAndRev, " (", 287 );
+                  Strncat( fileNameAndRev, activeWindowClass_str214, 287 );
+                  Strncat( fileNameAndRev, ")", 287 );
+                  strncpy( fileRev, activeWindowClass_str214, 31 );
+                  fileRev[31] = 0;
+	        }
+
+              }
+              else if ( strcmp( tk, "$Revision:" ) == 0 ) {
 
                 checkForRev = 0; // use first rev found, don't check any more
 
@@ -16866,6 +19975,218 @@ int moreComments = 1;
 
 }
 
+int activeWindowClass::loadWinDummy (
+  FILE *f,
+  int _x,
+  int _y,
+  int setPosition ) {
+
+  // if this is changed then activeWindowClass::discardWinLoadData
+  // must be likewise changed
+
+int stat, retStat = 1;
+int fileX, fileY, n, tmpVal;
+Arg args[5];
+
+tagClass tag;
+
+  x = 0;
+  y = 0;
+  strcpy( defaultFontTag, "" );
+  strcpy( defaultCtlFontTag, "" );
+  strcpy( defaultBtnFontTag, "" );
+
+  strcpy( this->id, "" );
+  activateCallbackFlag = 0;
+  deactivateCallbackFlag = 0;
+
+  major = 4;
+  minor = 0;
+  release = 0;
+  fileX = 0;
+  fileY = 0;
+  w = 50;
+  h = 50;
+  defaultAlignment = 0;
+  defaultCtlAlignment = 0;
+  defaultBtnAlignment = 0;
+  fgColor = 0;
+  bgColor = 0;
+  defaultTextFgColor = 0;
+  defaultFg1Color = 0;
+  defaultFg2Color = 0;
+  defaultBgColor = 0;
+  defaultOffsetColor = 0;
+  defaultTopShadowColor = 0;
+  defaultBotShadowColor = 0;
+  strcpy( title, "" );
+  gridShow = 0;
+  gridActive = 0;
+  gridSpacing = 0;
+  orthogonal = 0;
+  strcpy( defaultPvType, "" );
+
+  if ( setPosition ) {
+    x = _x;
+    y = _y;
+  }
+  else {
+    x = fileX;
+    y = fileY;
+  }
+
+  if ( !intersects( x, y, x+w, y+h, 0, 0,
+   XDisplayWidth( d, DefaultScreen(d) ),
+   XDisplayHeight( d, DefaultScreen(d) ) ) ) {
+
+//    appCtx->postMessage(
+//    "Screen location is out of display bounds - setting location to (50,50)" );
+
+    x = y = 50;
+
+  }
+
+#ifdef ADD_SCROLLED_WIN
+  if ( isEmbedded ) {
+
+      n = 0;
+      XtSetArg( args[n], XmNwidth, (XtArgVal) w ); n++;
+      XtSetValues( drawWidget, args, n );
+
+      n = 0;
+      XtSetArg( args[n], XmNheight, (XtArgVal) h ); n++;
+      XtSetValues( drawWidget, args, n );
+
+  }
+#else
+  n = 0;
+  XtSetArg( args[n], XmNwidth, (XtArgVal) w ); n++;
+  XtSetValues( drawWidget, args, n );
+
+  n = 0;
+  XtSetArg( args[n], XmNheight, (XtArgVal) h ); n++;
+  XtSetValues( drawWidget, args, n );
+#endif
+
+  if ( isEmbedded ) {
+
+    if ( embCenter && !embSetSize ) {
+
+      if ( embeddedH > h ) {
+
+        tmpVal = y + ( embeddedH - h ) / 2;
+        n = 0;
+        XtSetArg( args[n], XmNy, (XtArgVal) tmpVal ); n++;
+        XtSetValues( drawWidget, args, n );
+
+      }
+
+      if ( embeddedW > w ) {
+
+        tmpVal = x + ( embeddedW - w ) / 2;
+        n = 0;
+        XtSetArg( args[n], XmNx, (XtArgVal) tmpVal ); n++;
+        XtSetValues( drawWidget, args, n );
+
+      }
+
+    }
+
+  }
+  else {
+
+    n = 0;
+    XtSetArg( args[n], XmNx, (XtArgVal) x ); n++;
+    XtSetValues( drawWidget, args, n );
+
+    n = 0;
+    XtSetArg( args[n], XmNy, (XtArgVal) y ); n++;
+    XtSetValues( drawWidget, args, n );
+
+  }
+
+  if ( isEmbedded ) {
+
+    if ( embSetSize ) {
+
+      if ( w+embSizeOfs <= embeddedW ) {
+
+         n = 0;
+         XtSetArg( args[n], XmNwidth, (XtArgVal) w+embSizeOfs ); n++;
+         XtSetValues( top, args, n );
+
+      }
+
+      if ( h+embSizeOfs <= embeddedH ) {
+
+         n = 0;
+         XtSetArg( args[n], XmNheight, (XtArgVal) h+embSizeOfs ); n++;
+         XtSetValues( top, args, n );
+
+      }
+
+    }
+
+  }
+  else {
+
+#ifndef ADD_SCROLLED_WIN
+    n = 0;
+    XtSetArg( args[n], XmNwidth, (XtArgVal) w ); n++;
+    XtSetValues( top, args, n );
+
+    n = 0;
+    XtSetArg( args[n], XmNheight, (XtArgVal) h ); n++;
+    XtSetValues( top, args, n );
+#else
+    if ( !appCtx->useScrollBars ) {
+
+      n = 0;
+      XtSetArg( args[n], XmNwidth, (XtArgVal) w ); n++;
+      XtSetValues( top, args, n );
+
+      n = 0;
+      XtSetArg( args[n], XmNheight, (XtArgVal) h ); n++;
+      XtSetValues( top, args, n );
+
+    }
+    else {
+
+      reconfig();
+
+    }
+#endif
+
+  }
+
+  if ( strcmp( defaultFontTag, "" ) != 0 ) {
+    stat = defaultFm.setFontTag( defaultFontTag );
+  }
+
+  stat = defaultFm.setFontAlignment( defaultAlignment );
+
+  if ( strcmp( defaultCtlFontTag, "" ) != 0 ) {
+    stat = defaultCtlFm.setFontTag( defaultCtlFontTag );
+  }
+
+  stat = defaultCtlFm.setFontAlignment( defaultCtlAlignment );
+
+  if ( strcmp( defaultBtnFontTag, "" ) != 0 ) {
+    stat = defaultBtnFm.setFontTag( defaultBtnFontTag );
+  }
+
+  stat = defaultBtnFm.setFontAlignment( defaultBtnAlignment );
+
+  drawGc.setBaseBG( ci->pix(bgColor) );
+
+  expStrTitle.setRaw( title );
+
+  updateAllSelectedDisplayInfo();
+
+  return retStat;
+
+}
+
 int activeWindowClass::loadWinGeneric (
   FILE *f,
   int _x,
@@ -16895,6 +20216,18 @@ static int alignEnum[3] = {
   XmALIGNMENT_BEGINNING,
   XmALIGNMENT_CENTER,
   XmALIGNMENT_END
+};
+
+static int perEnvVar = 0;
+static char *pixmapEnumStr[3] = {
+  "perEnvVar",
+  "never",
+  "always"
+};
+static int pixmapEnum[3] = {
+  0,
+  1,
+  2
 };
 
 #if 0
@@ -16958,6 +20291,12 @@ static int alignEnum[3] = {
   tag.loadR( "orthoLineDraw", &orthogonal, &zero );
   tag.loadR( "pvType", 15, defaultPvType, emptyStr );
   tag.loadR( "disableScroll", &disableScroll, &zero );
+  tag.loadR( "pixmapFlag", 3, pixmapEnumStr, pixmapEnum,
+   &bgPixmapFlag, &perEnvVar );
+  tag.loadR( "templateParams", AWC_MAXTMPLPARAMS, AWC_TMPLPARAMSIZE+1,
+   (char *) paramValue, &numParamValues, emptyStr );
+  tag.loadR( "templateInfo", AWC_MAXTEMPLINFO, (char *) templInfo,
+   emptyStr );
   tag.loadR( "endScreenProperties" );
 
   stat = tag.readTags( f, "endScreenProperties" );
@@ -16965,6 +20304,9 @@ static int alignEnum[3] = {
   if ( !( stat & 1 ) ) {
     retStat = stat;
     appCtx->postMessage( tag.errMsg() );
+  }
+
+  if ( disableScroll ) {
   }
 
   if ( strcmp( defaultPvType, "epics" ) == 0 ) {
@@ -17880,6 +21222,7 @@ tagClass tag;
 int i, r, g, b, index;
 char s[127+1];
 unknownTagList junkTags;
+char *emptyStr = "";
 
   // don't inc line here
 
@@ -18064,6 +21407,14 @@ unknownTagList junkTags;
   tag.loadR( "orthoLineDraw", 255, junk );
   tag.loadR( "pvType", 255, junk );
   tag.loadR( "disableScroll", 255, junk );
+  tag.loadR( "templateParams", AWC_MAXTMPLPARAMS, AWC_TMPLPARAMSIZE+1,
+   (char *) bufParamValue, &bufNumParamValues, emptyStr );
+  if ( !bufTemplInfo ) {
+    bufTemplInfo = new char[AWC_MAXTEMPLINFO+1];
+  }
+  tag.loadR( "templateInfo", AWC_MAXTEMPLINFO, (char *) bufTemplInfo,
+   emptyStr );
+
   tag.loadR( "endScreenProperties" );
 
   stat = tag.readTags( f, "endScreenProperties" );
@@ -18165,14 +21516,19 @@ int result;
     Strncat( oneFileName, fName, 255 );
   }
 
-  if ( strlen(oneFileName) > strlen(".edl") ) {
-    if ( strcmp( &oneFileName[strlen(oneFileName)-strlen(".edl")], ".edl" ) !=
-      0 ) {
-      Strncat( oneFileName, ".edl", 255 );
+  //if ( strlen(oneFileName) > strlen(".edl") ) {
+  if ( strlen(oneFileName) > strlen(activeWindowClass::defExt()) ) {
+    //if ( strcmp( &oneFileName[strlen(oneFileName)-strlen(".edl")],
+    //   ".edl" ) != 0 ) {
+    if ( strcmp( &oneFileName[strlen(oneFileName)-strlen(activeWindowClass::defExt())],
+       activeWindowClass::defExt() ) != 0 ) {
+      //Strncat( oneFileName, ".edl", 255 );
+      Strncat( oneFileName, activeWindowClass::defExt(), 255 );
     }
   }
   else {
-    Strncat( oneFileName, ".edl", 255 );
+    //Strncat( oneFileName, ".edl", 255 );
+    Strncat( oneFileName, activeWindowClass::defExt(), 255 );
   }
 
   //f = fopen( oneFileName, "r" );
@@ -18387,7 +21743,7 @@ void activeWindowClass::showSelectionObject ( void ) {
 // !!!!!! notice coupling with activeWindowClass::updateMasterSelection()
 
 activeGraphicListPtr cur;
-int x1, y1;
+int x1=0, y1=0;
 char buf[31+1];
 int num_selected;
 
@@ -18437,28 +21793,47 @@ int num_selected;
 
 }
 
-void activeWindowClass::processObjects ( void )
+int activeWindowClass::processObjects ( void )
 {
 
 activeGraphicListPtr cur, next;
+int workToDo = 0;
 
-  appCtx->proc->lock();
-  cur = defExeHead->defExeFlink;
-  appCtx->proc->unlock();
-
-  if ( !cur ) return;
-
-  while ( cur != defExeHead ) {
+  if( !( this->frozen ) ) {
 
     appCtx->proc->lock();
-    next = cur->defExeFlink;
+    cur = defExeHead->defExeFlink;
     appCtx->proc->unlock();
 
-    cur->node->executeDeferred();
+    if ( !cur ) {
+      return 0;
+    }
 
-    cur = next;
+    if ( cur != defExeHead ) {
+      needCopy = 1;
+      workToDo = 1;
+    }
+
+    while ( cur != defExeHead ) {
+
+      if ( pixmapX0 > cur->node->getX0() ) pixmapX0 = cur->node->getX0();
+      if ( pixmapX1 < cur->node->getX1() ) pixmapX1 = cur->node->getX1();
+      if ( pixmapY0 > cur->node->getY0() ) pixmapY0 = cur->node->getY0();
+      if ( pixmapY1 < cur->node->getY1() ) pixmapY1 = cur->node->getY1();
+
+      appCtx->proc->lock();
+      next = cur->defExeFlink;
+      appCtx->proc->unlock();
+
+      cur->node->executeDeferred();
+
+      cur = next;
+
+    }
 
   }
+
+  return workToDo;
 
 }
 
@@ -18625,15 +22000,37 @@ void activeWindowClass::storeFileName (
   char *inName )
 {
 
-  strncpy( fileName, inName, 255 );
-  getFileName( displayName, inName, 127 );
-  getFilePrefix( prefix, inName, 127 );
-  getFilePostfix( postfix, inName, 127 );
+char nameWithSubs[1024+1];
 
-  strncpy( fileNameForSym, inName, 255 );
-  getFileName( displayNameForSym, inName, 127 );
-  getFilePrefix( prefixForSym, inName, 127 );
-  getFilePostfix( postfixForSym, inName, 127 );
+  this->substituteSpecial( 1024, inName, nameWithSubs );
+
+  strncpy( fileName, nameWithSubs, 255 );
+  fileName[255] = 0;
+  getFileName( displayName, nameWithSubs, 127 );
+  displayName[127] = 0;
+  getFilePrefix( prefix, nameWithSubs, 127 );
+  prefix[127] = 0;
+  getFilePostfix( postfix, nameWithSubs, 127 );
+  postfix[127] = 0;
+
+  strncpy( fileNameForSym, nameWithSubs, 255 );
+  fileNameForSym[255] = 0;
+  getFileName( displayNameForSym, nameWithSubs, 127 );
+  displayNameForSym[127] = 0;
+  getFilePrefix( prefixForSym, nameWithSubs, 127 );
+  prefixForSym[127] = 0;
+  getFilePostfix( postfixForSym, nameWithSubs, 127 );
+  postfixForSym[127] = 0;
+  
+  //strncpy( fileName, inName, 255 );
+  //getFileName( displayName, inName, 127 );
+  //getFilePrefix( prefix, inName, 127 );
+  //getFilePostfix( postfix, inName, 127 );
+
+  //strncpy( fileNameForSym, inName, 255 );
+  //getFileName( displayNameForSym, inName, 127 );
+  //getFilePrefix( prefixForSym, inName, 127 );
+  //getFilePostfix( postfixForSym, inName, 127 );
 
 }
 
@@ -18649,10 +22046,23 @@ void activeWindowClass::storeFileNameForSymbols (
   char *inName )
 {
 
-  strncpy( fileNameForSym, inName, 255 );
-  getFileName( displayNameForSym, inName, 127 );
-  getFilePrefix( prefixForSym, inName, 127 );
-  getFilePostfix( postfixForSym, inName, 127 );
+char nameWithSubs[1024+1];
+
+  this->substituteSpecial( 1024, inName, nameWithSubs );
+
+  strncpy( fileNameForSym, nameWithSubs, 255 );
+  fileNameForSym[255] = 0;
+  getFileName( displayNameForSym, nameWithSubs, 127 );
+  displayNameForSym[127] = 0;
+  getFilePrefix( prefixForSym, nameWithSubs, 127 );
+  prefixForSym[127] = 0;
+  getFilePostfix( postfixForSym, nameWithSubs, 127 );
+  postfixForSym[127] = 0;
+
+  //strncpy( fileNameForSym, inName, 255 );
+  //getFileName( displayNameForSym, inName, 127 );
+  //getFilePrefix( prefixForSym, inName, 127 );
+  //getFilePostfix( postfixForSym, inName, 127 );
 
 }
 
@@ -18666,9 +22076,14 @@ char buf[255+1];
 FILE *f;
 int i;
 
+  //printf( "standard ext is [%s]\n", activeWindowClass::stdExt() );
+  //printf( "default ext is [%s]\n", activeWindowClass::defExt() );
+  //printf( "default search mask is [%s]\n", activeWindowClass::defMask() );
+
   for ( i=0; i<appCtx->numPaths; i++ ) {
 
-    appCtx->expandFileName( i, buf, name, ".edl", 255 );
+    //appCtx->expandFileName( i, buf, name, ".edl", 255 );
+    appCtx->expandFileName( i, buf, name, activeWindowClass::defExt(), 255 );
 
     if ( strcmp( buf, "" ) != 0 ) {
       //f = fopen( buf, mode );
@@ -18676,6 +22091,59 @@ int i;
       if ( f ) {
         strncpy( fileName, buf, 255 ); // update fileName
         storeFileNameForSymbols( buf ); // update int sym file name components
+        return f;
+      }
+    }
+
+  }
+
+  return NULL;
+
+}
+
+FILE *activeWindowClass::openAnyTemplate (
+  char *name,
+  char *mode )
+{
+
+char buf[255+1];
+FILE *f;
+int i;
+
+  for ( i=0; i<appCtx->numPaths; i++ ) {
+
+    //appCtx->expandFileName( i, buf, name, ".edl", 255 );
+    appCtx->expandFileName( i, buf, name, activeWindowClass::defExt(), 255 );
+
+    if ( strcmp( buf, "" ) != 0 ) {
+      f = fileOpen( buf, mode );
+      if ( f ) {
+        return f;
+      }
+    }
+
+  }
+
+  return NULL;
+
+}
+
+FILE *activeWindowClass::openAnyTemplateParam (
+  char *name,
+  char *mode )
+{
+
+char buf[255+1];
+FILE *f;
+int i;
+
+  for ( i=0; i<appCtx->numPaths; i++ ) {
+
+    appCtx->expandFileName( i, buf, name, ".tmpl", 255 );
+
+    if ( strcmp( buf, "" ) != 0 ) {
+      f = fileOpen( buf, mode );
+      if ( f ) {
         return f;
       }
     }
@@ -18697,7 +22165,8 @@ int i;
 
   for ( i=0; i<appCtx->numPaths; i++ ) {
 
-    appCtx->expandFileName( i, buf, name, ".edl", 255 );
+    //appCtx->expandFileName( i, buf, name, ".edl", 255 );
+    appCtx->expandFileName( i, buf, name, activeWindowClass::defExt(), 255 );
 
     if ( strcmp( buf, "" ) != 0 ) {
       //f = fopen( buf, mode );
@@ -19034,8 +22503,8 @@ void activeWindowClass::substituteSpecial (
   char *bufOut )
 {
 
-char param[1023+1], tmp[1023+1], dspName[127+1], *envPtr, *ptr;
-int i, len, iIn, iOut, p0, p1, more, state, winid, isEnvVar;
+char param[1023+1], tmp[1023+1], dspName[127+1], *envPtr, *ptr, *pvVal;
+int i, len, iIn, iOut, p0, p1, more, state, winid, isEnvVar, isPvVal;
 
   state = 1; // copying
 
@@ -19155,6 +22624,43 @@ int i, len, iIn, iOut, p0, p1, more, state, winid, isEnvVar;
           iOut = strlen( bufOut );
           if ( iOut >= max ) iOut = max - 1;
 	}
+        else if ( strncmp( param, "<val:", 5 ) == 0 ) {
+
+          isPvVal = 1;
+          strncpy( tmp, param, 1023 );
+          tmp[1023] = 0;
+
+          ptr = strstr( tmp, ">" );
+          if ( ptr ) {
+            *ptr = 0;
+            pvVal = NULL;
+            pvVal = getPvValSync( &tmp[5] );
+            if ( pvVal ) {
+              bufOut[iOut] = 0;
+              Strncat( bufOut, pvVal, max );
+              delete[] pvVal;
+              pvVal = NULL;
+              iOut = strlen( bufOut );
+              if ( iOut >= max ) iOut = max - 1;
+            }
+            else {
+              isPvVal = 0;
+            }
+          }
+          else {
+            isPvVal = 0;
+          }
+
+          if ( !isPvVal ) {
+
+            bufOut[iOut] = 0;
+            Strncat( bufOut, param, max );
+            iOut = strlen( bufOut );
+            if ( iOut >= max ) iOut = max - 1;
+
+          }
+
+	}
         else { // maybe an env var
 
           if ( strncmp( param, "<env:", 5 ) == 0 ) {
@@ -19210,6 +22716,8 @@ int i, len, iIn, iOut, p0, p1, more, state, winid, isEnvVar;
     if ( iIn >= max ) more = 0;
 
   }
+
+  bufOut[max] = 0;
 
 }
 
@@ -19374,7 +22882,7 @@ void activeWindowClass::closeDeferred (
   int cycles )
 {
 
-  waiting = 1;
+  waiting = cycles;
   doActiveClose = 1;
   appCtx->postDeferredExecutionQueue( this );
 
@@ -19483,7 +22991,8 @@ char *sysMacros[] = {
   // ============
 
   Strncat( buf, fName, 255 );
-  Strncat( buf, ".edl", 255 );
+  //Strncat( buf, ".edl", 255 );
+  Strncat( buf, activeWindowClass::defExt(), 255 );
 
   cur = new activeWindowListType;
   appCtx->addActiveWindow( cur );
@@ -19501,6 +23010,13 @@ char *sysMacros[] = {
   cur->node.storeFileName( buf );
 
   appCtx->openActivateActiveWindow( &cur->node );
+
+}
+
+void activeWindowClass::requestReload ( void ) {
+
+  reloadRequestFlag = 1;
+  appCtx->requestSelectedReload();
 
 }
 
@@ -19751,6 +23267,18 @@ activeWindowClass *aw;
 
 }
 
+void activeWindowClass::freeze ( bool flag) {
+
+  this->frozen = flag;
+
+}
+
+bool activeWindowClass::is_frozen(void){
+
+  return this->frozen;
+
+}
+
 #ifdef ADD_SCROLLED_WIN
 
 void activeWindowClass::reconfig ( void ) {
@@ -19810,7 +23338,7 @@ Widget scroll = awc->scrollWidgetId();
   awc->setChanged();
 
   if ( scroll )
-    XtVaGetValues( scroll, XmNclipWindow, &clip, 0 );
+    XtVaGetValues( scroll, XmNclipWindow, &clip, NULL );
 
   if ( !clip ) {
     XtWarning("b2ReleaseClip_cb(): no clipWindow found");
@@ -19821,11 +23349,11 @@ Widget scroll = awc->scrollWidgetId();
    clip,
    XmNwidth, &newW,
    XmNheight, &newH,
-   0 );
+   NULL );
 
-  XtVaSetValues( awc->drawWidget, XmNwidth, newW, XmNheight, newH, 0 );
+  XtVaSetValues( awc->drawWidget, XmNwidth, newW, XmNheight, newH, NULL );
 
-  XtVaSetValues( awc->top,XmNwidth, newW, XmNheight, newH, 0 );
+  XtVaSetValues( awc->top,XmNwidth, newW, XmNheight, newH, NULL );
 
   awc->w = newW;
   awc->h = newH;

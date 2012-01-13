@@ -164,6 +164,13 @@ typedef struct editBufTag {
 
 editBufPtr eBuf;
 
+entryListBase *useGateEntry, *gateOnMouseEntry, *gateUpPvEntry, *gateDnPvEntry, 
+*gateUpValEntry, *gateDnValEntry;
+
+entryListBase *contEntry, *rateEntry;
+
+entryListBase *presColorEntry, *fgColorEntry, *bgColorEntry;
+
 int bufX;
 int bufY;
 int bufW;
@@ -408,6 +415,11 @@ void btnUp (
 
 void updateGroup ( void );
 
+int expandTemplate (
+  int numMacros,
+  char *macros[],
+  char *expansions[] );
+
 int expand1st (
   int numMacros,
   char *macros[],
@@ -534,6 +546,16 @@ void getPvs (
   int max,
   ProcessVariable *pvs[],
   int *n );
+
+char *getSearchString (
+  int i
+);
+
+void replaceString (
+  int i,
+  int max,
+  char *string
+);
 
 char *crawlerGetFirstPv ( void );
 

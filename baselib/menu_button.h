@@ -213,6 +213,8 @@ typedef struct editBufTag {
 
 editBufPtr eBuf;
 
+entryListBase *invisPvEntry, *visInvEntry, *minVisEntry, *maxVisEntry;
+
 int bufX, bufY, bufW, bufH;
 
 short curValue, value, curReadValue, readValue;
@@ -246,7 +248,7 @@ Widget popUpMenu, pullDownMenu, pb[MAX_ENUM_STATES];
 int needConnectInit, needReadConnectInit, needInfoInit,
  needReadInfoInit, needDraw, needRefresh, needToDrawUnconnected,
  needToEraseUnconnected;
-int unconnectedTimer;
+XtIntervalId unconnectedTimer;
 int initialConnection, initialReadConnection, initialVisConnection,
  initialColorConnection;
 
@@ -321,6 +323,11 @@ int erase ( void );
 int drawActive ( void );
 
 int eraseActive ( void );
+
+int expandTemplate (
+  int numMacros,
+  char *macros[],
+  char *expansions[] );
 
 int expand1st (
   int numMacros,
@@ -409,6 +416,16 @@ void getPvs (
   int max,
   ProcessVariable *pvs[],
   int *n );
+
+char *getSearchString (
+  int i
+);
+
+void replaceString (
+  int i,
+  int max,
+  char *string
+);
 
 char *crawlerGetFirstPv ( void );
 

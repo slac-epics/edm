@@ -202,6 +202,7 @@ activeTableClass::activeTableClass ( void ) {
 
   name = new char[strlen("activeTableClass")+1];
   strcpy( name, "activeTableClass" );
+  checkBaseClassVersion( activeGraphicClass::MAJOR_VERSION, name );
   strcpy( fontTag, "" );
   fs = NULL;
   activeMode = 0;
@@ -236,6 +237,8 @@ activeGraphicClass *tableo = (activeGraphicClass *) this;
   activeMode = 0;
 
   eBuf = NULL;
+
+  doAccSubs( readPvExpStr );
 
 }
 
@@ -814,6 +817,22 @@ int activeTableClass::deactivate (
 
 }
 
+int activeTableClass::expandTemplate (
+  int numMacros,
+  char *macros[],
+  char *expansions[] )
+{
+
+expStringClass tmpStr;
+
+  tmpStr.setRaw( readPvExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  readPvExpStr.setRaw( tmpStr.getExpanded() );
+
+  return 1;
+
+}
+
 int activeTableClass::expand1st (
   int numMacros,
   char *macros[],
@@ -998,6 +1017,8 @@ Widget wdgt;
     // open file name in readV
     //fprintf( stderr, "open [%s]\n", readV );
 
+    
+
     f = fopen( readV, "r" );
     if ( !f ) {
 
@@ -1020,6 +1041,7 @@ Widget wdgt;
       strcpy( comment, "" );
 
       tag.init();
+      tag.initLine();
       tag.loadR( "begin" );
       tag.loadR( "numCols", &numCols );
       tag.loadR( "headerAlign", 4095, headerAlignStr );
@@ -1203,6 +1225,30 @@ void activeTableClass::getPvs (
 
   *n = 1;
   pvs[0] = readPvId;
+
+}
+
+char *activeTableClass::getSearchString (
+  int i
+) {
+
+  if ( i == 0 ) {
+    return readPvExpStr.getRaw();
+  }
+
+  return NULL;
+
+}
+
+void activeTableClass::replaceString (
+  int i,
+  int max,
+  char *string
+) {
+
+  if ( i == 0 ) {
+    readPvExpStr.setRaw( string );
+  }
 
 }
 

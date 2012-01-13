@@ -71,6 +71,8 @@ activeCoefTableClass *coefTableo = (activeCoefTableClass *) client;
   else
     coefTableo->numEle = coefTableo->eBuf->bufEfNumEle.value();
 
+  coefTableo->formatExpStr.setRaw( coefTableo->eBuf->bufFormat );
+
   strncpy( coefTableo->fontTag, coefTableo->fm.currentFontTag(), 63 );
   coefTableo->fontTag[63] = 0;
   coefTableo->actWin->fi->loadFontTag( coefTableo->fontTag );
@@ -208,6 +210,7 @@ activeCoefTableClass::activeCoefTableClass ( void ) {
 
   name = new char[strlen("activeCoefTableClass")+1];
   strcpy( name, "activeCoefTableClass" );
+  checkBaseClassVersion( activeGraphicClass::MAJOR_VERSION, name );
   strcpy( fontTag, "" );
   fs = NULL;
   activeMode = 0;
@@ -252,9 +255,14 @@ activeGraphicClass *coefTableo = (activeGraphicClass *) this;
   efNumEle = source->efNumEle;
   numEle = source->numEle;
 
+  formatExpStr.copy( source->formatExpStr );
+
   activeMode = 0;
 
   eBuf = NULL;
+
+  doAccSubs( readPvExpStr );
+  doAccSubs( labelsExpStr );
 
 }
 
@@ -342,6 +350,7 @@ char *emptyStr = "";
   tag.loadW( "firstElement", &efFirstEle );
   tag.loadW( "numElements", &efNumEle );
   tag.loadW( "font", fontTag );
+  tag.loadW( "format", &formatExpStr, emptyStr );
   tag.loadW( unknownTags );
   tag.loadW( "endObjectProperties" );
   tag.loadW( "" );
@@ -387,6 +396,7 @@ char *emptyStr = "";
   tag.loadR( "firstElement", &efFirstEle );
   tag.loadR( "numElements", &efNumEle );
   tag.loadR( "font", 63, fontTag );
+  tag.loadR( "format", &formatExpStr, emptyStr );
   tag.loadR( "endObjectProperties" );
   tag.loadR( "" );
 
@@ -477,6 +487,13 @@ char title[32], *ptr;
   eBuf->bufEfFirstEle = efFirstEle;
   eBuf->bufEfNumEle = efNumEle;
 
+  if ( formatExpStr.getRaw() ) {
+    strncpy( eBuf->bufFormat, formatExpStr.getRaw(), 15 );
+    eBuf->bufFormat[15] = 0;
+  }
+  else
+    strcpy( eBuf->bufFormat, "" );
+
   ef.create( actWin->top, actWin->appCtx->ci.getColorMap(),
    &actWin->appCtx->entryFormX,
    &actWin->appCtx->entryFormY, &actWin->appCtx->entryFormW,
@@ -493,6 +510,7 @@ char title[32], *ptr;
    MaxLabelSize );
   ef.addTextField( activeCoefTableClass_str27, 35, &eBuf->bufEfFirstEle );
   ef.addTextField( activeCoefTableClass_str28, 35, &eBuf->bufEfNumEle );
+  ef.addTextField( activeCoefTableClass_str29, 35, eBuf->bufFormat, 15 );
   ef.addColorButton( activeCoefTableClass_str16, actWin->ci, &eBuf->fgCb, &eBuf->bufFgColor );
   ef.addColorButton( activeCoefTableClass_str17, actWin->ci, &eBuf->bgCb, &eBuf->bufBgColor );
   ef.addColorButton( activeCoefTableClass_str18, actWin->ci, &eBuf->oddBgCb, &eBuf->bufOddBgColor );
@@ -533,6 +551,7 @@ int activeCoefTableClass::edit ( void ) {
 
 int activeCoefTableClass::erase ( void ) {
 
+  if ( activeMode ) return 1;
   if ( deleteRequest ) return 1;
 
   XFillRectangle( actWin->d, XtWindow(actWin->drawWidget),
@@ -553,8 +572,15 @@ int activeCoefTableClass::eraseActive ( void ) {
 
 int activeCoefTableClass::draw ( void ) {
 
+XRectangle xR = { x, y, w, h };
+int clipStat;
+
+  if ( activeMode ) return 1;
   if ( deleteRequest ) return 1;
+
   actWin->drawGc.saveFg();
+
+  clipStat = actWin->drawGc.addNormXClipRectangle( xR );
 
   actWin->drawGc.setFG( bgColor.pixelColor() );
   XFillRectangle( actWin->d, XtWindow(actWin->drawWidget),
@@ -566,8 +592,20 @@ int activeCoefTableClass::draw ( void ) {
 
   actWin->drawGc.setFontTag( fontTag, actWin->fi );
 
+  if ( fs ) {
+    updateFont( " ", fontTag, &fs,
+     &fontAscent, &fontDescent, &fontHeight,
+     &stringWidth );
+  }
+  else {
+    fontHeight = 10;
+  }
+
   drawText( actWin->drawWidget, &actWin->drawGc,
-   fs, x+w/2, y+h/2, XmALIGNMENT_CENTER, activeCoefTableClass_str21 );
+   fs, x+w/2, y+h/2-fontHeight/2, XmALIGNMENT_CENTER,
+   activeCoefTableClass_str21 );
+
+  if ( clipStat & 1 ) actWin->drawGc.removeNormXClipRectangle();
 
   actWin->drawGc.restoreFg();
 
@@ -609,7 +647,6 @@ int opStat;
       activeMode = 1;
 
       if ( !readPvExpStr.getExpanded() ||
-	// ( strcmp( readPvExpStr.getExpanded(), "" ) == 0 ) ) {
         blankOrComment( readPvExpStr.getExpanded() ) ) {
         readExists = 0;
       }
@@ -701,18 +738,46 @@ int activeCoefTableClass::deactivate (
 
 }
 
+int activeCoefTableClass::expandTemplate (
+  int numMacros,
+  char *macros[],
+  char *expansions[] )
+{
+
+expStringClass tmpStr;
+
+  tmpStr.setRaw( readPvExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  readPvExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( labelsExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  labelsExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( formatExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  formatExpStr.setRaw( tmpStr.getExpanded() );
+
+  return 1;
+
+}
+
 int activeCoefTableClass::expand1st (
   int numMacros,
   char *macros[],
   char *expansions[] )
 {
 
-int stat;
+int stat, retStat = 1;
 
   stat = readPvExpStr.expand1st( numMacros, macros, expansions );
+  if ( !( stat & 1 ) ) retStat = stat;
   stat = labelsExpStr.expand1st( numMacros, macros, expansions );
+  if ( !( stat & 1 ) ) retStat = stat;
+  stat = formatExpStr.expand1st( numMacros, macros, expansions );
+  if ( !( stat & 1 ) ) retStat = stat;
 
-  return stat;
+  return retStat;
 
 }
 
@@ -722,12 +787,16 @@ int activeCoefTableClass::expand2nd (
   char *expansions[] )
 {
 
-int stat;
+int stat, retStat = 1;;
 
   stat = readPvExpStr.expand2nd( numMacros, macros, expansions );
+  if ( !( stat & 1 ) ) retStat = stat;
   stat = labelsExpStr.expand2nd( numMacros, macros, expansions );
+  if ( !( stat & 1 ) ) retStat = stat;
+  stat = formatExpStr.expand1st( numMacros, macros, expansions );
+  if ( !( stat & 1 ) ) retStat = stat;
 
-  return stat;
+  return retStat;
 
 }
 
@@ -739,6 +808,9 @@ int stat, retStat = 1;
   if ( !( stat & 1 ) ) retStat = stat;
 
   stat = labelsExpStr.containsPrimaryMacros();
+  if ( !( stat & 1 ) ) retStat = stat;
+
+  stat = formatExpStr.containsPrimaryMacros();
   if ( !( stat & 1 ) ) retStat = stat;
 
   return retStat;
@@ -847,7 +919,9 @@ char buf[MaxLabelSize+1];
 char val[255+1];
 char *tk, *ctx;
 Widget wdgt;
-const double *array;
+const double *darray;
+const int *larray;
+const char *carray;
 
 //----------------------------------------------------------------------------
 
@@ -913,7 +987,31 @@ const double *array;
     ctx = NULL;
     tk = strtok_r( buf, ",", &ctx );
 
-    array = readPvId->get_double_array();
+    carray = NULL;
+    larray = NULL;
+    darray = NULL;
+
+    switch ( readPvId->get_specific_type().type ) {
+
+    case ProcessVariable::specificType::flt:
+    case ProcessVariable::specificType::real:
+      darray = readPvId->get_double_array();
+      break;
+
+    case ProcessVariable::specificType::shrt:
+    case ProcessVariable::specificType::integer:
+      larray = readPvId->get_int_array();
+      break;
+
+    case ProcessVariable::specificType::chr:
+      carray = readPvId->get_char_array();
+      break;
+
+    default:
+      break;
+
+    }
+
     max = readPvId->get_dimension();
     if ( max > 1000 ) max = 1000;
 
@@ -921,15 +1019,19 @@ const double *array;
     if ( first < 0 ) first = 0;
     if ( first > max-1 ) first = max - 1;
 
-    if ( numEle == 0 )
+    if ( numEle == 0 ) {
       num = numLabels;
-    else
+      if ( num == 0 ) num = max;
+    }
+    else {
       num = numEle;
+    }
 
     last = first + num;
     if ( last > max ) last = max;
 
     for ( i=first; i<last; i++ ) {
+
       if ( tk ) {
         wdgt = table.addCell( tk );
       }
@@ -937,7 +1039,64 @@ const double *array;
         snprintf( val, 255, "Coef %-d", i );
         wdgt = table.addCell( val );
       }
-      snprintf( val, 255, "%-g", array[i] );
+
+      switch ( readPvId->get_specific_type().type ) {
+
+      case ProcessVariable::specificType::flt:
+      case ProcessVariable::specificType::real:
+        if ( darray ) {
+          if ( !blank( formatExpStr.getExpanded() ) ) {
+	    //printf( "1 using format [%s]\n", formatExpStr.getExpanded() );
+            snprintf( val, 255, formatExpStr.getExpanded(), darray[i] );
+	  }
+	  else {
+            snprintf( val, 255, "%-g", darray[i] );
+	  }
+        }
+        else {
+          strcpy( val, "Error" );
+        }
+        break;
+
+      case ProcessVariable::specificType::shrt:
+      case ProcessVariable::specificType::integer:
+        if ( larray ) {
+          if ( !blank( formatExpStr.getExpanded() ) ) {
+	    //printf( "2 using format [%s]\n", formatExpStr.getExpanded() );
+            snprintf( val, 255, formatExpStr.getExpanded(), larray[i] );
+	  }
+	  else {
+            snprintf( val, 255, "%-d", larray[i] );
+	  }
+
+        }
+        else {
+          strcpy( val, "Error" );
+        }
+        break;
+
+      case ProcessVariable::specificType::chr:
+        if ( carray ) {
+          if ( !blank( formatExpStr.getExpanded() ) ) {
+	    //printf( "3 using format [%s]\n", formatExpStr.getExpanded() );
+            snprintf( val, 255, formatExpStr.getExpanded(), (int) carray[i] );
+	  }
+	  else {
+            snprintf( val, 255, "%-d", (int) carray[i] );
+	  }
+        }
+        else {
+          strcpy( val, "Error" );
+        }
+        break;
+
+      default:
+        strcpy( val, "Unsupported type" );
+        break;
+
+
+      }
+
       wdgt = table.addCell( val );
 
       tk = strtok_r( NULL, ",", &ctx );
@@ -1050,6 +1209,42 @@ void activeCoefTableClass::getPvs (
 
   *n = 1;
   pvs[0] = readPvId;
+
+}
+
+char *activeCoefTableClass::getSearchString (
+  int i
+) {
+
+  if ( i == 0 ) {
+    return readPvExpStr.getRaw();
+  }
+  else if ( i == 1 ) {
+    return labelsExpStr.getRaw();
+  }
+  else if ( i == 2 ) {
+    return formatExpStr.getRaw();
+  }
+
+  return NULL;
+
+}
+
+void activeCoefTableClass::replaceString (
+  int i,
+  int max,
+  char *string
+) {
+
+  if ( i == 0 ) {
+    readPvExpStr.setRaw( string );
+  }
+  else if ( i == 1 ) {
+    labelsExpStr.setRaw( string );
+  }
+  else if ( i == 2 ) {
+    formatExpStr.setRaw( string );
+  }
 
 }
 

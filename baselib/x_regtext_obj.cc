@@ -299,6 +299,7 @@ activeXRegTextClass::activeXRegTextClass ( void ) {
 //  fprintf( stderr,"RegText constructor\n");
   name = new char[strlen("activeXRegTextClass")+1];
   strcpy( name, "activeXRegTextClass" );
+  checkBaseClassVersion( activeGraphicClass::MAJOR_VERSION, name );
 
   visibility = 0;
   prevVisibility = -1;
@@ -376,6 +377,13 @@ activeGraphicClass *ago = (activeGraphicClass *) this;
   strncpy( regExpStr, source->regExpStr, 39 );
   strncpy( bufRegExp, source->bufRegExp, 39 );
 //-------------------------------------
+
+  doAccSubs( alarmPvExpStr );
+  doAccSubs( visPvExpStr );
+  doAccSubs( value );
+  doAccSubs( minVisString, 39 );
+  doAccSubs( maxVisString, 39 );
+  doAccSubs( regExpStr, 39 );
 
 }
 
@@ -506,18 +514,36 @@ char title[32], *ptr;
   ef.addToggle( activeXTextClass_str11, &bufAutoSize );
   ef.addColorButton( activeXTextClass_str13, actWin->ci, &fgCb, &bufFgColor );
   ef.addToggle( activeXTextClass_str14, &bufFgColorMode );
+
   ef.addToggle( activeXTextClass_str15, &bufUseDisplayBg );
+  fillEntry = ef.getCurItem();
   ef.addColorButton( activeXTextClass_str16, actWin->ci, &bgCb, &bufBgColor );
+  fillColorEntry = ef.getCurItem();
+  fillEntry->addInvDependency( fillColorEntry );
   ef.addToggle( activeXTextClass_str17, &bufBgColorMode );
+  fillAlarmSensEntry = ef.getCurItem();
+  fillEntry->addInvDependency( fillAlarmSensEntry );
+  fillEntry->addDependencyCallbacks();
+
   ef.addFontMenu( activeXTextClass_str12, actWin->fi, &fm, fontTag );
   fm.setFontAlignment( alignment );
   ef.addTextField( activeXTextClass_str18, 35, bufAlarmPvName,
    PV_Factory::MAX_PV_NAME );
+
   ef.addTextField( activeXTextClass_str19, 35, bufVisPvName,
    PV_Factory::MAX_PV_NAME );
+  invisPvEntry = ef.getCurItem();
   ef.addOption( " ", activeXTextClass_str20, &bufVisInverted );
+  visInvEntry = ef.getCurItem();
+  invisPvEntry->addDependency( visInvEntry );
   ef.addTextField( activeXTextClass_str21, 35, bufMinVisString, 39 );
+  minVisEntry = ef.getCurItem();
+  invisPvEntry->addDependency( minVisEntry );
   ef.addTextField( activeXTextClass_str22, 35, bufMaxVisString, 39 );
+  maxVisEntry = ef.getCurItem();
+  invisPvEntry->addDependency( maxVisEntry );
+  invisPvEntry->addDependencyCallbacks();
+
 //----------------------------------------
   ef.addTextField( "Reg. Exp.", 35, bufRegExp, 39 );
 //----------------------------------------
@@ -1239,7 +1265,7 @@ int clipStat;
 
     if ( useDisplayBg ) {
 
-      XDrawStrings( actWin->d, XtWindow(actWin->executeWidget),
+      XDrawStrings( actWin->d, drawable(actWin->executeWidget),
        actWin->executeGc.normGC(), stringX, stringY, fontHeight,
        text, stringLength );
 
@@ -1249,7 +1275,7 @@ int clipStat;
       actWin->executeGc.saveBg();
       actWin->executeGc.setBG( bgColor.getColor() );
 
-      XDrawImageStrings( actWin->d, XtWindow(actWin->executeWidget),
+      XDrawImageStrings( actWin->d, drawable(actWin->executeWidget),
        actWin->executeGc.normGC(), stringX, stringY, fontHeight,
        text, stringLength );
 
@@ -1319,7 +1345,7 @@ XRectangle xR = { x, y, w, h };
 
   if ( useDisplayBg ) {
 
-    XDrawStrings( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawStrings( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.eraseGC(), stringX, stringY, fontHeight,
      text, stringLength );
 //    fprintf(stderr,"eraseUnconditional: useDisplayBg; text=%s\n", text);
@@ -1327,7 +1353,7 @@ XRectangle xR = { x, y, w, h };
   }
   else {
 
-    XDrawImageStrings( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawImageStrings( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.eraseGC(), stringX, stringY, fontHeight,
      text, stringLength );
 //    fprintf(stderr,"eraseUnconditional: !useDisplayBg; text=%s\n", text);
@@ -1364,7 +1390,7 @@ XRectangle xR = { x, y, w, h };
 
     actWin->executeGc.addEraseXClipRectangle( xR );
 
-    XDrawStrings( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawStrings( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.eraseGC(), stringX, stringY, fontHeight,
      text, stringLength );
 //    fprintf(stderr,"eraseActive: useDisplayBg; text=%s\n", text);
@@ -1383,7 +1409,7 @@ XRectangle xR = { x, y, w, h };
 
       if ( bufInvalid ) {
 
-        XDrawImageStrings( actWin->d, XtWindow(actWin->executeWidget),
+        XDrawImageStrings( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.eraseGC(), stringX, stringY, fontHeight,
          text, stringLength );
 
@@ -1393,7 +1419,7 @@ XRectangle xR = { x, y, w, h };
         actWin->executeGc.setFG( bgColor.getColor() );
         actWin->executeGc.setBG( bgColor.getColor() );
 
-        XDrawImageStrings( actWin->d, XtWindow(actWin->executeWidget),
+        XDrawImageStrings( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.normGC(), stringX, stringY, fontHeight,
          text, stringLength );
 
@@ -1407,6 +1433,30 @@ XRectangle xR = { x, y, w, h };
     actWin->executeGc.removeNormXClipRectangle();
 
   }
+
+  return 1;
+
+}
+
+int activeXRegTextClass::expandTemplate (
+  int numMacros,
+  char *macros[],
+  char *expansions[] )
+{
+
+expStringClass tmpStr;
+
+  tmpStr.setRaw( alarmPvExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  alarmPvExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( visPvExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  visPvExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( value.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  value.setRaw( tmpStr.getExpanded() );
 
   return 1;
 
@@ -1617,7 +1667,7 @@ int activeXRegTextClass::deactivate (
 
 // --------------------------------------------------------
     if ( re_valid ) {
-      fprintf( stderr, "regfree\n" );
+      //fprintf( stderr, "regfree\n" );
       regfree(&compiled_re);
     }
 // --------------------------------------------------------
@@ -1775,10 +1825,7 @@ void activeXRegTextClass::updateDimensions ( void )
   if ( activeMode ) {
     char text[80];
     getProcessedText(text);
-    if ( text )
-      stringLength = strlen( text );
-    else
-      stringLength = 0;
+    stringLength = strlen( text );
   }
   else {
     if ( value.getRaw() )
@@ -2228,6 +2275,76 @@ void activeXRegTextClass::getPvs (
   *n = 2;
   pvs[0] = alarmPvId;
   pvs[1] = visPvId;
+
+}
+
+char *activeXRegTextClass::getSearchString (
+  int i
+) {
+
+  if ( i == 0 ) {
+    return value.getRaw();
+  }
+  else if ( i == 1 ) {
+    return alarmPvExpStr.getRaw();
+  }
+  else if ( i == 2 ) {
+    return visPvExpStr.getRaw();
+  }
+  else if ( i == 3 ) {
+    return minVisString;
+  }
+  else if ( i == 4 ) {
+    return maxVisString;
+  }
+  else if ( i == 5 ) {
+    return regExpStr;
+  }
+
+  return NULL;
+
+}
+
+void activeXRegTextClass::replaceString (
+  int i,
+  int max,
+  char *string
+) {
+
+  if ( i == 0 ) {
+    value.setRaw( string );
+  }
+  else if ( i == 1 ) {
+    alarmPvExpStr.setRaw( string );
+  }
+  else if ( i == 2 ) {
+    visPvExpStr.setRaw( string );
+  }
+  else if ( i == 3 ) {
+    int l = max;
+    if ( 39 < max ) l = 39;
+    strncpy( minVisString, string, l );
+    minVisString[l] = 0;
+  }
+  else if ( i == 4 ) {
+    int l = max;
+    if ( 39 < max ) l = 39;
+    strncpy( maxVisString, string, l );
+    maxVisString[l] = 0;
+  }
+  else if ( i == 5 ) {
+    int l = max;
+    if ( 39 < max ) l = 39;
+    strncpy( regExpStr, string, l );
+    regExpStr[l] = 0;
+  }
+
+  updateDimensions();
+
+  if ( autoSize && fs ) {
+    sboxW = w = stringBoxWidth;
+    sboxH = h = stringBoxHeight;
+  }
 
 }
 

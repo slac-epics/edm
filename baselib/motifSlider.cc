@@ -29,10 +29,10 @@ static XtTranslations g_parsedTrans;
 
 static char g_dragTrans[] =
   "#override ~Ctrl~Shift<Btn2Down>: startDrag()\n\
-   Ctrl~Shift<Btn2Down>: pvInfo()\n\
-   Shift Ctrl<Btn2Down>: dummy()\n\
+   Ctrl~Shift<Btn2Up>: selectActions()\n\
+   Ctrl~Shift<Btn2Down>: dummy()\n\
    Shift~Ctrl<Btn2Down>: dummy()\n\
-   Shift Ctrl<Btn2Up>: selectActions()\n\
+   Shift Ctrl<Btn2Down>: pvInfo()\n\
    Shift~Ctrl<Btn2Up>: selectDrag()\n\
    <Btn3Up>: changeParams()";
 
@@ -141,7 +141,8 @@ double fvalue;
 
   if ( mslo->controlExists ) {
     if ( mslo->controlPvId ) {
-      stat = mslo->controlPvId->put( fvalue );
+      stat = mslo->controlPvId->put(
+       XDisplayName(mslo->actWin->appCtx->displayName), fvalue );
       if ( !stat ) fprintf( stderr, activeMotifSliderClass_str59 );
     }
   }
@@ -199,7 +200,8 @@ double fvalue;
 
   if ( mslo->controlExists ) {
     if ( mslo->controlPvId ) {
-      stat = mslo->controlPvId->put( fvalue );
+      stat = mslo->controlPvId->put(
+       XDisplayName(mslo->actWin->appCtx->displayName), fvalue );
       if ( !stat ) fprintf( stderr, activeMotifSliderClass_str59 );
     }
   }
@@ -498,7 +500,8 @@ activeMotifSliderClass *mslo = (activeMotifSliderClass *) client;
 
   if ( mslo->controlExists ) {
     if ( mslo->controlPvId ) {
-      stat = mslo->controlPvId->put( fvalue );
+      stat = mslo->controlPvId->put(
+       XDisplayName(mslo->actWin->appCtx->displayName), fvalue );
       if ( !stat ) fprintf( stderr, activeMotifSliderClass_str3 );
       mslo->actWin->appCtx->proc->lock();
       mslo->actWin->addDefExeNode( mslo->aglPtr );
@@ -859,6 +862,7 @@ activeMotifSliderClass::activeMotifSliderClass ( void ) {
 
   name = new char[strlen("activeMotifSliderClass")+1];
   strcpy( name, "activeMotifSliderClass" );
+  checkBaseClassVersion( activeGraphicClass::MAJOR_VERSION, name );
   deleteRequest = 0;
   selected = 0;
   positive = 1;
@@ -978,6 +982,10 @@ activeGraphicClass *mslo = (activeGraphicClass *) this;
   unconnectedTimer = 0;
 
   eBuf = NULL;
+
+  doAccSubs( controlPvName );
+  doAccSubs( savedValuePvName );
+  doAccSubs( controlLabelName );
 
 }
 
@@ -1563,8 +1571,13 @@ char title[32], *ptr;
 
   ef.addTextField( activeMotifSliderClass_str37, 35, eBuf->controlBufLabelName,
    PV_Factory::MAX_PV_NAME );
+  labelEntry = ef.getCurItem();
   ef.addOption( activeMotifSliderClass_str38, activeMotifSliderClass_str39,
    &bufControlLabelType );
+  labelTypeEntry = ef.getCurItem();
+  labelTypeEntry->setNumValues( 3 );
+  labelTypeEntry->addInvDependency( 2, labelEntry );
+  labelTypeEntry->addDependencyCallbacks();
 
   ef.addToggle( activeMotifSliderClass_str86, &bufShowLimits );
   ef.addToggle( activeMotifSliderClass_str87, &bufShowLabel );
@@ -1577,11 +1590,19 @@ char title[32], *ptr;
   ef.addTextField( activeMotifSliderClass_str28, 35, &bufIncrement );
 
   ef.addToggle( activeMotifSliderClass_str29, &bufLimitsFromDb );
+  limitsFromDbEntry = ef.getCurItem();
   ef.addOption( activeMotifSliderClass_str30, activeMotifSliderClass_str35,
    &bufFormatType );
   ef.addTextField( activeMotifSliderClass_str31, 35, &bufEfPrecision );
+  scalePrecEntry = ef.getCurItem();
+  limitsFromDbEntry->addInvDependency( scalePrecEntry );
   ef.addTextField( activeMotifSliderClass_str32, 35, &bufEfScaleMin );
+  scaleMinEntry = ef.getCurItem();
+  limitsFromDbEntry->addInvDependency( scaleMinEntry );
   ef.addTextField( activeMotifSliderClass_str33, 35, &bufEfScaleMax );
+  scaleMaxEntry = ef.getCurItem();
+  limitsFromDbEntry->addInvDependency( scaleMaxEntry );
+  limitsFromDbEntry->addDependencyCallbacks();
 
   ef.addColorButton( activeMotifSliderClass_str24, actWin->ci, &fgCb,
    &bufFgColor );
@@ -2001,7 +2022,7 @@ int tX, tY;
       actWin->executeGc.setFG( bgColor.getDisconnected() );
       actWin->executeGc.setLineWidth( 1 );
       actWin->executeGc.setLineStyle( LineSolid );
-      XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+      XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
        actWin->executeGc.normGC(), x, y, w, h );
       actWin->executeGc.restoreFg();
       needToEraseUnconnected = 1;
@@ -2010,7 +2031,7 @@ int tX, tY;
   else if ( needToEraseUnconnected ) {
     actWin->executeGc.setLineWidth( 1 );
     actWin->executeGc.setLineStyle( LineSolid );
-    XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.eraseGC(), x, y, w, h );
     needToEraseUnconnected = 0;
   }
@@ -2175,7 +2196,7 @@ KeySym key;
 char keyBuf[20];
 const int keyBufSize = 20;
 XComposeStatus compose;
-int charCount, stat, v;
+int b2Op, charCount, stat, v;
 double mult, fvalue;
 
   *continueToDispatch = True;
@@ -2211,7 +2232,24 @@ double mult, fvalue;
     mslo->keySensitive = 0;
 
   }
-  else if ( e->type == ButtonPress ) {
+
+  // allow Button2 operations when no write access
+  b2Op = 0;
+  if ( ( e->type == ButtonPress ) || ( e->type == ButtonRelease ) ) {
+    be = (XButtonEvent *) e;
+    if ( be->button == Button2 ) {
+      b2Op = 1;
+    }
+  }
+
+  if ( mslo->controlPvId ) {
+    if ( !mslo->controlPvId->have_write_access() && !b2Op ) {
+      *continueToDispatch = False;
+      return;
+    }
+  }
+
+  if ( e->type == ButtonPress ) {
 
     be = (XButtonEvent *) e;
 
@@ -2265,7 +2303,8 @@ double mult, fvalue;
 
       if ( mslo->controlExists ) {
         if ( mslo->controlPvId ) {
-          stat = mslo->controlPvId->put( fvalue );
+          stat = mslo->controlPvId->put(
+           XDisplayName(mslo->actWin->appCtx->displayName), fvalue );
           if ( !stat ) fprintf( stderr, activeMotifSliderClass_str59 );
         }
       }
@@ -2316,7 +2355,8 @@ double mult, fvalue;
 
       if ( mslo->controlExists ) {
         if ( mslo->controlPvId ) {
-          stat = mslo->controlPvId->put( fvalue );
+          stat = mslo->controlPvId->put(
+           XDisplayName(mslo->actWin->appCtx->displayName), fvalue );
           if ( !stat ) fprintf( stderr, activeMotifSliderClass_str59 );
         }
       }
@@ -2429,7 +2469,8 @@ double mult, fvalue;
 
       if ( mslo->controlExists ) {
         if ( mslo->controlPvId ) {
-          stat = mslo->controlPvId->put( fvalue );
+          stat = mslo->controlPvId->put(
+           XDisplayName(mslo->actWin->appCtx->displayName), fvalue );
           if ( !stat ) fprintf( stderr, activeMotifSliderClass_str59 );
         }
       }
@@ -2443,7 +2484,8 @@ double mult, fvalue;
 
       if ( mslo->savedValueExists ) {
         if ( mslo->savedValuePvId ) {
-          stat = mslo->savedValuePvId->put( mslo->savedV );
+          stat = mslo->savedValuePvId->put(
+           XDisplayName(mslo->actWin->appCtx->displayName), mslo->savedV );
           if ( !stat ) fprintf( stderr, activeMotifSliderClass_str59 );
         }
       }
@@ -2464,7 +2506,8 @@ double mult, fvalue;
 
       if ( mslo->controlExists ) {
         if ( mslo->controlPvId ) {
-          stat = mslo->controlPvId->put( mslo->controlV );
+          stat = mslo->controlPvId->put(
+           XDisplayName(mslo->actWin->appCtx->displayName), mslo->controlV );
           if ( !stat ) fprintf( stderr, activeMotifSliderClass_str59 );
         }
       }
@@ -2483,7 +2526,7 @@ static void motifSliderEventHandler (
 
 XButtonEvent *be;
 activeMotifSliderClass *mslo;
- int stat;
+int stat, b2Op;
 char title[32], *ptr, strVal[255+1];
 
 #if 0
@@ -2535,8 +2578,20 @@ double fvalue, mult;
 
   }
 
+  // allow Button2 operations when no write access
+  b2Op = 0;
+  if ( ( e->type == ButtonPress ) || ( e->type == ButtonRelease ) ) {
+    be = (XButtonEvent *) e;
+    if ( be->button == Button2 ) {
+      b2Op = 1;
+    }
+  }
+
   if ( mslo->controlPvId ) {
-    if ( !mslo->controlPvId->have_write_access() ) return;
+    if ( !mslo->controlPvId->have_write_access() && !b2Op ) {
+      *continueToDispatch = False;
+      return;
+    }
   }
 
   if ( e->type == ButtonPress ) {
@@ -2562,7 +2617,7 @@ double fvalue, mult;
       if ( !( be->state & ( ControlMask | ShiftMask ) ) ) {
         stat = mslo->startDrag( w, e );
       }
-      else if ( !( be->state & ShiftMask ) &&
+      else if ( ( be->state & ShiftMask ) &&
                 ( be->state & ControlMask ) ) {
         stat = mslo->showPvInfo( be, be->x, be->y );
       }
@@ -2654,7 +2709,8 @@ double fvalue, mult;
 
       if ( mslo->controlExists ) {
         if ( mslo->controlPvId ) {
-          stat = mslo->controlPvId->put( fvalue );
+          stat = mslo->controlPvId->put(
+           XDisplayName(mslo->actWin->appCtx->displayName), fvalue );
           if ( !stat ) fprintf( stderr, activeMotifSliderClass_str59 );
         }
       }
@@ -2705,7 +2761,8 @@ double fvalue, mult;
 
       if ( mslo->controlExists ) {
         if ( mslo->controlPvId ) {
-          stat = mslo->controlPvId->put( fvalue );
+          stat = mslo->controlPvId->put(
+           XDisplayName(mslo->actWin->appCtx->displayName), fvalue );
           if ( !stat ) fprintf( stderr, activeMotifSliderClass_str59 );
         }
       }
@@ -2732,7 +2789,7 @@ double fvalue, mult;
            !( be->state & ControlMask ) ) {
         stat = mslo->selectDragValue( be );
       }
-      else if ( ( be->state & ShiftMask ) &&
+      else if ( !( be->state & ShiftMask ) &&
                 ( be->state & ControlMask ) ) {
         mslo->doActions( be, be->x, be->y );
       }
@@ -3127,6 +3184,30 @@ void activeMotifSliderClass::updateDimensions ( void )
   midVertScaleY = scaleH/2 + scaleY - (int) ( (double) fontHeight * 0.5 );
   midVertScaleY1 = scaleH/3 + scaleY - (int) ( (double) fontHeight * 0.5 );
   midVertScaleY2 = 2*scaleH/3 + scaleY - (int) ( (double) fontHeight * 0.5 );
+
+}
+
+int activeMotifSliderClass::expandTemplate (
+  int numMacros,
+  char *macros[],
+  char *expansions[] )
+{
+
+expStringClass tmpStr;
+
+  tmpStr.setRaw( controlPvName.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  controlPvName.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( savedValuePvName.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  savedValuePvName.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( controlLabelName.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  controlLabelName.setRaw( tmpStr.getExpanded() );
+
+  return 1;
 
 }
 
@@ -3701,6 +3782,42 @@ void activeMotifSliderClass::getPvs (
   *n = 2;
   pvs[0] = controlPvId;
   pvs[1] = savedValuePvId;
+
+}
+
+char *activeMotifSliderClass::getSearchString (
+  int i
+) {
+
+  if ( i == 0 ) {
+    return controlPvName.getRaw();
+  }
+  else if ( i == 1 ) {
+    return savedValuePvName.getRaw();
+  }
+  else if ( i == 2 ) {
+    return controlLabelName.getRaw();
+  }
+
+  return NULL;
+
+}
+
+void activeMotifSliderClass::replaceString (
+  int i,
+  int max,
+  char *string
+) {
+
+  if ( i == 0 ) {
+    controlPvName.setRaw( string );
+  }
+  else if ( i == 1 ) {
+    savedValuePvName.setRaw( string );
+  }
+  else if ( i == 2 ) {
+    controlLabelName.setRaw( string );
+  }
 
 }
 

@@ -91,7 +91,25 @@ friend void agc_edit_cancel (
   XtPointer client,
   XtPointer call );
 
+ enum CrawlerStates { GETTING_FIRST_CRAWLER_PV, GETTING_NEXT_CRAWLER_PV,
+  NO_MORE_CRAWLER_PVS };
+
 void * voidHead; // cast to activeGraphicListPtr at runtime
+void * curCrawlerNode; // cast to activeGraphicListPtr at runtime
+int curCrawlerState;
+
+void * sarNode; // cast to activeGraphicListPtr at runtime
+int sarIndex, sarNeedNextNode, sarItemIndexOffset;
+
+typedef struct relatedDisplayNodeList {
+  void *ptr; // cast to activeGraphicListPtr at runtime
+  int first;  // index of first related screen
+  int last;   // index of last related screen
+  struct relatedDisplayNodeList *flink;
+  struct relatedDisplayNodeList *blink;
+} RelatedDisplayNodeType, *RelatedDisplayNodePtr;
+RelatedDisplayNodePtr relatedDisplayNodeHead;
+
 btnActionListPtr btnDownActionHead;
 btnActionListPtr btnUpActionHead;
 btnActionListPtr btnMotionActionHead;
@@ -105,6 +123,8 @@ typedef struct editBufTag {
 } editBufType, *editBufPtr;
 
 editBufPtr eBuf;
+
+entryListBase *invisPvEntry, *visInvEntry, *minVisEntry, *maxVisEntry;
 
 int bufX, bufY;
 ProcessVariable *visPvId;
@@ -124,7 +144,7 @@ pvConnectionClass connection;
 int needConnectInit, needVisUpdate, needRefresh, needToDrawUnconnected,
  needToEraseUnconnected;
 
-int unconnectedTimer;
+XtIntervalId unconnectedTimer;
 
 public:
 
@@ -360,6 +380,11 @@ void executeDeferred ( void );
 
 int containsMacros ( void );
 
+int expandTemplate (
+  int numMacros,
+  char *macros[],
+  char *expansions[] );
+
 int expand1st (
   int numMacros,
   char *macros[],
@@ -376,6 +401,10 @@ void setNextSelectedToEdit (
   activeGraphicClass *ptr );
 
 void clearNextSelectedToEdit ( void );
+
+int activateBeforePreReexecuteComplete ( void );
+
+int activateComplete ( void );
 
 void changeDisplayParams (
   unsigned int flag,
@@ -542,6 +571,37 @@ int putGroupVisInfo (
   int maxLen,
   char *minVis,
   char *maxVis
+);
+
+char *crawlerGetFirstPv ( void );
+
+char *crawlerGetNextPv ( void );
+
+int isRelatedDisplay ( void );
+
+int getNumRelatedDisplays ( void );
+
+int getRelatedDisplayProperty (
+  int index,
+  char *name
+);
+
+char *getRelatedDisplayName (
+  int index
+);
+
+char *getRelatedDisplayMacros (
+  int index
+);
+
+char *getSearchString (
+  int i
+);
+
+void replaceString (
+  int i,
+  int max,
+  char *string
 );
 
 };

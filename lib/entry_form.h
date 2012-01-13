@@ -193,6 +193,13 @@ double v, n;
 
 };
 
+class entryListBase;
+
+typedef struct entryRecTag {
+  entryListBase *entry;
+  int sense;
+} entryRecType, *entryRecPtr;
+
 class entryListBase { // base class for all items that may be placed
                       // on a entry form
 
@@ -202,15 +209,48 @@ efArrayCallbackDscType arrayDsc;
 entryListBase *flink;
 Widget labelW, activeW;
 
-entryListBase ( void ) { }
+entryListBase ( void ) {
+
+  haveCallback = 0;
+  numDepend = 0;
+  numValues = 0; // for multi-value widgets like option menus
+
+}
 
 virtual ~entryListBase ( void ) { }
+
+virtual void cleanup ( void ) { }
 
 virtual void setValue ( int value ) { }
 
 virtual void setValue ( double value ) { }
 
 virtual void setValue ( char *value ) { }
+
+virtual void setNumValues ( int n ) {
+  numValues = n;
+}
+
+virtual void addDependency ( class entryListBase* entry );
+
+virtual void addInvDependency ( class entryListBase* entry );
+
+virtual void addDependency ( int i, class entryListBase* entry );
+
+virtual void addInvDependency ( int i, class entryListBase* entry );
+
+virtual void addDependencyCallbacks ( void ) { }
+
+virtual void removeDependencyCallbacks ( void ) { }
+
+virtual void enable ( void );
+
+virtual void disable ( void );
+
+int numValues; // for multi-value widgets like option menus
+int haveCallback;
+int numDepend;
+entryRecType dependList[10];
 
 };
 
@@ -237,6 +277,12 @@ colorButtonEntry ( void );
 virtual ~colorButtonEntry ( void );
 
 void setValue ( int value );
+
+void enable ( void );
+
+void disable ( void );
+
+colorButtonClass *theCb;
 
 };
 
@@ -270,11 +316,17 @@ textEntry ( void );
 
 virtual ~textEntry ( void );
 
+void cleanup ( void );
+
 void setValue ( int value );
 
 void setValue ( double value );
 
 void setValue ( char *value );
+
+void addDependencyCallbacks ( void );
+
+void removeDependencyCallbacks ( void );
 
 };
 
@@ -290,9 +342,29 @@ optionEntry ( void );
 
 virtual ~optionEntry ( void );
 
+void cleanup ( void );
+
 void setValue ( int value );
 
 void setValue ( char *value );
+
+void addDependency (
+  int i,
+  class entryListBase* entry
+);
+
+void addInvDependency (
+  int i,
+  class entryListBase* entry
+);
+
+void addDependencyCallbacks ( void );
+
+void removeDependencyCallbacks ( void );
+
+int optHaveCallback[10];
+int optNumDepend[10];
+entryRecType optDependList[10][10];
 
 };
 
@@ -308,11 +380,32 @@ toggleEntry ( void );
 
 virtual ~toggleEntry ( void );
 
+void cleanup ( void );
+
 void setValue ( int value );
+
+void addDependencyCallbacks ( void );
+
+void removeDependencyCallbacks ( void );
 
 };
 
 #ifdef __entry_form_cc
+
+static void textEntryDependency (
+  Widget w,
+  XtPointer client,
+  XtPointer call );
+
+static void toggleEntryDependency (
+  Widget w,
+  XtPointer client,
+  XtPointer call );
+
+static void optionEntryDependency (
+  Widget w,
+  XtPointer client,
+  XtPointer call );
 
 static void kill_cb (
   Widget w,
@@ -364,7 +457,55 @@ static void ef_set_item_num (
 
 class entryFormClass {
 
+public:
+
+static const int OK = 1;
+static const int APPLY = 2;
+static const int CANCEL = 3;
+
+static const int CREATE = 10;
+static const int EDIT = 11;
+
+typedef struct callbackDataTag {
+  int op;
+  int command;
+} callbackDataType, *callbackDataPtr;
+
+callbackDataType callbackData;
+XtPointer callbackPtr;
+XtCallbackProc clientCb;
+
 private:
+
+static void ok_callback (
+  Widget w,
+  XtPointer client,
+  XtPointer call );
+
+static void apply_callback (
+  Widget w,
+  XtPointer client,
+  XtPointer call );
+
+static void cancel_callback (
+  Widget w,
+  XtPointer client,
+  XtPointer call );
+
+friend void textEntryDependency (
+  Widget w,
+  XtPointer client,
+  XtPointer call );
+
+friend void toggleEntryEntryDependency (
+  Widget w,
+  XtPointer client,
+  XtPointer call );
+
+friend void optionEntryDependency (
+  Widget w,
+  XtPointer client,
+  XtPointer call );
 
 friend void kill_cb (
   Widget w,
@@ -409,8 +550,8 @@ friend void ef_set_item_num (
 
 Display *display;
 
-Widget shell, scrollWin, pane, labelForm, mainLabel, topForm, controlForm,
- arrayForm, bottomForm, pb_ok,
+Widget shell, paneTop, scrollWin, pane, labelForm, mainLabel,
+ topForm, controlForm, arrayForm, bottomForm, pb_ok,
  pb_cancel, pb_apply, itemNumArrowInc, itemNumArrowDec, itemNumText,
  itemNumLabel, numItemsArrowInc, numItemsArrowDec, numItemsText,
  numItemsLabel, *subForm, prevW, curTopParent;
@@ -452,6 +593,8 @@ entryFormClass ( void );
 ~entryFormClass ( void );
 
 int destroy ( void );
+
+entryListBase *getCurItem ( void );
 
 void setMultiPointObjectType ( void );
 
@@ -619,7 +762,22 @@ int addTextField (
   char *dest,
   int stringSize );
 
+int addGenericTextBox (
+  int edit,
+  char *label,
+  int width,
+  int height,
+  char *dest,
+  int stringSize );
+
 int addTextBox (
+  char *label,
+  int width,
+  int height,
+  char *dest,
+  int stringSize );
+
+int addReadonlyTextBox (
   char *label,
   int width,
   int height,
@@ -730,6 +888,11 @@ int finished (
   XtPointer ptr );
 
 int finished (
+  int operationType,
+  XtCallbackProc cb,
+  XtPointer ptr );
+
+int finished (
   XtCallbackProc close_cb,
   XtPointer ptr );
 
@@ -746,6 +909,18 @@ int popdown ( void );
 int popdownNoDestroy ( void );
 
 int formIsPoppedUp ( void );
+
+Widget getOkWidget ( void ) {
+  return pb_ok;
+}
+
+Widget getApplyWidget ( void ) {
+  return pb_apply;
+}
+
+Widget getCancelWidget ( void ) {
+  return pb_cancel;
+}
 
 };
 

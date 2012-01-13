@@ -267,6 +267,7 @@ int status;
 
   name = new char[strlen("activePngClass")+1];
   strcpy( name, "activePngClass" );
+  checkBaseClassVersion( activeGraphicClass::MAJOR_VERSION, name );
 
   strcpy( pngFileName, "" );
 
@@ -359,6 +360,8 @@ activeGraphicClass *ago = (activeGraphicClass *) this;
   status = avl_init_tree( compare_nodes_by_pixel,
    compare_key_by_pixel, copy_nodes, &(colorCacheByPixelH) );
   if ( !( status & 1 ) ) colorCacheByPixelH = (AVL_HANDLE) NULL;
+
+  doAccSubs( pngFileName, 127 );
 
   status = readPngFile();
 
@@ -1333,10 +1336,10 @@ int activePngClass::eraseActive ( void ) {
 
   if ( !enabled || noFile || !activeMode ) return 1;
 
-  XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.eraseGC(), x, y, w, h );
 
-  XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+  XFillRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.eraseGC(), x, y, w, h );
 
   return 1;
@@ -1354,8 +1357,10 @@ int activePngClass::draw ( void ) {
     return 1;
   }
 
-  XPutImage( actWin->display(), XtWindow(actWin->drawWidget),
-   actWin->drawGc.normGC(), image, 0, 0, x, y, w, h );
+  if ( image ) {
+    XPutImage( actWin->display(), XtWindow(actWin->drawWidget),
+     actWin->drawGc.normGC(), image, 0, 0, x, y, w, h );
+  }
 
   return 1;
 
@@ -1400,8 +1405,10 @@ int curW, curH;
   curW = x1 - x0;
   curH = y1 - y0;
 
-  XPutImage( actWin->display(), XtWindow(actWin->drawWidget),
-   actWin->drawGc.normGC(), image, x0-x, y0-y, x0, y0, curW, curH );
+  if ( image ) {
+    XPutImage( actWin->display(), XtWindow(actWin->drawWidget),
+     actWin->drawGc.normGC(), image, x0-x, y0-y, x0, y0, curW, curH );
+  }
 
   return 1;
 
@@ -1421,7 +1428,7 @@ Pixmap pixmap;
 
   if ( !actWin->appCtx->renderImages() ) {
     actWin->executeGc.setFG( actWin->defaultTextFgColor );
-    XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x, y, w, h );
     return 1;
   }
@@ -1433,22 +1440,21 @@ Pixmap pixmap;
   pixmap = XCreatePixmap( actWin->display(),
    XtWindow(actWin->executeWidget), w, h, depth );
 
-//    XPutImage( actWin->display(), XtWindow(actWin->executeWidget),
-//     actWin->executeGc.normGC(), image, 0, 0, x, y, w, h );
-
-  XPutImage( actWin->display(), pixmap,
-   actWin->executeGc.normGC(), image, 0, 0, 0, 0, w, h );
+  if ( image ) {
+    XPutImage( actWin->display(), pixmap,
+     actWin->executeGc.normGC(), image, 0, 0, 0, 0, w, h );
+  }
 
   if ( needErase ) {
     needErase = 0;
-    XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.eraseGC(), bufX, bufY, bufW, bufH );
-    XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+    XFillRectangle( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.eraseGC(), bufX, bufY, bufW, bufH );
   }
 
   XCopyArea( actWin->display(), pixmap,
-   XtWindow(actWin->executeWidget), actWin->executeGc.normGC(),
+   drawable(actWin->executeWidget), actWin->executeGc.normGC(),
    0, 0, w, h, x, y );
 
   XFreePixmap( actWin->display(), pixmap );
@@ -1470,7 +1476,7 @@ int curW, curH;
 
   if ( !actWin->appCtx->renderImages() ) {
     actWin->executeGc.setFG( actWin->defaultTextFgColor );
-    XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x, y, w, h );
     return 1;
   }
@@ -1496,8 +1502,10 @@ int curW, curH;
   curW = x1 - x0;
   curH = y1 - y0;
 
-  XPutImage( actWin->display(), XtWindow(actWin->executeWidget),
-   actWin->executeGc.normGC(), image, x0-x, y0-y, x0, y0, curW, curH );
+  if ( image ) {
+    XPutImage( actWin->display(), drawable(actWin->executeWidget),
+     actWin->executeGc.normGC(), image, x0-x, y0-y, x0, y0, curW, curH );
+  }
 
   return 1;
 
@@ -1929,6 +1937,50 @@ void activePngClass::readpng_cleanup (
     png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
     png_ptr = NULL;
     info_ptr = NULL;
+  }
+
+}
+
+char *activePngClass::getSearchString (
+  int index
+) {
+
+  if ( index == 0 ) {
+    return pngFileName;
+  }
+  else {
+    return NULL;
+  }
+
+}
+
+void activePngClass::replaceString (
+  int i,
+  int max,
+  char *string
+) {
+
+int status;
+int l = 127;
+
+  if ( max < l ) l = max;
+
+  if ( i == 0 ) {
+
+    strncpy( pngFileName, string, l );
+    pngFileName[l] = 0;
+
+    status = readPngFile();
+
+    initSelectBox();
+
+    if ( !( status & 1 ) ) {
+      char msg[255+1];
+      snprintf( msg, 255, activePngClass_str1, actWin->fileName,
+       pngFileName );
+      actWin->appCtx->postMessage( msg );
+    }
+
   }
 
 }

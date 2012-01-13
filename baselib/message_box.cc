@@ -221,6 +221,7 @@ activeMessageBoxClass::activeMessageBoxClass ( void ) {
 
   name = new char[strlen("activeMessageBoxClass")+1];
   strcpy( name, "activeMessageBoxClass" );
+  checkBaseClassVersion( activeGraphicClass::MAJOR_VERSION, name );
   minW = 200;
   minH = 100;
   strcpy( fontTag, "" );
@@ -275,6 +276,9 @@ activeGraphicClass *messageboxo = (activeGraphicClass *) this;
   flushTimerValue = source->flushTimerValue;
 
   eBuf = NULL;
+
+  doAccSubs( readPvExpStr );
+  doAccSubs( logFileName );
 
 }
 
@@ -1071,6 +1075,26 @@ int activeMessageBoxClass::deactivate (
 
 }
 
+int activeMessageBoxClass::expandTemplate (
+  int numMacros,
+  char *macros[],
+  char *expansions[] )
+{
+
+expStringClass tmpStr;
+
+  tmpStr.setRaw( readPvExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  readPvExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( logFileName.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  logFileName.setRaw( tmpStr.getExpanded() );
+
+  return 1;
+
+}
+
 int activeMessageBoxClass::expand1st (
   int numMacros,
   char *macros[],
@@ -1436,6 +1460,36 @@ void activeMessageBoxClass::getPvs (
 
   *n = 1;
   pvs[0] = readPvId;
+
+}
+
+char *activeMessageBoxClass::getSearchString (
+  int i
+) {
+
+  if ( i == 0 ) {
+    return readPvExpStr.getRaw();
+  }
+  else if ( i == 1 ) {
+    return logFileName.getRaw();
+  }
+
+  return NULL;
+
+}
+
+void activeMessageBoxClass::replaceString (
+  int i,
+  int max,
+  char *string
+) {
+
+  if ( i == 0 ) {
+    readPvExpStr.setRaw( string );
+  }
+  else if ( i == 1 ) {
+    logFileName.setRaw( string );
+  }
 
 }
 

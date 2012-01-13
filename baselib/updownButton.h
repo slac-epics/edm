@@ -261,6 +261,10 @@ typedef struct editBufTag {
 
 editBufPtr eBuf;
 
+entryListBase *limitsFromDbEntry, *minEntry, *maxEntry;
+
+entryListBase *invisPvEntry, *visInvEntry, *minVisEntry, *maxVisEntry;
+
 int destType, saveType;
 
 pvColorClass fgColor, bgColor;
@@ -302,7 +306,7 @@ double controlV, curControlV, curSaveV, coarse, fine;
 
 int needConnectInit, needSaveConnectInit, needCtlInfoInit, needRefresh,
  needErase, needDraw, needToDrawUnconnected, needToEraseUnconnected;
-int unconnectedTimer;
+XtIntervalId unconnectedTimer;
 int initialConnection, initialSavedValueConnection, initialVisConnection,
  initialColorConnection;
 
@@ -432,6 +436,11 @@ int getButtonActionRequest (
   int *drag,
   int *focus );
 
+int expandTemplate (
+  int numMacros,
+  char *macros[],
+  char *expansions[] );
+
 int expand1st (
   int numMacros,
   char *macros[],
@@ -486,6 +495,16 @@ void getPvs (
   int max,
   ProcessVariable *pvs[],
   int *n );
+
+char *getSearchString (
+  int i
+);
+
+void replaceString (
+  int i,
+  int max,
+  char *string
+);
 
 char *crawlerGetFirstPv ( void );
 

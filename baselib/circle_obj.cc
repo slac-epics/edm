@@ -299,6 +299,7 @@ activeCircleClass::activeCircleClass ( void ) {
 
   name = new char[strlen("activeCircleClass")+1];
   strcpy( name, "activeCircleClass" );
+  checkBaseClassVersion( activeGraphicClass::MAJOR_VERSION, name );
   visibility = 0;
   prevVisibility = -1;
   visInverted = 0;
@@ -357,6 +358,11 @@ activeGraphicClass *ago = (activeGraphicClass *) this;
   eBuf = NULL;
 
   setBlinkFunction( (void *) doBlink );
+
+  doAccSubs( alarmPvExpStr );
+  doAccSubs( visPvExpStr );
+  doAccSubs( minVisString, 39 );
+  doAccSubs( maxVisString, 39 );
 
 }
 
@@ -464,16 +470,33 @@ char title[32], *ptr;
   ef.addOption( activeCircleClass_str12, activeCircleClass_str13, &eBuf->bufLineStyle );
   ef.addColorButton( activeCircleClass_str14, actWin->ci, &eBuf->lineCb, &eBuf->bufLineColor );
   ef.addToggle( activeCircleClass_str15, &eBuf->bufLineColorMode );
+
   ef.addToggle( activeCircleClass_str16, &eBuf->bufFill );
+  fillEntry = ef.getCurItem();
   ef.addColorButton( activeCircleClass_str17, actWin->ci, &eBuf->fillCb, &eBuf->bufFillColor );
+  fillColorEntry = ef.getCurItem();
+  fillEntry->addDependency( fillColorEntry );
   ef.addToggle( activeCircleClass_str18, &eBuf->bufFillColorMode );
+  fillAlarmSensEntry = ef.getCurItem();
+  fillEntry->addDependency( fillAlarmSensEntry );
+  fillEntry->addDependencyCallbacks();
+
   ef.addTextField( activeCircleClass_str19, 30, eBuf->bufAlarmPvName,
    PV_Factory::MAX_PV_NAME );
+
   ef.addTextField( activeCircleClass_str20, 30, eBuf->bufVisPvName,
    PV_Factory::MAX_PV_NAME );
+  invisPvEntry = ef.getCurItem();
   ef.addOption( " ", activeCircleClass_str21, &eBuf->bufVisInverted );
+  visInvEntry = ef.getCurItem();
+  invisPvEntry->addDependency( visInvEntry );
   ef.addTextField( activeCircleClass_str22, 30, eBuf->bufMinVisString, 39 );
+  minVisEntry = ef.getCurItem();
+  invisPvEntry->addDependency( minVisEntry );
   ef.addTextField( activeCircleClass_str23, 30, eBuf->bufMaxVisString, 39 );
+  maxVisEntry = ef.getCurItem();
+  invisPvEntry->addDependency( maxVisEntry );
+  invisPvEntry->addDependencyCallbacks();
 
   return 1;
 
@@ -1050,7 +1073,7 @@ int blink = 0;
       actWin->executeGc.setFG( lineColor.getDisconnectedIndex(), &blink );
       actWin->executeGc.setLineWidth( 1 );
       actWin->executeGc.setLineStyle( LineSolid );
-      XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+      XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
        actWin->executeGc.normGC(), x, y, w, h );
       actWin->executeGc.restoreFg();
       needToEraseUnconnected = 1;
@@ -1060,7 +1083,7 @@ int blink = 0;
   else if ( needToEraseUnconnected ) {
     actWin->executeGc.setLineWidth( 1 );
     actWin->executeGc.setLineStyle( LineSolid );
-    XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.eraseGC(), x, y, w, h );
     needToEraseUnconnected = 0;
   }
@@ -1076,14 +1099,14 @@ int blink = 0;
   if ( fill && fillVisibility ) {
     //actWin->executeGc.setFG( fillColor.getColor() );
     actWin->executeGc.setFG( fillColor.getIndex(), &blink );
-    XFillArc( actWin->d, XtWindow(actWin->executeWidget),
+    XFillArc( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x, y, w, h, 0, 23040 );
   }
 
   if ( lineVisibility ) {
     //actWin->executeGc.setFG( lineColor.getColor() );
     actWin->executeGc.setFG( lineColor.getIndex(), &blink );
-    XDrawArc( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawArc( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x, y, w, h, 0, 23040 );
   }
 
@@ -1106,14 +1129,14 @@ int activeCircleClass::eraseUnconditional ( void )
   actWin->executeGc.setLineWidth( lineWidth );
 
   if ( fill ) {
-    XFillArc( actWin->d, XtWindow(actWin->executeWidget),
+    XFillArc( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.eraseGC(), x, y, w, h, 0, 23040 );
   }
 
-  XDrawArc( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawArc( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.eraseGC(), x, y, w, h, 0, 23040 );
 
-  XFillArc( actWin->d, XtWindow(actWin->executeWidget),
+  XFillArc( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.eraseGC(), x, y, w, h, 0, 23040 );
 
   actWin->executeGc.setLineStyle( LineSolid );
@@ -1139,18 +1162,38 @@ int activeCircleClass::eraseActive ( void )
   actWin->executeGc.setLineWidth( lineWidth );
 
   if ( fill ) {
-    XFillArc( actWin->d, XtWindow(actWin->executeWidget),
+    XFillArc( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.eraseGC(), x, y, w, h, 0, 23040 );
   }
 
-  XDrawArc( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawArc( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.eraseGC(), x, y, w, h, 0, 23040 );
 
-  XFillArc( actWin->d, XtWindow(actWin->executeWidget),
+  XFillArc( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.eraseGC(), x, y, w, h, 0, 23040 );
 
   actWin->executeGc.setLineStyle( LineSolid );
   actWin->executeGc.setLineWidth( 1 );
+
+  return 1;
+
+}
+
+int activeCircleClass::expandTemplate (
+  int numMacros,
+  char *macros[],
+  char *expansions[] )
+{
+
+expStringClass tmpStr;
+
+  tmpStr.setRaw( alarmPvExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  alarmPvExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( visPvExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  visPvExpStr.setRaw( tmpStr.getExpanded() );
 
   return 1;
 
@@ -1753,7 +1796,7 @@ void activeCircleClass::updateColors (
   double colorValue )
 {
 
-int index, change;
+int index, change=0;
 
   index = actWin->ci->evalRule( lineColor.pixelIndex(), colorValue );
 
@@ -1810,6 +1853,55 @@ void activeCircleClass::getPvs (
   *n = 2;
   pvs[0] = alarmPvId;
   pvs[1] = visPvId;
+
+}
+
+char *activeCircleClass::getSearchString (
+  int i
+) {
+
+  if ( i == 0 ) {
+    return alarmPvExpStr.getRaw();
+  }
+  else if ( i == 1 ) {
+    return visPvExpStr.getRaw();
+  }
+  else if ( i == 2 ) {
+    return minVisString;
+  }
+  else if ( i == 3 ) {
+    return maxVisString;
+  }
+  else {
+    return NULL;
+  }
+
+}
+
+void activeCircleClass::replaceString (
+  int i,
+  int max,
+  char *string
+) {
+
+  if ( i == 0 ) {
+    alarmPvExpStr.setRaw( string );
+  }
+  else if ( i == 1 ) {
+    visPvExpStr.setRaw( string );
+  }
+  else if ( i == 2 ) {
+    int l = max;
+    if ( 39 < max ) l = 39;
+    strncpy( minVisString, string, l );
+    minVisString[l] = 0;
+  }
+  else if ( i == 3 ) {
+    int l = max;
+    if ( 39 < max ) l = 39;
+    strncpy( maxVisString, string, l );
+    maxVisString[l] = 0;
+  }
 
 }
 

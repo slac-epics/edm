@@ -8,7 +8,7 @@
 #include "regTextupdate.h"
 #include "app_pkg.h"
 #include "act_win.h"
-#include "epics_pv_factory.h"
+#include "pv_factory.h"
 #include "cvtFast.h"
 #include <libgen.h>
 
@@ -238,11 +238,50 @@ int edmRegTextupdateClass::drawActive()
     }
 
     redraw_text(actWin->d,
-                XtWindow(actWin->executeWidget),
+                drawable(actWin->executeWidget),
                 actWin->executeGc,
                 actWin->executeGc.normGC(),
                 text, len);
    
     actWin->executeGc.restoreFg();
     return 1;
+}
+
+char *edmRegTextupdateClass::getSearchString (
+  int i
+) {
+
+  if ( i == 0 ) {
+    return pv_name.getRaw();
+  }
+  else if ( i == 1 ) {
+    return color_pv_name.getRaw();
+  }
+  else if ( i == 2 ) {
+    return regExpStr;
+  }
+
+  return NULL;
+
+}
+
+void edmRegTextupdateClass::replaceString (
+  int i,
+  int max,
+  char *string
+) {
+
+  if ( i == 0 ) {
+    pv_name.setRaw( string );
+  }
+  else if ( i == 1 ) {
+    color_pv_name.setRaw( string );
+  }
+  else if ( i == 2 ) {
+    int l = max;
+    if ( PV_Factory::MAX_PV_NAME < max ) l = PV_Factory::MAX_PV_NAME;
+    strncpy( regExpStr, string, l );
+    regExpStr[l] = 0;
+  }
+
 }

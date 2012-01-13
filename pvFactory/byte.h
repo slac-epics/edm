@@ -71,12 +71,23 @@ public:
                        int numAlarmPvs,
                        char *alarmPvs[]);
     
-void getPvs(int max,
+    void getPvs(int max,
 			  ProcessVariable *pvs[],
 			  int *n);
 
+    char *getSearchString (
+      int i
+    );
+
+    void replaceString (
+      int i,
+      int max,
+      char *string
+    );
+
     // Macro support
     int containsMacros();
+    int expandTemplate (int numMacros, char *macros[], char *expansions[]);
     int expand1st(int numMacros, char *macros[], char *expansions[]);
     int expand2nd(int numMacros, char *macros[], char *expansions[]);
     

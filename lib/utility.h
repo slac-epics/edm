@@ -21,11 +21,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <math.h>
 #include <sys/time.h>
+#include <regex.h>
 
 #if defined(darwin) || defined(HP_UX)
 	#include <sys/wait.h>
@@ -46,6 +48,36 @@
 #include "expString.h"
 #include "remFileOpen.h"
 
+int doReSearchReplace (
+  int caseInsensivite,
+  char *expression,
+  char *newText,
+  int max,
+  char *oldString,
+  char *newString
+);
+
+int doSearchReplace (
+  int caseInsensivite,
+  int useRegExpr,
+  char *expression,
+  char *newText,
+  int max,
+  char *oldString,
+  char *newString
+);
+
+void enableAccumulator ( void );
+void disableAccumulator ( void );
+int useAccumulator ( void );
+void setAccumulator ( int );
+int getAccumulator ( void );
+void incAccumulator ( void );
+void doAccSubs( expStringClass & );
+void doAccSubs( char *, int );
+
+int useAppTopParent ( void );
+
 int debugMode ( void );
 
 int diagnosticMode ( void );
@@ -53,6 +85,10 @@ int diagnosticMode ( void );
 int logDiagnostic (
   char *text
 );
+
+void disableBadWindowErrors ( int arg );
+
+int badWindowErrorsDisabled ( void );
 
 char *getEnvironmentVar (
   char *name
@@ -100,6 +136,9 @@ void processAllEventsWithSync (
 void processAllEvents (
   XtAppContext app,
   Display *d );
+
+void trimWhiteSpace (
+  char *str );
 
 int isLegalInteger (
   char *str );
@@ -158,6 +197,26 @@ int xEraseImageText (
 
 int drawText (
   Widget widget,
+  Drawable dr,
+  gcClass *gc,
+  XFontStruct *fs,
+  int _x,
+  int _y,
+  int _alignment,
+  char *value );
+
+int drawText (
+  Widget widget,
+  gcClass *gc,
+  XFontStruct *fs,
+  int _x,
+  int _y,
+  int _alignment,
+  char *value );
+
+int eraseText (
+  Widget widget,
+  Drawable dr,
   gcClass *gc,
   XFontStruct *fs,
   int _x,
@@ -176,6 +235,26 @@ int eraseText (
 
 int drawImageText (
   Widget widget,
+  Drawable dr,
+  gcClass *gc,
+  XFontStruct *fs,
+  int _x,
+  int _y,
+  int _alignment,
+  char *value );
+
+int drawImageText (
+  Widget widget,
+  gcClass *gc,
+  XFontStruct *fs,
+  int _x,
+  int _y,
+  int _alignment,
+  char *value );
+
+int eraseImageText (
+  Widget widget,
+  Drawable dr,
   gcClass *gc,
   XFontStruct *fs,
   int _x,
@@ -350,6 +429,19 @@ int get_scale_params (
   char *format
 );
 
+int formatString (
+  double value,
+  char *string,
+  int len
+);
+
+int formatString (
+  double value,
+  char *string,
+  int len,
+  char *fmt
+);
+
 void drawXLinearTimeScale (
   Display *d,
   Window win,
@@ -408,6 +500,36 @@ void drawXLinearScale (
   int xminConstrained,
   int xmaxConstrained,
   int erase
+);
+
+void drawXLinearScale (
+  Display *d,
+  Window win,
+  gcClass *gc,
+  int drawScale,
+  int x,
+  int y,
+  int scaleLen,
+  double adj_min,
+  double adj_max,
+  int num_label_ticks,
+  int majors_per_label,
+  int minors_per_major,
+  unsigned int scaleColor,
+  unsigned int bgColor,
+  int labelGrid,
+  int majorGrid,
+  int minorGrid,
+  int gridHeight,
+  unsigned int gridColor,
+  fontInfoClass *fi,
+  char *fontTag,
+  XFontStruct *fs,
+  int annotateScale,
+  int xminConstrained,
+  int xmaxConstrained,
+  int erase,
+  char* fmt
 );
 
 void drawXLinearScale2 (
@@ -559,6 +681,36 @@ void drawYLinearScale (
   int xminConstrained,
   int xmaxConstrained,
   int erase
+);
+
+void drawYLinearScale (
+  Display *d,
+  Window win,
+  gcClass *gc,
+  int drawScale,
+  int x,
+  int y,
+  int scaleHeight,
+  double adj_min,
+  double adj_max,
+  int num_label_ticks,
+  int majors_per_label,
+  int minors_per_major,
+  unsigned int scaleColor,
+  unsigned int bgColor,
+  int labelGrid,
+  int majorGrid,
+  int minorGrid,
+  int gridLen,
+  unsigned int gridColor,
+  fontInfoClass *fi,
+  char *fontTag,
+  XFontStruct *fs,
+  int annotateScale,
+  int xminConstrained,
+  int xmaxConstrained,
+  int erase,
+  char *fmt
 );
 
 void drawYLinearScale2 (

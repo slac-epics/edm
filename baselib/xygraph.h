@@ -40,12 +40,15 @@
 
 #include "edmTime.h"
 
-#define XYGC_K_MAX_TRACES 14
+#define XYGC_K_MAX_TRACES 20
 
 // scaling options
 #define XYGC_K_FROM_PV 0
 #define XYGC_K_USER_SPECIFIED 1
 #define XYGC_K_AUTOSCALE 2
+
+#define XYGC_K_SMOOTHING 0
+#define XYGC_K_NO_SMOOTHING 1
 
 #define XYGC_K_SYMBOL_TYPE_NONE 0
 #define XYGC_K_SYMBOL_TYPE_CIRCLE 1
@@ -61,6 +64,7 @@
 #define XYGC_K_PLOT_STYLE_LINE 0
 #define XYGC_K_PLOT_STYLE_POINT 1
 #define XYGC_K_PLOT_STYLE_NEEDLE 2
+#define XYGC_K_PLOT_STYLE_SINGLE_POINT 3
 
 #define XYGC_K_TRACE_INVALID 0
 #define XYGC_K_TRACE_XY 1
@@ -99,7 +103,7 @@
 #define XYGC_K_PLOT_SORTED_X_MODE 1
 
 #define XYGC_MAJOR_VERSION 4
-#define XYGC_MINOR_VERSION 3
+#define XYGC_MINOR_VERSION 7
 #define XYGC_RELEASE 0
 
 #ifdef __xygraph_cc
@@ -136,7 +140,19 @@ static char *dragName[] = {
   xyGraphClass_str27,
   xyGraphClass_str28,
   xyGraphClass_str29,
-  xyGraphClass_str30
+  xyGraphClass_str30,
+  xyGraphClass_str31,
+  xyGraphClass_str32,
+  xyGraphClass_str33,
+  xyGraphClass_str36,
+  xyGraphClass_str35,
+  xyGraphClass_str36,
+  xyGraphClass_str37,
+  xyGraphClass_str38,
+  xyGraphClass_str39,
+  xyGraphClass_str40,
+  xyGraphClass_str41,
+  xyGraphClass_str42,
 };
 
 static void updateTimerAction (
@@ -274,6 +290,10 @@ static void yMonitorConnection (
   ProcessVariable *pv,
   void *userarg );
 
+static void nMonitorConnection (
+  ProcessVariable *pv,
+  void *userarg );
+
 static void xValueUpdate (
   ProcessVariable *pv,
   void *userarg );
@@ -282,7 +302,19 @@ static void yValueUpdate (
   ProcessVariable *pv,
   void *userarg );
 
+static void nValueUpdate (
+  ProcessVariable *pv,
+  void *userarg );
+
 static void yValueWithTimeUpdate (
+  ProcessVariable *pv,
+  void *userarg );
+
+static void traceCtlMonitorConnection (
+  ProcessVariable *pv,
+  void *userarg );
+
+static void traceCtlValueUpdate (
   ProcessVariable *pv,
   void *userarg );
 
@@ -365,12 +397,14 @@ typedef struct editBufTag {
   int bufPlotColor[XYGC_K_MAX_TRACES];
   char bufXPvName[XYGC_K_MAX_TRACES][PV_Factory::MAX_PV_NAME+1];
   char bufYPvName[XYGC_K_MAX_TRACES][PV_Factory::MAX_PV_NAME+1];
+  char bufNPvName[XYGC_K_MAX_TRACES][PV_Factory::MAX_PV_NAME+1];
   int bufXSigned[XYGC_K_MAX_TRACES];
   int bufYSigned[XYGC_K_MAX_TRACES];
   int bufLineThk[XYGC_K_MAX_TRACES];
   int bufLineStyle[XYGC_K_MAX_TRACES];
   char bufTrigPvName[PV_Factory::MAX_PV_NAME+1];
   char bufResetPvName[PV_Factory::MAX_PV_NAME+1];
+  char bufTraceCtlPvName[PV_Factory::MAX_PV_NAME+1];
   int bufOpMode[XYGC_K_MAX_TRACES];
   int bufY2Scale[XYGC_K_MAX_TRACES];
   int bufCount;
@@ -389,6 +423,8 @@ typedef struct editBufTag {
   int bufXMinorGrid;
   efInt bufXAnnotationPrecision;
   int bufXAnnotationFormat;
+  int bufXGridMode;
+  int bufXAxisSmoothing;
 
   int bufY1Axis[NUM_Y_AXES];
   int bufY1AxisStyle[NUM_Y_AXES];
@@ -404,6 +440,8 @@ typedef struct editBufTag {
   int bufY1MinorGrid[NUM_Y_AXES];
   efInt bufY1AnnotationPrecision[NUM_Y_AXES];
   int bufY1AnnotationFormat[NUM_Y_AXES];
+  int bufY1GridMode[NUM_Y_AXES];
+  int bufY1AxisSmoothing[NUM_Y_AXES];
 
   int bufY2Axis;
   int bufY2AxisStyle;
@@ -439,6 +477,12 @@ typedef struct editBufTag {
   int bufUpdateTimerValue;
 
 } editBufType, *editBufPtr;
+
+entryListBase *scaleInwardEntry, *scaleInwardTimerEntry, *scaleInwardThreshEntry;
+
+
+entryListBase *resetPvEntry, *resetModeEntry;
+
 
 typedef struct objPlusIndexTag {
   void *objPtr;
@@ -580,6 +624,10 @@ friend void yMonitorConnection (
   ProcessVariable *pv,
   void *userarg );
 
+friend void nMonitorConnection (
+  ProcessVariable *pv,
+  void *userarg );
+
 friend void xValueUpdate (
   ProcessVariable *pv,
   void *userarg );
@@ -588,7 +636,19 @@ friend void yValueUpdate (
   ProcessVariable *pv,
   void *userarg );
 
+friend void nValueUpdate (
+  ProcessVariable *pv,
+  void *userarg );
+
 friend void yValueWithTimeUpdate (
+  ProcessVariable *pv,
+  void *userarg );
+
+friend void traceCtlMonitorConnection (
+  ProcessVariable *pv,
+  void *userarg );
+
+friend void traceCtlValueUpdate (
   ProcessVariable *pv,
   void *userarg );
 
@@ -675,8 +735,12 @@ objPlusIndexType xcArgRec[XYGC_K_MAX_TRACES];
 objPlusIndexType xvArgRec[XYGC_K_MAX_TRACES];
 objPlusIndexType ycArgRec[XYGC_K_MAX_TRACES];
 objPlusIndexType yvArgRec[XYGC_K_MAX_TRACES];
+objPlusIndexType ncArgRec[XYGC_K_MAX_TRACES];
+objPlusIndexType nvArgRec[XYGC_K_MAX_TRACES];
 
-ProcessVariable *xPv[XYGC_K_MAX_TRACES], *yPv[XYGC_K_MAX_TRACES];
+ProcessVariable *xPv[XYGC_K_MAX_TRACES], *yPv[XYGC_K_MAX_TRACES], 
+ *nPv[XYGC_K_MAX_TRACES];
+
 int initialXConnection[XYGC_K_MAX_TRACES],
  initialYConnection[XYGC_K_MAX_TRACES];
 
@@ -688,13 +752,17 @@ int plotUpdateMode[XYGC_K_MAX_TRACES];
 int opMode[XYGC_K_MAX_TRACES];
 int y2Scale[XYGC_K_MAX_TRACES];
 
-expStringClass xPvExpStr[XYGC_K_MAX_TRACES], yPvExpStr[XYGC_K_MAX_TRACES];
+expStringClass xPvExpStr[XYGC_K_MAX_TRACES], yPvExpStr[XYGC_K_MAX_TRACES],
+ nPvExpStr[XYGC_K_MAX_TRACES];
 
 int xPvType[XYGC_K_MAX_TRACES], yPvType[XYGC_K_MAX_TRACES];
 
 int traceType[XYGC_K_MAX_TRACES]; // XYGC_K_TRACE_XY or XYGC_K_TRACE_CHRONOLOGICAL
 
 int plotState[XYGC_K_MAX_TRACES];
+
+int yPvDim[XYGC_K_MAX_TRACES], xPvDim[XYGC_K_MAX_TRACES],
+ traceSize[XYGC_K_MAX_TRACES];
 
 typedef struct plotInfoTag {
   int n;
@@ -740,12 +808,15 @@ int arrayHead[XYGC_K_MAX_TRACES], arrayTail[XYGC_K_MAX_TRACES],
 
 int effectiveCount[XYGC_K_MAX_TRACES], totalCount[XYGC_K_MAX_TRACES];
 
-ProcessVariable *resetPv, *trigPv;
-int initialResetConnection, initialTrigConnection;
-expStringClass trigPvExpStr, resetPvExpStr;
+ProcessVariable *traceCtlPv, *resetPv, *trigPv;
+int initialTraceCtlConnection, initialResetConnection, initialTrigConnection;
+expStringClass traceCtlPvExpStr, trigPvExpStr, resetPvExpStr;
 
 int count, bufferScrollSize, plotStyle[XYGC_K_MAX_TRACES], plotMode, resetMode;
 int firstTimeSample, curSec, curNsec, drawGridFlag, special[XYGC_K_MAX_TRACES];
+int forceVector[XYGC_K_MAX_TRACES];
+
+int traceCtl;
 
 int xAxis, xAxisStyle, xAxisSource, xAxisTimeFormat;
 efDouble xMin, xMax;
@@ -808,6 +879,8 @@ efInt xNumMinorPerMajor;
 int xMinorGrid;
 efInt xAnnotationPrecision;
 int xAnnotationFormat;
+int xGridMode;
+int xAxisSmoothing;
 
 efInt y1NumLabelIntervals[NUM_Y_AXES];
 int y1LabelGrid[NUM_Y_AXES];
@@ -817,6 +890,8 @@ efInt y1NumMinorPerMajor[NUM_Y_AXES];
 int y1MinorGrid[NUM_Y_AXES];
 efInt y1AnnotationPrecision[NUM_Y_AXES];
 int y1AnnotationFormat[NUM_Y_AXES];
+int y1GridMode[NUM_Y_AXES];
+int y1AxisSmoothing[NUM_Y_AXES];
 
 efInt y2NumLabelIntervals;
 int y2LabelGrid;
@@ -828,7 +903,7 @@ efInt y2AnnotationPrecision;
 int y2AnnotationFormat;
 
 int xPvExists[XYGC_K_MAX_TRACES], yPvExists[XYGC_K_MAX_TRACES],
- trigPvExists, resetPvExists;
+ traceCtlPvExists, trigPvExists, resetPvExists;
 
 double xFactor[XYGC_K_MAX_TRACES], xOffset[XYGC_K_MAX_TRACES];
 double y1Factor[NUM_Y_AXES][XYGC_K_MAX_TRACES],
@@ -837,11 +912,14 @@ double y2Factor[XYGC_K_MAX_TRACES], y2Offset[XYGC_K_MAX_TRACES];
 
 Widget plotWidget;
 
+int needNPvConnect[XYGC_K_MAX_TRACES];
+
 int needConnect, needInit, needRefresh, needUpdate, needErase, needDraw,
- needResetConnect, needReset, needTrigConnect, needTrig, needXRescale,
+ needResetConnect, needReset, needTrigConnect, needTrig,
+ needTraceCtlConnect, needTraceUpdate, needXRescale,
  needY1Rescale[NUM_Y_AXES], needY2Rescale, needBufferScroll, needVectorUpdate,
  needRealUpdate, needBoxRescale, needNewLimits, needOriginalLimits,
- needAutoScaleUpdate;
+ needAutoScaleUpdate, needNConnect, needNInit, needArraySizeChange;
 
 int numBufferScrolls;
 
@@ -1004,6 +1082,11 @@ int eraseActive ( void );
 
 void bufInvalidate ( void );
 
+int expandTemplate (
+  int numMacros,
+  char *macros[],
+  char *expansions[] );
+
 int expand1st (
   int numMacros,
   char *macros[],
@@ -1107,6 +1190,16 @@ void getPvs (
   int max,
   ProcessVariable *pvs[],
   int *n );
+
+char *getSearchString (
+  int i
+);
+
+void replaceString (
+  int i,
+  int max,
+  char *string
+);
 
 char *crawlerGetFirstPv ( void );
 

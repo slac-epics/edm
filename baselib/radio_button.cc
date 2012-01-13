@@ -32,10 +32,10 @@ static XtTranslations g_parsedTrans;
 static char g_dragTrans[] =
   "#override\n\
    ~Ctrl~Shift<Btn2Down>: startDrag()\n\
-   Ctrl~Shift<Btn2Down>: pvInfo()\n\
+   Ctrl~Shift<Btn2Down>: dummy()\n\
+   Ctrl~Shift<Btn2Up>: selectActions()\n\
+   Shift Ctrl<Btn2Down>: pvInfo()\n\
    Shift~Ctrl<Btn2Down>: dummy()\n\
-   Shift Ctrl<Btn2Down>: dummy()\n\
-   Shift Ctrl<Btn2Up>: selectActions()\n\
    Shift~Ctrl<Btn2Up>: selectDrag()";
 
 static XtActionsRec g_dragActions[] = {
@@ -70,25 +70,44 @@ static void radioBoxEventHandler (
   Boolean *continueToDispatch ) {
 
 activeRadioButtonClass *rbto = (activeRadioButtonClass *) client;
+int b2Op;
+XButtonEvent *be;
 
   *continueToDispatch = True;
 
   if ( !rbto->active ) return;
 
   if ( e->type == EnterNotify ) {
-    if ( !rbto->controlPvId->have_write_access() ) {
-      rbto->actWin->cursor.set( XtWindow(rbto->actWin->executeWidget),
-       CURSOR_K_NO );
-    }
-    else {
-      rbto->actWin->cursor.set( XtWindow(rbto->actWin->executeWidget),
-       CURSOR_K_DEFAULT );
+    if ( rbto->controlPvId ) {
+      if ( !rbto->controlPvId->have_write_access() ) {
+        rbto->actWin->cursor.set( XtWindow(rbto->actWin->executeWidget),
+         CURSOR_K_NO );
+      }
+      else {
+        rbto->actWin->cursor.set( XtWindow(rbto->actWin->executeWidget),
+         CURSOR_K_DEFAULT );
+      }
     }
   }
 
   if ( e->type == LeaveNotify ) {
     rbto->actWin->cursor.set( XtWindow(rbto->actWin->executeWidget),
      CURSOR_K_DEFAULT );
+  }
+
+  // allow Button2 operations when no write access
+  b2Op = 0;
+  if ( ( e->type == ButtonPress ) || ( e->type == ButtonRelease ) ) {
+    be = (XButtonEvent *) e;
+    if ( be->button == Button2 ) {
+      b2Op = 1;
+    }
+  }
+
+  if ( rbto->controlPvId ) {
+    if ( !rbto->controlPvId->have_write_access() && !b2Op ) {
+      *continueToDispatch = False;
+    }
   }
 
 }
@@ -112,7 +131,8 @@ int i;
     if ( w == rbto->pb[i] ) {
       if ( rbto->curValue != i ) {
         rbto->curValue = i;
-        rbto->controlPvId->put( rbto->curValue );
+        rbto->controlPvId->put(
+         XDisplayName(rbto->actWin->appCtx->displayName), rbto->curValue );
       }
       break;
     }
@@ -307,6 +327,7 @@ int i;
 
   name = new char[strlen("activeRadioButtonClass")+1];
   strcpy( name, "activeRadioButtonClass" );
+  checkBaseClassVersion( activeGraphicClass::MAJOR_VERSION, name );
 
   for ( i=0; i<MAX_ENUM_STATES; i++ ) {
     pb[i] = NULL;
@@ -390,6 +411,8 @@ activeGraphicClass *rbto = (activeGraphicClass *) this;
   unconnectedTimer = 0;
 
   eBuf = NULL;
+
+  doAccSubs( controlPvExpStr );
 
 }
 
@@ -893,7 +916,7 @@ int activeRadioButtonClass::drawActive ( void ) {
       actWin->executeGc.setFG( fgColor.getDisconnected() );
       actWin->executeGc.setLineWidth( 1 );
       actWin->executeGc.setLineStyle( LineSolid );
-      XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+      XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
        actWin->executeGc.normGC(), x, y, w, h );
       actWin->executeGc.restoreFg();
       needToEraseUnconnected = 1;
@@ -902,10 +925,26 @@ int activeRadioButtonClass::drawActive ( void ) {
   else if ( needToEraseUnconnected ) {
     actWin->executeGc.setLineWidth( 1 );
     actWin->executeGc.setLineStyle( LineSolid );
-    XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.eraseGC(), x, y, w, h );
     needToEraseUnconnected = 0;
   }
+
+  return 1;
+
+}
+
+int activeRadioButtonClass::expandTemplate (
+  int numMacros,
+  char *macros[],
+  char *expansions[] )
+{
+
+expStringClass tmpStr;
+
+  tmpStr.setRaw( controlPvExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  controlPvExpStr.setRaw( tmpStr.getExpanded() );
 
   return 1;
 
@@ -1082,10 +1121,10 @@ int activeRadioButtonClass::deactivate (
     if ( widgetsCreated ) {
       if ( bulBrd ) {
         XtUnmapWidget( bulBrd );
-        XtDestroyWidget( bulBrd );
-        bulBrd = NULL;
         XtDestroyWidget( radioBox );
         radioBox = NULL;
+        XtDestroyWidget( bulBrd );
+        bulBrd = NULL;
       }
       widgetsCreated = 0;
     }
@@ -1164,7 +1203,6 @@ static void selectActions (
 {
 
 activeRadioButtonClass *rbto;
-int stat;
 XButtonEvent *be = (XButtonEvent *) e;
 
   XtVaGetValues( w, XmNuserData, &rbto, NULL );
@@ -1239,10 +1277,10 @@ char msg[79+1];
     if ( widgetsCreated ) {
       if ( bulBrd ) {
         XtUnmapWidget( bulBrd );
-        XtDestroyWidget( bulBrd );
-        bulBrd = NULL;
         XtDestroyWidget( radioBox );
         radioBox = NULL;
+        XtDestroyWidget( bulBrd );
+        bulBrd = NULL;
       }
       widgetsCreated = 0;
     }
@@ -1308,23 +1346,6 @@ char msg[79+1];
        XmNselectColor, actWin->ci->pix(selectColor),
        NULL );
 
-      if ( controlExists ) {
-        if ( controlPvId->have_write_access() ) {
-          n = 0;
-          XtSetArg( args[n], XmNsensitive, True ); n++;
-	}
-	else {
-          n = 0;
-          XtSetArg( args[n], XmNsensitive, False ); n++;
-	}
-      }
-      else {
-        n = 0;
-        XtSetArg( args[n], XmNsensitive, False ); n++;
-      }
-
-      XtSetValues( pb[i], args, n );
-
       XtAddCallback( pb[i], XmNvalueChangedCallback, putValue,
        (XtPointer) this );
 
@@ -1339,7 +1360,7 @@ Cardinal numChildren;
 int ii;
 
     XtAddEventHandler( radioBox,
-     EnterWindowMask|LeaveWindowMask,
+     ButtonPressMask|ButtonReleaseMask|EnterWindowMask|LeaveWindowMask,
      False, radioBoxEventHandler, (XtPointer) this );
 
     XtVaGetValues( radioBox,
@@ -1350,7 +1371,7 @@ int ii;
     for ( ii=0; ii<(int)numChildren; ii++ ) {
 
       XtAddEventHandler( children[ii],
-       EnterWindowMask,
+       ButtonPressMask|ButtonReleaseMask|EnterWindowMask,
        False, radioBoxEventHandler, (XtPointer) this );
 
     }
@@ -1555,6 +1576,30 @@ void activeRadioButtonClass::getPvs (
 
   *n = 1;
   pvs[0] = controlPvId;
+
+}
+
+char *activeRadioButtonClass::getSearchString (
+  int i
+) {
+
+  if ( i == 0 ) {
+    return controlPvExpStr.getRaw();
+  }
+
+  return NULL;
+
+}
+
+void activeRadioButtonClass::replaceString (
+  int i,
+  int max,
+  char *string
+) {
+
+  if ( i == 0 ) {
+    controlPvExpStr.setRaw( string );
+  }
 
 }
 

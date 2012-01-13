@@ -70,7 +70,9 @@ activeMenuButtonClass *mbto = (activeMenuButtonClass *) client;
 int i;
 short value;
 
-  if ( !mbto->controlPvId->have_write_access() ) return;
+  if ( mbto->controlPvId ) {
+    if ( !mbto->controlPvId->have_write_access() ) return;
+  }
 
   if ( mbto->stateStringPvId ) {
 
@@ -78,7 +80,9 @@ short value;
 
       if ( w == mbto->pb[i] ) {
         value = (short) i;
-        mbto->controlPvId->put( value );
+        mbto->controlPvId->put(
+         XDisplayName(mbto->actWin->appCtx->displayName),
+         value );
         break;
       }
 
@@ -429,6 +433,7 @@ int i;
 
   name = new char[strlen("activeMenuButtonClass")+1];
   strcpy( name, "activeMenuButtonClass" );
+  checkBaseClassVersion( activeGraphicClass::MAJOR_VERSION, name );
 
   for ( i=0; i<MAX_ENUM_STATES; i++ ) {
     pb[i] = NULL;
@@ -535,6 +540,13 @@ int i;
   eBuf = NULL;
 
   setBlinkFunction( (void *) doBlink );
+
+  doAccSubs( controlPvExpStr );
+  doAccSubs( readPvExpStr );
+  doAccSubs( colorPvExpStr );
+  doAccSubs( visPvExpStr );
+  doAccSubs( minVisString, 39 );
+  doAccSubs( maxVisString, 39 );
 
 }
 
@@ -943,7 +955,7 @@ char oneName[PV_Factory::MAX_PV_NAME+1];
     readPvExpStr.setRaw( "" );
   }
 
-  if ( ( major > 2 ) || ( major == 2 ) && ( minor > 0 ) ) {
+  if ( ( major > 2 ) || ( ( major == 2 ) && ( minor > 0 ) ) ) {
     fscanf( f, "%d\n", &index ); actWin->incLine();
     inconsistentColor.setColorIndex( index, actWin->ci );
   }
@@ -1091,9 +1103,17 @@ char title[32], *ptr;
 
   ef.addTextField( activeMenuButtonClass_str30, 35, eBuf->bufVisPvName,
    PV_Factory::MAX_PV_NAME );
+  invisPvEntry = ef.getCurItem();
   ef.addOption( " ", activeMenuButtonClass_str31, &bufVisInverted );
+  visInvEntry = ef.getCurItem();
+  invisPvEntry->addDependency( visInvEntry );
   ef.addTextField( activeMenuButtonClass_str32, 35, bufMinVisString, 39 );
+  minVisEntry = ef.getCurItem();
+  invisPvEntry->addDependency( minVisEntry );
   ef.addTextField( activeMenuButtonClass_str33, 35, bufMaxVisString, 39 );
+  maxVisEntry = ef.getCurItem();
+  invisPvEntry->addDependency( maxVisEntry );
+  invisPvEntry->addDependencyCallbacks();
 
   return 1;
 
@@ -1146,10 +1166,10 @@ int activeMenuButtonClass::eraseActive ( void ) {
 
   prevVisibility = visibility;
 
-  XDrawRectangle( actWin->d, XtWindow(actWin->drawWidget),
+  XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->drawGc.eraseGC(), x, y, w, h );
 
-  XFillRectangle( actWin->d, XtWindow(actWin->drawWidget),
+  XFillRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->drawGc.eraseGC(), x, y, w, h );
 
   return 1;
@@ -1283,7 +1303,7 @@ int blink = 0;
       actWin->executeGc.setFG( bgColor.getDisconnectedIndex(), &blink );
       actWin->executeGc.setLineWidth( 1 );
       actWin->executeGc.setLineStyle( LineSolid );
-      XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+      XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
        actWin->executeGc.normGC(), x, y, w, h );
       actWin->executeGc.restoreFg();
       needToEraseUnconnected = 1;
@@ -1293,7 +1313,7 @@ int blink = 0;
   else if ( needToEraseUnconnected ) {
     actWin->executeGc.setLineWidth( 1 );
     actWin->executeGc.setLineStyle( LineSolid );
-    XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.eraseGC(), x, y, w, h );
     needToEraseUnconnected = 0;
     eraseActive();
@@ -1347,58 +1367,58 @@ int blink = 0;
 
   }
 
-  XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+  XFillRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x, y, w, h );
 
-  XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x, y, w, h );
 
   actWin->executeGc.setFG( actWin->ci->pix(botShadowColor) );
 
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x, y, x+w, y );
 
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x, y, x, y+h );
 
   actWin->executeGc.setFG( actWin->ci->pix(topShadowColor) );
 
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x, y+h, x+w, y+h );
 
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x+w, y, x+w, y+h );
 
   // top
   actWin->executeGc.setFG( actWin->ci->pix(topShadowColor) );
 
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x+1, y+1, x+w-1, y+1 );
 
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x+2, y+2, x+w-2, y+2 );
 
   // left
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x+1, y+1, x+1, y+h-1 );
 
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x+2, y+2, x+2, y+h-2 );
 
   // bottom
   actWin->executeGc.setFG( actWin->ci->pix(botShadowColor) );
 
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x+1, y+h-1, x+w-1, y+h-1 );
 
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x+2, y+h-2, x+w-2, y+h-2 );
 
   // right
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x+w-1, y+1, x+w-1, y+h-1 );
 
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x+w-2, y+2, x+w-2, y+h-2 );
 
   // draw bump
@@ -1408,18 +1428,18 @@ int blink = 0;
 
   actWin->executeGc.setFG( actWin->ci->pix(topShadowColor) );
 
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), bumpX, bumpY+10, bumpX, bumpY );
 
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), bumpX, bumpY, bumpX+10, bumpY );
 
   actWin->executeGc.setFG( actWin->ci->pix(botShadowColor) );
 
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), bumpX+10, bumpY, bumpX+10, bumpY+10 );
 
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), bumpX+10, bumpY+10, bumpX, bumpY+10 );
 
   if ( fs ) {
@@ -1436,18 +1456,21 @@ int blink = 0;
     if ( stateStringPvId ) {
 
       if ( ( v >= 0 ) && ( v < (short) stateStringPvId->get_enum_count() ) ) {
-        drawText( actWin->executeWidget, &actWin->executeGc, fs, tX, tY,
+        drawText( actWin->executeWidget, drawable(actWin->executeWidget),
+         &actWin->executeGc, fs, tX, tY,
          XmALIGNMENT_CENTER, (char *) stateStringPvId->get_enum( v ) );
       }
       else {
-        drawText( actWin->executeWidget, &actWin->executeGc, fs, tX, tY,
+        drawText( actWin->executeWidget, drawable(actWin->executeWidget),
+         &actWin->executeGc, fs, tX, tY,
          XmALIGNMENT_CENTER, "?" );
       }
 
     }
     else {
 
-      drawText( actWin->executeWidget, &actWin->executeGc, fs, tX, tY,
+      drawText( actWin->executeWidget, drawable(actWin->executeWidget),
+       &actWin->executeGc, fs, tX, tY,
        XmALIGNMENT_CENTER, "?" );
 
     }
@@ -1459,6 +1482,34 @@ int blink = 0;
   actWin->executeGc.restoreFg();
 
   updateBlink( blink );
+
+  return 1;
+
+}
+
+int activeMenuButtonClass::expandTemplate (
+  int numMacros,
+  char *macros[],
+  char *expansions[] )
+{
+
+expStringClass tmpStr;
+
+  tmpStr.setRaw( controlPvExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  controlPvExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( readPvExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  readPvExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( visPvExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  visPvExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( colorPvExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  colorPvExpStr.setRaw( tmpStr.getExpanded() );
 
   return 1;
 
@@ -1833,6 +1884,10 @@ void activeMenuButtonClass::btnUp (
 
   if ( !controlExists ) return;
 
+  if ( controlPvId ) {
+    if ( !controlPvId->have_write_access() ) return;
+  }
+
   if ( buttonNumber == 1 ) {
 
     XmMenuPosition( popUpMenu, be );
@@ -1857,6 +1912,10 @@ void activeMenuButtonClass::btnDown (
 
   if ( !controlExists ) return;
 
+  if ( controlPvId ) {
+    if ( !controlPvId->have_write_access() ) return;
+  }
+
   if ( buttonNumber == 1 ) {
     buttonPressed = 1;
   }
@@ -1871,11 +1930,13 @@ void activeMenuButtonClass::pointerIn (
 
   if ( !enabled || !init || !visibility ) return;
 
-  if ( !controlPvId->have_write_access() ) {
-    actWin->cursor.set( XtWindow(actWin->executeWidget), CURSOR_K_NO );
-  }
-  else {
-    actWin->cursor.set( XtWindow(actWin->executeWidget), CURSOR_K_DEFAULT );
+  if ( controlPvId ) {
+    if ( !controlPvId->have_write_access() ) {
+      actWin->cursor.set( XtWindow(actWin->executeWidget), CURSOR_K_NO );
+    }
+    else {
+      actWin->cursor.set( XtWindow(actWin->executeWidget), CURSOR_K_DEFAULT );
+    }
   }
 
   activeGraphicClass::pointerIn( _x, _y, buttonState );
@@ -2377,6 +2438,66 @@ void activeMenuButtonClass::getPvs (
   pvs[1] = readPvId;
   pvs[2] = colorPvId;
   pvs[3] = visPvId;
+
+}
+
+char *activeMenuButtonClass::getSearchString (
+  int i
+) {
+
+  if ( i == 0 ) {
+    return controlPvExpStr.getRaw();
+  }
+  else if ( i == 1 ) {
+    return readPvExpStr.getRaw();
+  }
+  else if ( i == 2 ) {
+    return colorPvExpStr.getRaw();
+  }
+  else if ( i == 3 ) {
+    return visPvExpStr.getRaw();
+  }
+  else if ( i == 4 ) {
+    return minVisString;
+  }
+  else if ( i == 5 ) {
+    return maxVisString;
+  }
+
+  return NULL;
+
+}
+
+void activeMenuButtonClass::replaceString (
+  int i,
+  int max,
+  char *string
+) {
+
+  if ( i == 0 ) {
+    controlPvExpStr.setRaw( string );
+  }
+  else if ( i == 1 ) {
+    readPvExpStr.setRaw( string );
+  }
+  else if ( i == 2 ) {
+    colorPvExpStr.setRaw( string );
+  }
+  else if ( i == 3 ) {
+    visPvExpStr.setRaw( string );
+  }
+  else if ( i == 4 ) {
+    int l = max;
+    if ( 39 < max ) l = 39;
+    strncpy( minVisString, string, l );
+    minVisString[l] = 0;
+  }
+  else if ( i == 5 ) {
+    int l = max;
+    if ( 39 < max ) l = 39;
+    strncpy( maxVisString, string, l );
+    maxVisString[l] = 0;
+  }
 
 }
 

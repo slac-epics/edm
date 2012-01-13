@@ -144,6 +144,30 @@ activeButtonClass *bto = (activeButtonClass *) client;
 
   bto->colorPvExpString.setRaw( bto->eBuf->bufColorPvName );
 
+  bto->efControlBitPos = bto->eBuf->bufEfControlBitPos;
+  if ( bto->efControlBitPos.isNull() ) {
+    bto->controlIsBit = 0;
+    bto->controlBitPos = 0;
+  }
+  else {
+    bto->controlIsBit = 1;
+    bto->controlBitPos = bto->efControlBitPos.value();
+    if ( bto->controlBitPos > 31 ) bto->controlBitPos = 31;
+    if ( bto->controlBitPos < 0 ) bto->controlBitPos = 0;
+  }
+
+  bto->efReadBitPos = bto->eBuf->bufEfReadBitPos;
+  if ( bto->efReadBitPos.isNull() ) {
+    bto->readIsBit = 0;
+    bto->readBitPos = 0;
+  }
+  else {
+    bto->readIsBit = 1;
+    bto->readBitPos = bto->efReadBitPos.value();
+    if ( bto->readBitPos > 31 ) bto->readBitPos = 31;
+    if ( bto->readBitPos < 0 ) bto->readBitPos = 0;
+  }
+
   bto->x = bto->eBuf->bufX;
   bto->sboxX = bto->eBuf->bufX;
 
@@ -258,6 +282,10 @@ int st, sev;
   bto->controlValid = 1;
   bto->curControlV = (short) pv->get_int();
 
+  if ( bto->controlIsBit ) {
+    bto->controlBit = ( ( bto->curControlV & ( 1 << bto->controlBitPos ) ) > 0 );
+  }
+
   if ( !bto->readExists ) {
 
     st = pv->get_status();
@@ -320,6 +348,10 @@ int st, sev;
   bto->readValid = 1;
   bto->curReadV = (short) pv->get_int();
 
+  if ( bto->readIsBit ) {
+    bto->readBit = ( ( bto->curReadV & ( 1 << bto->readBitPos ) ) > 0 );
+  }
+
   st = pv->get_status();
   sev = pv->get_severity();
   if ( ( st != bto->oldStat ) || ( sev != bto->oldSev ) ) {
@@ -329,10 +361,22 @@ int st, sev;
     bto->bufInvalidate();
   }
 
-  bto->needReadRefresh = 1;
-  bto->actWin->appCtx->proc->lock();
-  bto->actWin->addDefExeNode( bto->aglPtr );
-  bto->actWin->appCtx->proc->unlock();
+  if ( bto->readIsBit ) {
+    if ( bto->initReadBit || ( bto->readBit != bto->prevReadBit ) ) {
+      bto->initReadBit = 0;
+      bto->prevReadBit = bto->readBit;
+      bto->needReadRefresh = 1;
+      bto->actWin->appCtx->proc->lock();
+      bto->actWin->addDefExeNode( bto->aglPtr );
+      bto->actWin->appCtx->proc->unlock();
+    }
+  }
+  else {
+    bto->needReadRefresh = 1;
+    bto->actWin->appCtx->proc->lock();
+    bto->actWin->addDefExeNode( bto->aglPtr );
+    bto->actWin->appCtx->proc->unlock();
+  }
 
 }
 
@@ -429,6 +473,7 @@ activeButtonClass::activeButtonClass ( void ) {
 
   name = new char[strlen("activeButtonClass")+1];
   strcpy( name, "activeButtonClass" );
+  checkBaseClassVersion( activeGraphicClass::MAJOR_VERSION, name );
   deleteRequest = 0;
   selected = 0;
   strcpy( id, "" );
@@ -448,6 +493,13 @@ activeButtonClass::activeButtonClass ( void ) {
   strcpy( maxVisString, "" );
   connection.setMaxPvs( 4 );
   activeMode = 0;
+
+  controlIsBit = readIsBit = 0;
+  prevControlBit = prevReadBit = 0;
+  controlBitPos = readBitPos = 0;
+  initControlBit = initReadBit = 0;
+  efControlBitPos.setNull(1);
+  efReadBitPos.setNull(1);
 
   fgColorMode = BTC_K_COLORMODE_STATIC;
 
@@ -525,9 +577,27 @@ activeGraphicClass *bto = (activeGraphicClass *) this;
   strncpy( maxVisString, source->maxVisString, 39 );
   activeMode = 0;
 
+  prevControlBit = prevReadBit = 0;
+  initControlBit = initReadBit = 0;
+  controlIsBit = source->controlIsBit;
+  readIsBit = source->readIsBit;
+  controlBitPos = source->controlBitPos;
+  efControlBitPos = source->efControlBitPos;
+  readBitPos = source->readBitPos;
+  efReadBitPos = source->efReadBitPos;
+
   fgColorMode = source->fgColorMode;
 
   connection.setMaxPvs( 4 );
+
+  doAccSubs( controlPvName );
+  doAccSubs( readPvName );
+  doAccSubs( colorPvExpString );
+  doAccSubs( visPvExpString );
+  doAccSubs( minVisString, 39 );
+  doAccSubs( maxVisString, 39 );
+  doAccSubs( onLabel, MAX_ENUM_STRING_SIZE );
+  doAccSubs( offLabel, MAX_ENUM_STRING_SIZE );
 
   updateDimensions();
 
@@ -695,6 +765,8 @@ static int objTypeEnum[4] = {
   tag.loadW( "visMin", minVisString, emptyStr );
   tag.loadW( "visMax", maxVisString, emptyStr );
   tag.loadW( "colorPv", &colorPvExpString, emptyStr  );
+  tag.loadW( "controlBitPos", &efControlBitPos );
+  tag.loadW( "readBitPos", &efReadBitPos );
   tag.loadW( unknownTags );
   tag.loadW( "endObjectProperties" );
   tag.loadW( "" );
@@ -886,6 +958,8 @@ static int objTypeEnum[4] = {
   tag.loadR( "visMin", 39, minVisString, emptyStr );
   tag.loadR( "visMax", 39, maxVisString, emptyStr );
   tag.loadR( "colorPv", &colorPvExpString, emptyStr );
+  tag.loadR( "controlBitPos", &efControlBitPos );
+  tag.loadR( "readBitPos", &efReadBitPos );
   tag.loadR( "endObjectProperties" );
   tag.loadR( "" );
 
@@ -906,6 +980,28 @@ static int objTypeEnum[4] = {
   }
 
   this->initSelectBox(); // call after getting x,y,w,h
+
+  if ( efControlBitPos.isNull() ) {
+    controlIsBit = 0;
+    controlBitPos = 0;
+  }
+  else {
+    controlIsBit = 1;
+    controlBitPos = efControlBitPos.value();
+    if ( controlBitPos > 31 ) controlBitPos = 31;
+    if ( controlBitPos < 0 ) controlBitPos = 0;
+  }
+
+  if ( efReadBitPos.isNull() ) {
+    readIsBit = 0;
+    readBitPos = 0;
+  }
+  else {
+    readIsBit = 1;
+    readBitPos = efReadBitPos.value();
+    if ( readBitPos > 31 ) readBitPos = 31;
+    if ( readBitPos < 0 ) readBitPos = 0;
+  }
 
   if ( fgColorMode == BTC_K_COLORMODE_ALARM )
     fgColor.setAlarmSensitive();
@@ -1535,21 +1631,36 @@ char title[32], *ptr;
   strncpy( eBuf->bufMinVisString, minVisString, 39 );
   strncpy( eBuf->bufMaxVisString, maxVisString, 39 );
 
+  eBuf->bufEfControlBitPos = efControlBitPos;
+  eBuf->bufEfReadBitPos = efReadBitPos;
+
   ef.create( actWin->top, actWin->appCtx->ci.getColorMap(),
    &actWin->appCtx->entryFormX,
    &actWin->appCtx->entryFormY, &actWin->appCtx->entryFormW,
    &actWin->appCtx->entryFormH, &actWin->appCtx->largestH,
    title, NULL, NULL, NULL );
 
-  //ef.addTextField( activeButtonClass_str17, 35, bufId, 31 );
   ef.addTextField( activeButtonClass_str18, 35, &eBuf->bufX );
   ef.addTextField( activeButtonClass_str19, 35, &eBuf->bufY );
   ef.addTextField( activeButtonClass_str20, 35, &eBuf->bufW );
   ef.addTextField( activeButtonClass_str21, 35, &eBuf->bufH );
+
   ef.addTextField( activeButtonClass_str22, 35, eBuf->controlBufPvName,
    PV_Factory::MAX_PV_NAME );
+  ctlPvEntry = ef.getCurItem();
+  ef.addTextField( "Bit", 35, &eBuf->bufEfControlBitPos );
+  ctlPvBitEntry = ef.getCurItem();
+  ctlPvEntry->addDependency( ctlPvBitEntry );
+  ctlPvEntry->addDependencyCallbacks();
+
   ef.addTextField( activeButtonClass_str23, 35, eBuf->readBufPvName,
    PV_Factory::MAX_PV_NAME );
+  rdPvEntry = ef.getCurItem();
+  ef.addTextField( "Bit", 35, &eBuf->bufEfReadBitPos );
+  rdPvBitEntry = ef.getCurItem();
+  rdPvEntry->addDependency( rdPvBitEntry );
+  rdPvEntry->addDependencyCallbacks();
+
   ef.addOption( activeButtonClass_str24, activeButtonClass_str25,
    buttonTypeStr, 7 );
   ef.addOption( activeButtonClass_str26, activeButtonClass_str27, _3DString,
@@ -1562,11 +1673,6 @@ char title[32], *ptr;
    MAX_ENUM_STRING_SIZE );
   ef.addTextField( activeButtonClass_str33, 35, eBuf->bufOffLabel,
    MAX_ENUM_STRING_SIZE );
-
-  //ef.addToggle( activeButtonClass_str34, &eBuf->bufActivateCallbackFlag );
-  //ef.addToggle( activeButtonClass_str35, &eBuf->bufDeactivateCallbackFlag );
-  //ef.addToggle( activeButtonClass_str36, &eBuf->bufDownCallbackFlag );
-  //ef.addToggle( activeButtonClass_str37, &eBuf->bufUpCallbackFlag );
 
   ef.addColorButton( activeButtonClass_str39, actWin->ci, &eBuf->fgCb, &eBuf->bufFgColor );
   ef.addToggle( activeButtonClass_str41, &eBuf->bufFgColorMode );
@@ -1589,9 +1695,17 @@ char title[32], *ptr;
 
   ef.addTextField( activeButtonClass_str58, 30, eBuf->bufVisPvName,
    PV_Factory::MAX_PV_NAME );
+  invisPvEntry = ef.getCurItem();
   ef.addOption( " ", activeButtonClass_str59, &eBuf->bufVisInverted );
+  visInvEntry = ef.getCurItem();
+  invisPvEntry->addDependency( visInvEntry );
   ef.addTextField( activeButtonClass_str60, 30, eBuf->bufMinVisString, 39 );
+  minVisEntry = ef.getCurItem();
+  invisPvEntry->addDependency( minVisEntry );
   ef.addTextField( activeButtonClass_str61, 30, eBuf->bufMaxVisString, 39 );
+  maxVisEntry = ef.getCurItem();
+  invisPvEntry->addDependency( maxVisEntry );
+  invisPvEntry->addDependencyCallbacks();
 
   return 1;
 
@@ -1644,10 +1758,10 @@ int activeButtonClass::eraseActive ( void ) {
 
   prevVisibility = visibility;
 
-  XDrawRectangle( actWin->d, XtWindow(actWin->drawWidget),
+  XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->drawGc.eraseGC(), x, y, w, h );
 
-  XFillRectangle( actWin->d, XtWindow(actWin->drawWidget),
+  XFillRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->drawGc.eraseGC(), x, y, w, h );
 
   return 1;
@@ -1664,7 +1778,6 @@ int blink = 0;
 
   actWin->drawGc.saveFg();
 
-  //actWin->drawGc.setFG( onColor.pixelColor() );
   actWin->drawGc.setFG( onColor.pixelIndex(), &blink );
 
   XFillRectangle( actWin->d, XtWindow(actWin->drawWidget),
@@ -1725,7 +1838,6 @@ int blink = 0;
 
     actWin->drawGc.addNormXClipRectangle( xR );
 
-    //actWin->drawGc.setFG( fgColor.pixelColor() );
     actWin->drawGc.setFG( fgColor.pixelIndex(), &blink );
     actWin->drawGc.setFontTag( fontTag, actWin->fi );
 
@@ -1757,11 +1869,10 @@ int blink = 0;
   if ( !init ) {
     if ( needToDrawUnconnected ) {
       actWin->executeGc.saveFg();
-      //actWin->executeGc.setFG( onColor.getDisconnected() );
       actWin->executeGc.setFG( onColor.getDisconnectedIndex(), &blink );
       actWin->executeGc.setLineWidth( 1 );
       actWin->executeGc.setLineStyle( LineSolid );
-      XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+      XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
        actWin->executeGc.normGC(), x, y, w, h );
       actWin->executeGc.restoreFg();
       needToEraseUnconnected = 1;
@@ -1771,7 +1882,7 @@ int blink = 0;
   else if ( needToEraseUnconnected ) {
     actWin->executeGc.setLineWidth( 1 );
     actWin->executeGc.setLineStyle( LineSolid );
-    XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.eraseGC(), x, y, w, h );
     needToEraseUnconnected = 0;
     if ( invisible ) {
@@ -1787,6 +1898,14 @@ int blink = 0;
   cV = controlV;
   rV = readV;
 
+  if ( controlIsBit ) {
+    cV = controlBit;
+  }
+
+  if ( readIsBit ) {
+    rV = readBit;
+  }
+
   actWin->executeGc.saveFg();
   actWin->executeGc.setLineWidth( 1 );
   actWin->executeGc.setLineStyle( LineSolid );
@@ -1794,41 +1913,34 @@ int blink = 0;
   if ( controlExists && readExists ) {
 
     if ( ( cV != rV ) || !controlValid || !readValid ) {
-      //actWin->executeGc.setFG( inconsistentColor.getColor() );
       actWin->executeGc.setFG( inconsistentColor.getIndex(), &blink );
     }
     else if ( cV == 0 ) {
-      //actWin->executeGc.setFG( offColor.getColor() );
       actWin->executeGc.setFG( offColor.getIndex(), &blink );
     }
     else {
-      //actWin->executeGc.setFG( onColor.getColor() );
       actWin->executeGc.setFG( onColor.getIndex(), &blink );
     }
 
   }
   else if ( readExists ) {
 
-    cV = readV;
-
-    if ( cV == 0 ) {
-      //actWin->executeGc.setFG( offColor.getColor() );
+    if ( rV == 0 ) {
       actWin->executeGc.setFG( offColor.getIndex(), &blink );
     }
     else {
-      //actWin->executeGc.setFG( onColor.getColor() );
       actWin->executeGc.setFG( onColor.getIndex(), &blink );
     }
+
+    cV = rV;
 
   }
   else if ( controlExists ) {
 
     if ( cV == 0 ) {
-      //actWin->executeGc.setFG( offColor.getColor() );
       actWin->executeGc.setFG( offColor.getIndex(), &blink );
     }
     else {
-      //actWin->executeGc.setFG( onColor.getColor() );
       actWin->executeGc.setFG( onColor.getIndex(), &blink );
     }
 
@@ -1836,30 +1948,26 @@ int blink = 0;
   else if ( anyCallbackFlag ) {
 
     if ( cV != rV ) {
-      //actWin->executeGc.setFG( inconsistentColor.getColor() );
       actWin->executeGc.setFG( inconsistentColor.getIndex(), &blink );
     }
     else if ( cV == 0 ) {
-      //actWin->executeGc.setFG( offColor.getColor() );
       actWin->executeGc.setFG( offColor.getIndex(), &blink );
     }
     else {
-      //actWin->executeGc.setFG( onColor.getColor() );
       actWin->executeGc.setFG( onColor.getIndex(), &blink );
     }
 
   }
   else {
 
-    //actWin->executeGc.setFG( inconsistentColor.getColor() );
     actWin->executeGc.setFG( inconsistentColor.getIndex(), &blink );
 
   }
 
-  XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+  XFillRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x, y, w, h );
 
-  XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x, y, w, h );
 
   if ( cV == 0 ) {
@@ -1882,50 +1990,50 @@ int blink = 0;
 
     actWin->executeGc.setFG( actWin->ci->pix(botShadowColor) );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x, y, x+w, y );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x, y, x, y+h );
 
     actWin->executeGc.setFG( actWin->ci->pix(topShadowColor) );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x, y+h, x+w, y+h );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x+w, y, x+w, y+h );
 
     // top
     actWin->executeGc.setFG( actWin->ci->pix(topShadowColor) );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x+1, y+1, x+w-1, y+1 );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x+2, y+2, x+w-2, y+2 );
 
     // left
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x+1, y+1, x+1, y+h-1 );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x+2, y+2, x+2, y+h-2 );
 
     // bottom
     actWin->executeGc.setFG( actWin->ci->pix(botShadowColor) );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x+1, y+h-1, x+w-1, y+h-1 );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x+2, y+h-2, x+w-2, y+h-2 );
 
     // right
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x+w-1, y+1, x+w-1, y+h-1 );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x+w-2, y+2, x+w-2, y+h-2 );
 
     }
@@ -1950,48 +2058,28 @@ int blink = 0;
 
     actWin->executeGc.setFG( actWin->ci->pix(botShadowColor) );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x, y, x+w, y );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x, y, x, y+h );
 
     // top
 
     actWin->executeGc.setFG( actWin->ci->pix(topShadowColor) );
 
-//     XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
-//      actWin->executeGc.normGC(), x, y, x+w, y );
-
-//      actWin->executeGc.setFG( actWin->ci->pix(botShadowColor) );
-
-//      XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
-//       actWin->executeGc.normGC(), x+1, y+1, x+w-1, y+1 );
-
-    //left
-
-//     actWin->executeGc.setFG( actWin->ci->pix(topShadowColor) );
-
-//     XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
-//      actWin->executeGc.normGC(), x, y, x, y+h );
-
-//      actWin->executeGc.setFG( actWin->ci->pix(botShadowColor) );
-
-//      XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
-//       actWin->executeGc.normGC(), x+1, y+1, x+1, y+h-1 );
-
     // bottom
 
     actWin->executeGc.setFG( actWin->ci->pix(topShadowColor) );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x, y+h, x+w, y+h );
 
     //right
 
     actWin->executeGc.setFG( actWin->ci->pix(topShadowColor) );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x+w, y, x+w, y+h );
 
     }
@@ -2002,7 +2090,6 @@ int blink = 0;
 
     actWin->executeGc.addNormXClipRectangle( xR );
 
-    //actWin->executeGc.setFG( fgColor.getColor() );
     actWin->executeGc.setFG( fgColor.getIndex(), &blink );
     actWin->executeGc.setFontTag( fontTag, actWin->fi );
 
@@ -2011,14 +2098,14 @@ int blink = 0;
 
     if ( labelType == BTC_K_LITERAL ) {
 
-      drawText( actWin->executeWidget, &actWin->executeGc, fs, tX, tY,
-       XmALIGNMENT_CENTER, string );
+      drawText( actWin->executeWidget, drawable(actWin->executeWidget),
+       &actWin->executeGc, fs, tX, tY, XmALIGNMENT_CENTER, string );
 
     }
     else {
 
-      drawText( actWin->executeWidget, &actWin->executeGc, fs, tX, tY,
-       XmALIGNMENT_CENTER, string );
+      drawText( actWin->executeWidget, drawable(actWin->executeWidget),
+       &actWin->executeGc, fs, tX, tY, XmALIGNMENT_CENTER, string );
 
     }
 
@@ -2080,7 +2167,6 @@ char callbackName[63+1];
       activeMode = 1;
 
       if ( !controlPvName.getExpanded() ||
-	 //( strcmp( controlPvName.getExpanded(), "" ) == 0 ) ) {
         blankOrComment( controlPvName.getExpanded() ) ) {
         controlExists = 0;
       }
@@ -2090,7 +2176,6 @@ char callbackName[63+1];
       }
 
       if ( !readPvName.getExpanded() ||
-	// ( strcmp( readPvName.getExpanded(), "" ) == 0 ) ) {
         blankOrComment( readPvName.getExpanded() ) ) {
         readExists = 0;
       }
@@ -2100,7 +2185,6 @@ char callbackName[63+1];
       }
 
       if ( !visPvExpString.getExpanded() ||
-	// ( strcmp( visPvExpString.getExpanded(), "" ) == 0 ) ) {
         blankOrComment( visPvExpString.getExpanded() ) ) {
         visExists = 0;
         visibility = 1;
@@ -2111,7 +2195,6 @@ char callbackName[63+1];
       }
 
       if ( !colorPvExpString.getExpanded() ||
-	 // ( strcmp( colorPvExpString.getExpanded(), "" ) == 0 ) ) {
          blankOrComment( colorPvExpString.getExpanded() ) ) {
         colorExists = 0;
       }
@@ -2265,8 +2348,6 @@ int activeButtonClass::deactivate (
     unconnectedTimer = 0;
   }
 
-  //updateBlink( 0 );
-
   if ( deactivateCallback ) {
     (*deactivateCallback)( this );
   }
@@ -2346,6 +2427,7 @@ void activeButtonClass::btnUp (
 
 short value;
 int stat;
+unsigned int uival;
 
   if ( !enabled || !active || !visibility ) return;
 
@@ -2357,12 +2439,25 @@ int stat;
 
   if ( !controlExists ) controlV = 0;
 
+  if ( controlExists ) {
+    if ( controlIsBit ) {
+      controlBit = 0;
+    }
+  }
+
   if ( upCallback ) {
     (*upCallback)( this );
   }
 
   if ( !controlExists ) return;
-  stat = controlPvId->put( value );
+
+  if ( controlIsBit ) {
+    uival = controlV & ( ~( (unsigned int) 1 << controlBitPos ) );
+    stat = controlPvId->put( XDisplayName(actWin->appCtx->displayName), (int) uival );
+  }
+  else {
+    stat = controlPvId->put( XDisplayName(actWin->appCtx->displayName), value );
+  }
 
 }
 
@@ -2374,7 +2469,8 @@ void activeButtonClass::btnDown (
 {
 
 short value;
-int stat;
+int stat, curControlBit;
+unsigned int uival;
 
   if ( !enabled || !active || !visibility ) return;
 
@@ -2384,32 +2480,62 @@ int stat;
 
   if ( buttonNumber != 1 ) return;
 
-  if ( toggle ) {
-    if ( controlV == 0 ) {
+  if ( controlExists && controlIsBit ) {
+
+    curControlBit = ( ( controlV & ( 1 << controlBitPos ) ) > 0 );
+
+    if ( toggle ) {
+      if ( curControlBit == 0 ) {
+        controlBit = 1;
+      }
+      else {
+        controlBit = 0;
+      }
+    }
+    else {
+      controlBit = 1;
+    }
+
+    if ( controlBit ) {
+      uival = controlV | ( (unsigned int) 1 << controlBitPos );
+    }
+    else {
+      uival = controlV & ( ~( (unsigned int) 1 << controlBitPos ) );
+    }
+
+    stat = controlPvId->put( XDisplayName(actWin->appCtx->displayName), (int) uival );
+
+  }
+  else {
+
+    if ( toggle ) {
+      if ( controlV == 0 ) {
+        value = 1;
+        if ( !controlExists ) controlV = 1;
+        if ( downCallback ) {
+          (*downCallback)( this );
+        }
+      }
+      else {
+        value = 0;
+        if ( !controlExists ) controlV = 0;
+        if ( upCallback ) {
+          (*upCallback)( this );
+        }
+      }
+    }
+    else {
       value = 1;
       if ( !controlExists ) controlV = 1;
       if ( downCallback ) {
         (*downCallback)( this );
       }
     }
-    else {
-      value = 0;
-      if ( !controlExists ) controlV = 0;
-      if ( upCallback ) {
-        (*upCallback)( this );
-      }
-    }
-  }
-  else {
-    value = 1;
-    if ( !controlExists ) controlV = 1;
-    if ( downCallback ) {
-      (*downCallback)( this );
-    }
-  }
 
-  if ( !controlExists ) return;
-  stat = controlPvId->put( value );
+    if ( !controlExists ) return;
+    stat = controlPvId->put( XDisplayName(actWin->appCtx->displayName), value );
+
+  }
 
 }
 
@@ -2451,6 +2577,34 @@ int activeButtonClass::getButtonActionRequest (
     *up = 0;
     *down = 0;
   }
+
+  return 1;
+
+}
+
+int activeButtonClass::expandTemplate (
+  int numMacros,
+  char *macros[],
+  char *expansions[] )
+{
+
+expStringClass tmpStr;
+
+  tmpStr.setRaw( controlPvName.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  controlPvName.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( readPvName.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  readPvName.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( visPvExpString.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  visPvExpString.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( colorPvExpString.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  colorPvExpString.setRaw( tmpStr.getExpanded() );
 
   return 1;
 
@@ -2548,7 +2702,13 @@ char msg[79+1];
 
   if ( ncc ) {
 
-    if ( controlPvId->get_type().type != ProcessVariable::Type::enumerated ) {
+    if ( controlIsBit &&
+         ( ( controlPvId->get_type().type == ProcessVariable::Type::integer ) ||
+           ( controlPvId->get_type().type == ProcessVariable::Type::real ) ) ) {
+      initControlBit = 1;
+    }
+    else if ( controlPvId->get_type().type !=
+     ProcessVariable::Type::enumerated ) {
       strncpy( msg, actWin->obj.getNameFromClass( "activeButtonClass" ),
        79 );
       Strncat( msg, activeButtonClass_str51, 79 );
@@ -2559,6 +2719,10 @@ char msg[79+1];
     }
 
     cv = curControlV = (short) controlPvId->get_int();
+
+    if ( controlIsBit ) {
+      prevControlBit = controlBit = ( ( cv & ( 1 << controlBitPos ) ) > 0 );
+    }
 
     nci = 1;
 
@@ -2603,7 +2767,13 @@ char msg[79+1];
 
   if ( nrc ) {
 
-    if ( readPvId->get_type().type != ProcessVariable::Type::enumerated ) {
+    if ( readIsBit &&
+         ( ( readPvId->get_type().type == ProcessVariable::Type::integer ) ||
+           ( readPvId->get_type().type == ProcessVariable::Type::real ) ) ) {
+      initReadBit = 1;
+    }
+    else if ( readPvId->get_type().type !=
+     ProcessVariable::Type::enumerated ) {
       strncpy( msg, actWin->obj.getNameFromClass( "activeButtonClass" ),
        79 );
       Strncat( msg, activeButtonClass_str54, 79 );
@@ -2614,6 +2784,10 @@ char msg[79+1];
     }
 
     rv = curReadV = (short) readPvId->get_int();
+
+    if ( readIsBit ) {
+      prevReadBit = readBit = ( ( rv & ( 1 << readBitPos ) ) > 0 );
+    }
 
     nri = 1;
 
@@ -3009,6 +3183,86 @@ void activeButtonClass::getPvs (
   pvs[1] = readPvId;
   pvs[2] = colorPvId;
   pvs[3] = visPvId;
+
+}
+
+char *activeButtonClass::getSearchString (
+  int i
+) {
+
+  if ( i == 0 ) {
+    return controlPvName.getRaw();
+  }
+  else if ( i == 1 ) {
+    return readPvName.getRaw();
+  }
+  else if ( i == 2 ) {
+    return colorPvExpString.getRaw();
+  }
+  else if ( i == 3 ) {
+    return visPvExpString.getRaw();
+  }
+  else if ( i == 4 ) {
+    return minVisString;
+  }
+  else if ( i == 5 ) {
+    return maxVisString;
+  }
+  else if ( i == 6 ) {
+    return onLabel;
+  }
+  else if ( i == 7 ) {
+    return offLabel;
+  }
+
+  return NULL;
+
+}
+
+void activeButtonClass::replaceString (
+  int i,
+  int max,
+  char *string
+) {
+
+  if ( i == 0 ) {
+    controlPvName.setRaw( string );
+  }
+  else if ( i == 1 ) {
+    readPvName.setRaw( string );
+  }
+  else if ( i == 2 ) {
+    colorPvExpString.setRaw( string );
+  }
+  else if ( i == 3 ) {
+    visPvExpString.setRaw( string );
+  }
+  else if ( i == 4 ) {
+    int l = max;
+    if ( 39 < max ) l = 39;
+    strncpy( minVisString, string, l );
+    minVisString[l] = 0;
+  }
+  else if ( i == 5 ) {
+    int l = max;
+    if ( 39 < max ) l = 39;
+    strncpy( maxVisString, string, l );
+    maxVisString[l] = 0;
+  }
+  else if ( i == 6 ) {
+    int l = max;
+    if ( MAX_ENUM_STRING_SIZE < max ) l = MAX_ENUM_STRING_SIZE;
+    strncpy( onLabel, string, l );
+    onLabel[l] = 0;
+  }
+  else if ( i == 7 ) {
+    int l = max;
+    if ( MAX_ENUM_STRING_SIZE < max ) l = MAX_ENUM_STRING_SIZE;
+    strncpy( offLabel, string, l );
+    offLabel[l] = 0;
+  }
+
+  updateDimensions();
 
 }
 

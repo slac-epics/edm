@@ -140,6 +140,10 @@ typedef struct editBufTag {
 
 editBufPtr eBuf;
 
+entryListBase *invisPvEntry, *visInvEntry, *minVisEntry, *maxVisEntry;
+
+entryListBase *fillEntry, *fillColorEntry, *fillAlarmSensEntry;
+
 pvColorClass lineColor;
 
 int lineColorMode;
@@ -175,7 +179,7 @@ int lineStyle;
 
 int needConnectInit, needAlarmUpdate, needVisUpdate, needRefresh;
 int needToDrawUnconnected, needToEraseUnconnected;
-int unconnectedTimer;
+XtIntervalId unconnectedTimer;
 
 int curLineColorIndex, curFillColorIndex, curStatus, curSeverity;
 
@@ -263,6 +267,11 @@ int eraseActive ( void );
 
 int eraseUnconditional ( void );
 
+int expandTemplate (
+  int numMacros,
+  char *macros[],
+  char *expansions[] );
+
 int expand1st (
   int numMacros,
   char *macros[],
@@ -329,6 +338,15 @@ void getPvs (
   int max,
   ProcessVariable *pvs[],
   int *n );
+
+char *getSearchString (
+  int index );
+
+void replaceString (
+  int i,
+  int max,
+  char *string
+);
 
 char *crawlerGetFirstPv ( void );
 

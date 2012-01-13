@@ -22,13 +22,540 @@
 #include "environment.str"
 
 static int g_serverSocketFd = -1;
+static int g_accumulator = 0;
+static int g_useAccumulator = 0;
+
+int doReSearchReplace (
+  int caseInsensivite,
+  char *expression,
+  char *newText,
+  int max,
+  char *oldString,
+  char *newString
+) {
+
+regex_t compiled_re;
+int res, status=0;
+int flags;
+
+  strcpy( newString, "" );
+
+  //fprintf( stderr, "expression = [%s]\n", expression );
+
+  flags = REG_EXTENDED;
+  if ( caseInsensivite ) flags |= REG_ICASE;
+
+  res = regcomp( &compiled_re, expression, flags );
+  if ( res ) {
+
+    // error (consider it no match)
+    status = -1;
+
+  }
+  else {
+
+    int arrayi, l, start, size, so, eo, index,
+     i, ii, newi, oldi, newTextLen;
+    regmatch_t pmatch[10];
+    bool more, first;
+
+    newi = 0;
+    oldi = 0;
+    arrayi = 0;
+    l = strlen( oldString );
+    newTextLen = strlen( newText );
+    more = true;
+    index = 0;
+    first = true;
+    do {
+
+      //fprintf( stderr, "index = %-d\n", index );
+      //fprintf( stderr, "search string = [%s]\n", &oldString[index] );
+      res = regexec( &compiled_re, &oldString[index],
+       10, pmatch, REG_EXTENDED );
+      if ( !res ) {
+
+	//for ( i=9; i>=0; i-- ) {
+        //  fprintf( stderr, "so[%-d] = %-d, eo[%-d] = %-d\n",
+        //   i, pmatch[i].rm_so,
+        //   i, pmatch[i].rm_eo );
+        //}
+
+	// find last match
+	size = 0;
+	for ( i=9; i>=0; i-- ) {
+          //fprintf( stderr, "so[%-d] = %-d, eo[%-d] = %-d\n",
+          // i, pmatch[i].rm_so,
+          // i, pmatch[i].rm_eo );
+          if ( pmatch[i].rm_eo != pmatch[i].rm_so ) {
+            so = pmatch[i].rm_so + index;
+            eo = pmatch[i].rm_eo + index;
+	    size = eo - so;
+	    break;
+	  }
+	}
+
+        if ( size > 0 ) {
+
+          start = oldi;
+          for ( ii=start; ii<so; ii++ ) {
+            newString[newi] = oldString[oldi];
+            newi++; if ( newi >= max ) newi = max;
+            oldi++;
+          }
+          oldi = eo;
+          for ( ii=0; ii<newTextLen; ii++ ) {
+            newString[newi] = newText[ii];
+            newi++; if ( newi >= max ) newi = max;
+          }
+          newString[newi] = 0;
+	  //printf( "newString is [%s]\n", newString );
+
+        }
+	else {
+
+	  if ( first ) {
+            status = -1;
+	    more = false;
+	  }
+
+	}
+
+        if ( more ) {
+          first = false;
+          eo = pmatch[0].rm_eo + index;
+          index = eo;
+          if ( index >= l ) more = false;
+        }
+
+      }
+      else {
+
+        if ( first ) status = -1;
+
+	more = false;
+
+	// copy rest of string
+	//fprintf( stderr, "oldi = %-d\n", oldi );
+	//fprintf( stderr, "newi = %-d\n", newi );
+        for ( ii=oldi; ii<l; ii++ ) {
+          newString[newi] = oldString[ii];
+          newi++; if ( newi >= max ) newi = max;
+          //newString[newi] = 0;
+          //printf( "newString is [%s]\n", newString );
+        }
+        newString[newi] = 0;
+        //printf( "final newString is [%s]\n", newString );
+
+      }
+
+    } while ( more );
+
+  }
+
+  regfree(&compiled_re);
+
+  return status;
+
+}
+
+int doSearchReplace (
+  int caseInsensivite,
+  int useRegExpr,
+  char *expression,
+  char *newText,
+  int max,
+  char *oldString,
+  char *newString
+) {
+
+  unsigned int i, ii, newi, start,
+   lenOldString, lenExpression, lenNewText;
+  int result, lastPos;
+  bool more, anyMatch;
+
+  if ( useRegExpr ) {
+
+    return doReSearchReplace( caseInsensivite, expression, newText,
+     max, oldString, newString );
+
+  }
+
+  lenOldString = strlen( oldString );
+  lenExpression = strlen( expression );
+  lenNewText = strlen( newText );
+  lastPos = lenOldString - lenExpression;
+  if ( lastPos < 0 ) return -1; // no match
+
+  start = newi = i = 0;
+  more = true;
+  anyMatch = false;
+
+  while ( more ) {
+
+    if ( caseInsensivite ) {
+      result = strncasecmp( expression, &oldString[i], lenExpression );
+    }
+    else {
+      result = strncmp( expression, &oldString[i], lenExpression );
+    }
+
+    if ( result == 0 ) { // match
+      anyMatch = true;
+      // skip past found expression in old string
+      i += lenExpression;
+      if ( i >= lenOldString ) more = false;
+      // insert expression into newString
+      for ( ii=0; ii<lenNewText; ii++ ) {
+        if ( newi < (unsigned int) max ) newString[newi] = newText[ii];
+        newi++;
+      }
+    }
+    else {
+      // copy single char into newString
+      if ( newi < (unsigned int) max ) newString[newi] = oldString[i];
+      newi++;
+      i++;
+      if ( i >= lenOldString ) more = false;
+    }
+
+  }
+
+  if ( newi < (unsigned int) max ) newString[newi] = 0;
+  newString[max] = 0;
+
+  if ( anyMatch ) {
+    return 0;
+  }
+  else {
+    return -1;
+  }
+
+}
+
+void enableAccumulator ( void ) {
+
+static int noAccumulator = -1;
+
+  if ( noAccumulator == -1 ) {
+    char *envPtr = getenv( environment_str36 );
+    if ( envPtr ) {
+      noAccumulator = 1;
+    }
+    else {
+      noAccumulator = 0;
+    }
+  }
+
+  if ( noAccumulator == 1 ) {
+    g_useAccumulator = 0;
+  }
+  else {
+    g_useAccumulator = 1;
+  }
+
+}
+
+void disableAccumulator ( void ) {
+  g_useAccumulator = 0;
+}
+
+int useAccumulator ( void ) {
+  return g_useAccumulator;
+}
+
+void setAccumulator (
+  int v
+) {
+  g_accumulator = v;
+}
+
+int getAccumulator ( void ) {
+  return g_accumulator;
+}
+
+void incAccumulator ( void ) {
+  g_accumulator++;
+}
+
+int buildSymbols (
+  char *string,
+  int *n,
+  char symbols[10][31+1],
+  int increment[10],
+  int multiplier[10]
+) {
+
+regex_t compiled_re;
+int status=0, res, i;
+
+char *re = "\\$\\(([-]?[0-9]+\\*)*(#)(([+-])([0-9]+))*\\)";
+
+  //fprintf( stderr, "re = [%s]\n", re );
+  //fprintf( stderr, "string = [%s]\n", string );
+
+  for ( i=0; i<10; i++ ) {
+    strcpy( symbols[i], "" );
+    increment[i] = 0;
+    multiplier[i] = 1;
+  }
+  *n = 0;
+
+  res = regcomp( &compiled_re, re, REG_EXTENDED );
+  if ( res ) {
+
+    // error
+    status = -1;
+
+  }
+  else {
+
+    int arrayi, l, start, size, so, eo, index, mult, inc, sign, offset, len;
+    char text[1023+1];
+    regmatch_t pmatch[10];
+    bool more;
+
+    arrayi = 0;
+    l = strlen( string );
+    more = true;
+    index = 0;
+    do {
+
+      //fprintf( stderr, "index = %-d\n", index );
+      res = regexec( &compiled_re, &string[index], 6, pmatch, REG_EXTENDED );
+      if ( !res ) {
+
+        //for ( i=0; i<6; i++ ) {
+        //  fprintf( stderr, "so = %-d, eo = %-d\n", pmatch[i].rm_so + index,
+        //  pmatch[i].rm_eo + index );
+        //}
+
+        // copy matched substring into display string
+        // match 0 is always the full match,
+        // match 1 is the first selected substring
+        so = pmatch[0].rm_so + index;
+        eo = pmatch[0].rm_eo + index;
+        start = so;
+        size = eo - so;
+        if ( size > 1023 ) size = 1023;
+
+        if ( size <= 0 ) {
+          //fprintf( stderr, "no match\n" );
+          more = false;
+          continue;
+        }
+
+        so = pmatch[1].rm_so + index;
+        eo = pmatch[1].rm_eo + index;
+        start = so;
+        size = eo - so;
+        if ( size > 1023 ) size = 1023;
+
+        if ( size <= 0 ) {
+          mult = 1;
+        }
+        else {
+          memcpy( text, string+start, size );
+          text[size] = 0;
+          mult = strtol( text, NULL, 0 );
+        }
+
+        multiplier[arrayi] = mult;
+
+        so = pmatch[4].rm_so + index;
+        eo = pmatch[4].rm_eo + index;
+        start = so;
+        size = eo - so;
+        if ( size > 1023 ) size = 1023;
+
+        if ( size <= 0 ) {
+          sign = 1;
+        }
+        else {
+          memcpy( text, string+start, size );
+          text[size] = 0;
+          if ( strcmp( text, "-" ) == 0 ) {
+            sign = -1;
+          }
+          else {
+            sign = 1;
+          }
+        }
+
+        so = pmatch[5].rm_so + index;
+        eo = pmatch[5].rm_eo + index;
+        start = so;
+        size = eo - so;
+        if ( size > 1023 ) size = 1023;
+
+        if ( size <= 0 ) {
+          inc = 0;
+        }
+        else {
+          memcpy( text, string+start, size );
+          text[size] = 0;
+          inc = strtol( text, NULL, 0 ) * sign;
+        }
+
+        increment[arrayi] = inc;
+
+        so = pmatch[0].rm_so + index;
+        eo = pmatch[0].rm_eo + index;
+        start = so;
+        size = eo - so;
+        if ( size > 1023 ) size = 1023;
+        memcpy( text, string+start, size );
+        text[size] = 0;
+        if ( size > 3 ) {
+          offset = 2;
+          text[size-1] = 0;
+          len = size - 3;
+          //fprintf( stderr, "1 - text = [%s]\n", &text[2] );
+        }
+        else {
+          offset = 0;
+          len = size;
+          //fprintf( stderr, "2 - text = [%s]\n", text );
+        }
+
+        if ( len > 31 ) len = 31;
+        strncpy( symbols[arrayi], &text[offset], len+1 );
+        symbols[arrayi][31] = 0;
+
+        eo = pmatch[0].rm_eo + index;
+        index = eo;
+        if ( index >= l ) more = false;
+
+      }
+      else {
+
+        more = false;
+        //regerror( res, &compiled_re, buf, sizeof buf );
+        //fprintf( stderr,"2 - Error in regular expression match: %s\n", buf );
+
+      }
+
+      arrayi++;
+      if ( arrayi < 10 ) {
+        (*n)++;
+      }
+      else {
+        more = false;
+      }
+
+    } while ( more );
+
+  }
+
+  regfree(&compiled_re);
+
+  return status;
+
+}
+
+void doAccSubs (
+  expStringClass &s
+) {
+
+  if ( useAccumulator() ) {
+
+    if ( s.getRaw() && !blank(s.getRaw()) ) {
+
+      expStringClass tmp;
+      int n, inc[10], mult[10];
+      char syms[10][31+1];
+      char vals[10][31+1];
+      char *syms1[10];
+      char *vals1[10];
+
+      int i;
+      int status = buildSymbols( s.getRaw(), &n, syms, inc, mult );
+
+      if ( status ) return;
+
+      for ( i=0; i<n; i++ ) {
+        snprintf( vals[i], 31, "%-d", mult[i] * getAccumulator() + inc[i] );
+        syms1[i] = syms[i];
+        vals1[i] = vals[i];
+        //fprintf( stderr, "syms1[%-d] = %s, vals1[%-d] = %s\n",
+        // i, syms1[i], i, vals1[i] );
+      }
+
+      //fprintf( stderr, "1 - es = [%s]\n", s.getRaw() );
+      tmp.setRaw( s.getRaw() );
+      tmp.expand1st( n, (char **) syms1, (char **) vals1 );
+      s.setRaw( tmp.getExpanded() );
+      //fprintf( stderr, "2 - es = [%s]\n", s.getRaw() );
+
+    }
+
+  }
+
+}
+
+void doAccSubs (
+  char *s,
+  int maxlen
+) {
+
+  if ( useAccumulator() && ( maxlen > 0 ) ) {
+
+    if ( s && !blank(s) ) {
+      expStringClass tmp;
+      int n, inc[10], mult[10];
+      char syms[10][31+1];
+      char vals[10][31+1];
+      char *syms1[10];
+      char *vals1[10];
+
+      int i;
+      int status = buildSymbols( s, &n, syms, inc, mult );
+
+      if ( status ) return;
+
+      for ( i=0; i<n; i++ ) {
+        snprintf( vals[i], 31, "%-d", mult[i] * getAccumulator() + inc[i] );
+        syms1[i] = syms[i];
+        vals1[i] = vals[i];
+      }
+
+      tmp.setRaw( s );
+      tmp.expand1st( n, (char **) syms1, (char **) vals1 );
+
+      strncpy( s, tmp.getExpanded(), maxlen-1 );
+      s[maxlen-1] = 0;
+
+    }
+
+  }
+
+}
+
+int useAppTopParent ( void ) {
+
+static int useAppTop = -1;
+char *envPtr;
+
+  if ( useAppTop == -1 ) {
+    envPtr = getenv( environment_str34 );
+    if ( envPtr ) {
+      useAppTop = 1;
+    }
+    else {
+      useAppTop = 0;
+    }
+  }
+
+  return useAppTop;
+
+}
 
 int debugMode ( void ) {
 
 int val;
 char *envPtr;
 
-  envPtr = getenv( "EDMDEBUGMODE" );
+  envPtr = getenv( environment_str29 );
   if ( envPtr ) {
     val = atol(envPtr);
     if ( !val ) val = 1; // if value is non-numeric make it 1
@@ -52,7 +579,7 @@ char *envPtr;
 
     g_needDiagModeInit = 0;
 
-    envPtr = getenv( "EDMDIAGNOSTICMODE" );
+    envPtr = getenv( environment_str30 );
     if ( envPtr ) {
       g_diagMode = atol(envPtr);
       if ( !g_diagMode ) val = 1; // if value is non-numeric make it 1
@@ -118,7 +645,7 @@ mode_t curMode;
 
     close( 2 );
     curMode = umask( 0 );
-    fd = open( g_diagFileName, O_CREAT|O_WRONLY );
+    fd = open( g_diagFileName, O_CREAT|O_WRONLY, 0777 );
     umask( curMode );
     fprintf( stderr, time_string );
     fprintf( stderr, "host %s, pid %-d - ", hostName, procPid );
@@ -187,6 +714,20 @@ mode_t curMode;
   fclose( diagFile );
 
   return 1;
+
+}
+
+static int g_badWindowErrorsAreDisabled = 0;
+
+void disableBadWindowErrors ( int arg ) {
+
+  g_badWindowErrorsAreDisabled = arg;
+
+}
+
+int badWindowErrorsDisabled ( void ) {
+
+  return g_badWindowErrorsAreDisabled;
 
 }
 
@@ -433,7 +974,7 @@ char *expandEnvVars (
   // expands all environment vars of the form $(envVar) found in inStr
   // and sends the expanded string to outStr
 
-int i, ii, iii, inL, state, bufOnHeap;
+int i, ii, iii=0, inL, state, bufOnHeap;
 char *ptr, stackBuf[255+1];
 char *buf;
 
@@ -676,19 +1217,16 @@ void processAllEvents (
 
 }
 
-static void trimWhiteSpace (
+void trimWhiteSpace (
   char *str )
 {
 
-char buf[127+1];
 int first, last, i, ii, l;
 
   l = strlen(str);
-  if ( l > 126 ) l = 126;
 
-  ii = 0;
+  i = ii = 0;
 
-  i = 0;
   while ( ( i < l ) && isspace( str[i] ) ) {
     i++;
   }
@@ -702,14 +1240,21 @@ int first, last, i, ii, l;
 
   last = i;
 
-  for ( i=first; i<=last; i++ ) {
-    buf[ii] = str[i];
-    ii++;
+  if ( first > 0 ) {
+
+    for ( i=first; i<=last; i++ ) {
+      str[ii] = str[i];
+      ii++;
+    }
+
+    str[ii] = 0;
+
   }
+  else if ( last < l-1 ) {
 
-  buf[ii] = 0;
+    str[last+1] = 0;
 
-  strcpy( str, buf );
+  }
 
 }
 
@@ -1403,6 +1948,7 @@ int stringLength, stringWidth, stringX, stringY;
 
 int drawImageText (
   Widget widget,
+  Drawable dr,
   gcClass *gc,
   XFontStruct *fs,
   int _x,
@@ -1433,8 +1979,62 @@ int stringLength, stringWidth, stringX, stringY;
   else if ( _alignment == XmALIGNMENT_END )
     stringX = _x - stringWidth;
 
-  XDrawImageString( XtDisplay(widget), XtWindow(widget),
+  XDrawImageString( XtDisplay(widget), dr,
    gc->normGC(), stringX, stringY, value, stringLength );
+
+  return 1;
+
+}
+
+int drawImageText (
+  Widget widget,
+  gcClass *gc,
+  XFontStruct *fs,
+  int _x,
+  int _y,
+  int _alignment,
+  char *value ) {
+
+  Drawable dr = XtWindow(widget);
+  return drawImageText( widget, dr, gc, fs, _x, _y, _alignment, value );
+
+}
+
+int eraseImageText (
+  Widget widget,
+  Drawable dr,
+  gcClass *gc,
+  XFontStruct *fs,
+  int _x,
+  int _y,
+  int _alignment,
+  char *value ) {
+
+int stringLength, stringWidth, stringX, stringY;
+
+  stringLength = strlen( value );
+
+  if ( fs ) {
+    stringWidth = XTextWidth( fs, value, stringLength );
+    stringY = _y + fs->ascent;
+  }
+  else {
+    stringWidth = 0;
+    stringY = _y;
+  }
+
+  stringX = _x;
+
+  if ( _alignment == XmALIGNMENT_BEGINNING ) {
+    // no change
+  }
+  else if ( _alignment == XmALIGNMENT_CENTER )
+    stringX = _x - stringWidth/2;
+  else if ( _alignment == XmALIGNMENT_END )
+    stringX = _x - stringWidth;
+
+  XDrawImageString( XtDisplay(widget), dr,
+   gc->eraseGC(), stringX, stringY, value, stringLength );
 
   return 1;
 
@@ -1449,33 +2049,27 @@ int eraseImageText (
   int _alignment,
   char *value ) {
 
-int stringLength, stringWidth, stringX, stringY;
+  Drawable dr = XtWindow(widget);
+  return eraseImageText( widget, dr, gc, fs, _x, _y, _alignment, value );
 
-  stringLength = strlen( value );
+}
 
-  if ( fs ) {
-    stringWidth = XTextWidth( fs, value, stringLength );
-    stringY = _y + fs->ascent;
-  }
-  else {
-    stringWidth = 0;
-    stringY = _y;
-  }
+int drawText (
+  Widget widget,
+  Drawable dr,
+  gcClass *gc,
+  XFontStruct *fs,
+  int _x,
+  int _y,
+  int _alignment,
+  char *value ) {
 
-  stringX = _x;
+int stat;
 
-  if ( _alignment == XmALIGNMENT_BEGINNING ) {
-    // no change
-  }
-  else if ( _alignment == XmALIGNMENT_CENTER )
-    stringX = _x - stringWidth/2;
-  else if ( _alignment == XmALIGNMENT_END )
-    stringX = _x - stringWidth;
+  stat = xDrawText( XtDisplay(widget), dr,
+   gc, fs, _x, _y, _alignment, value );
 
-  XDrawImageString( XtDisplay(widget), XtWindow(widget),
-   gc->eraseGC(), stringX, stringY, value, stringLength );
-
-  return 1;
+  return stat;
 
 }
 
@@ -1488,9 +2082,24 @@ int drawText (
   int _alignment,
   char *value ) {
 
+  Drawable dr = XtWindow(widget);
+  return drawText( widget, dr, gc, fs, _x, _y, _alignment, value );
+
+}
+
+int eraseText (
+  Widget widget,
+  Drawable dr,
+  gcClass *gc,
+  XFontStruct *fs,
+  int _x,
+  int _y,
+  int _alignment,
+  char *value ) {
+
 int stat;
 
-  stat = xDrawText( XtDisplay(widget), XtWindow(widget),
+  stat = xEraseText( XtDisplay(widget), dr,
    gc, fs, _x, _y, _alignment, value );
 
   return stat;
@@ -1506,12 +2115,9 @@ int eraseText (
   int _alignment,
   char *value ) {
 
-int stat;
+  Drawable dr = XtWindow(widget);
+  return eraseText( widget, dr, gc, fs, _x, _y, _alignment, value );
 
-  stat = xEraseText( XtDisplay(widget), XtWindow(widget),
-   gc, fs, _x, _y, _alignment, value );
-
-  return stat;
 
 }
 
@@ -1905,7 +2511,7 @@ void getStringBoxSize (
   int *height )
 {
 
-int i, start, l, strL, stringWidth, maxWidth, maxHeight, charHeight;
+int i, start, l, strL, stringWidth, maxWidth, maxHeight, charHeight=0;
 
   maxWidth = 2;
   maxHeight = 0;
@@ -1983,7 +2589,7 @@ void XDrawStringsAligned (
   int alignment )
 {
 
-int charHeight, i, start, l, strL, stringWidth, stringX;
+int charHeight=0, i, start, l, strL, stringWidth, stringX=0;
 
   i = start = l = 0;
   strL = strlen( str );
@@ -2067,7 +2673,7 @@ void XDrawImageStringsAligned (
   int alignment )
 {
 
-int charHeight, i, start, l, strL, stringWidth, stringX;
+int charHeight=0, i, start, l, strL, stringWidth, stringX=0;
 
   i = start = l = 0;
   strL = strlen( str );
@@ -2298,12 +2904,14 @@ int parseSymbolsAndValues (
   // and v1, v2, v3, ... into values
 
 int l;
-char *context, *tk, buf[511+1];
+char *context, *tk, buf[10000+1];
 
   if ( !string ) return 100; // fail
 
-  strncpy( buf, string, 511 );
-  buf[511] = 0;
+  l = strlen(string);
+  if ( l > 10000 ) l = 10000;
+  strncpy( buf, string, l );
+  buf[l] = 0;
 
   *numFound = 0;
   context = NULL;
@@ -2317,7 +2925,9 @@ char *context, *tk, buf[511+1];
     trimWhiteSpace( symbols[*numFound] );
 
     tk = strtok_r( NULL, ",=", &context );
-    if ( !tk ) return 101; // missing value
+    if ( !tk ) {
+      return 101; // missing value
+    }
 
     if ( strcmp( tk, "''" ) == 0 ) {
       l = 1;
@@ -2364,12 +2974,14 @@ int parseLocalSymbolsAndValues (
   // and v1, v2, v3, ... into values
 
 int l;
-char *context, *tk, buf[511+1];
+char *context, *tk, buf[10000+1];
 
   if ( !string ) return 100; // fail
 
-  strncpy( buf, string, 511 );
-  buf[511] = 0;
+  l = strlen(string);
+  if ( l > 10000 ) l = 10000;
+  strncpy( buf, string, l );
+  buf[l] = 0;
 
   *numFound = 0;
   context = NULL;
@@ -2673,7 +3285,6 @@ int imin, imax, inc1, imin1, imax1,
 
   imin = (int) floor( min );
   imax = (int) ceil( max );
-  //fprintf( stderr, "imin = %-d, imax = %-d\n", imin, imax );
 
   do {
 
@@ -2700,14 +3311,23 @@ int imin, imax, inc1, imin1, imax1,
         imax1 = imax;
     }
 
+    //fprintf( stderr, "imin = %-d, imax = %-d\n", imin, imax );
+    //fprintf( stderr, "imin1 = %-d, imax1 = %-d\n", imin1, imax1 );
+    //fprintf( stderr, "div = %-d\n", div );
+    //fprintf( stderr, "imin %% div = %-d\n", imin % div );
+
     inc1 = ( imax1 - imin1 ) / div;
     if ( inc1 < 1 ) inc1 = 1;
-    if ( inc1 < 8 ) ok = 1;
+    //if ( inc1 < 8 ) ok = 1;
+    if ( inc1 <= 20 ) ok = 1;
 
     //fprintf( stderr, "1st adj min 1 = %-d, 1st adj max 1 = %-d\n", imin1, imax1 );
     //fprintf( stderr, "inc1 = %-d\n", inc1 );
 
-    if ( !ok ) div *= 10;
+    if ( !ok ) {
+      div += 10;
+      //printf( "not ok - div = %-d\n", div );
+    }
 
   } while ( !ok );
 
@@ -2762,7 +3382,7 @@ int num_label_ticks, stat;
 
 }
 
-static int formatString (
+int formatString (
   double value,
   char *string,
   int len
@@ -2773,11 +3393,38 @@ char buf[128];
   if ( !string ) return 0;
   if ( len < 1 ) return 0;
 
-  sprintf( buf, "%-g", value );
+  snprintf( buf, 127, "%-g", value );
+  buf[127] = 0;
 
   if ( strlen(buf) > 8 ) {
-    sprintf( buf, "%-3g", value );
+    snprintf( buf, 127, "%-3g", value );
+    buf[127] = 0;
   }
+
+  strncpy( string, buf, len );
+
+  return 1;
+
+}
+
+int formatString (
+  double value,
+  char *string,
+  int len,
+  char *fmt
+) {
+
+char buf[128];
+
+  if ( !string ) return 0;
+  if ( len < 1 ) return 0;
+
+  if ( !fmt ) {
+    return formatString( value, string, len );
+  }
+
+  snprintf( buf, 127, fmt, value );
+  buf[127] = 0;
 
   strncpy( string, buf, len );
 
@@ -2908,7 +3555,7 @@ int scaleOfs;
 char buf[31+1];
 int stringWidth;
 
-  strcpy( buf, "00:00:00" );
+  strcpy( buf, "00-00-0000" );
 
   if ( fs ) {
     stringWidth = XTextWidth( fs, buf, strlen(buf) );
@@ -2957,7 +3604,7 @@ void drawXLinearTimeScale (
 ) {
 
 int count, firstLabel, ii, iii, x0, y0, x1, y1;
-int label_tick_height, major_tick_height, minor_tick_height, first, ifrac;
+int label_tick_height, major_tick_height, minor_tick_height, first=0, ifrac;
 double xFactor, xOffset, labelVal, majorInc, majorVal,
  minorInc, minorVal, lastInc, labelInc, seconds;
 int fontAscent, fontDescent, fontHeight,
@@ -2986,6 +3633,7 @@ time_t theTime;
   gc->setBG( bgColor );
 
   labelInc = ( adj_max - adj_min ) / num_label_ticks;
+  if ( labelInc <= 0 ) labelInc = 1;
 
   xFactor = (double) ( scaleLen ) / ( adj_max - adj_min );
   xOffset = x;
@@ -3035,7 +3683,7 @@ time_t theTime;
     y0 = y;
     y1 = y0 + label_tick_height;
 
-    if ( labelGrid && count++ ) {
+    if ( labelGrid && count ) {
       if ( erase ) {
         XDrawLine( d, win, gc->eraseGC(), x0, y0, x1, y0-gridHeight );
       }
@@ -3045,6 +3693,7 @@ time_t theTime;
         gc->setFG( scaleColor );
       }
     }
+    count++;
 
     if ( drawScale ) {
 
@@ -3085,7 +3734,7 @@ time_t theTime;
         xEraseImageText( d, win, gc, fs, x0, y1,
          XmALIGNMENT_CENTER, buf1 );
         if ( firstLabel ) {
-          firstLabel = 0;
+          firstLabel = 10; // ????????????????
           xEraseImageText( d, win, gc, fs, x0, y1+(int)(fontHeight),
            XmALIGNMENT_CENTER, buf2 );
 	}
@@ -3094,7 +3743,7 @@ time_t theTime;
         xDrawImageText( d, win, gc, fs, x0, y1,
          XmALIGNMENT_CENTER, buf1 );
         if ( firstLabel ) {
-          firstLabel = 0;
+          firstLabel = 10; // ????????????????
           xDrawImageText( d, win, gc, fs, x0, y1+(int)(fontHeight),
            XmALIGNMENT_CENTER, buf2 );
 	}
@@ -3113,6 +3762,7 @@ time_t theTime;
     if ( majors_per_label > 0 ) {
 
       majorInc = labelInc / majors_per_label;
+      if ( majorInc <= 0 ) majorInc = 1;
       majorVal = labelVal;
       for ( ii=0; ii<majors_per_label; ii++ ) {
 
@@ -3148,6 +3798,7 @@ time_t theTime;
         if ( minors_per_major  > 0 ) {
 
           minorInc = majorInc / minors_per_major;
+          if ( minorInc <= 0 ) minorInc = 1;
           minorVal = majorVal + minorInc;
 
           for ( iii=1; iii<minors_per_major; iii++ ) {
@@ -3287,11 +3938,12 @@ void drawXLinearScale (
   int annotateScale,
   int minConstrained,
   int maxConstrained,
-  int erase
+  int erase,
+  char *fmt
 ) {
 
 int count, ii, iii, x0, y0, x1, y1;
-int label_tick_height, major_tick_height, minor_tick_height, first;
+int label_tick_height, major_tick_height, minor_tick_height, first=0;
 double xFactor, xOffset, labelVal, majorInc, majorVal,
  minorInc, minorVal, lastInc, labelInc, z;
 int fontAscent, fontDescent, fontHeight,
@@ -3322,6 +3974,7 @@ int reverse = 0;
   gc->setBG( bgColor );
 
   labelInc = ( adj_max - adj_min ) / num_label_ticks;
+  if ( labelInc <= 0 ) labelInc = 1;
 
   xFactor = (double) ( scaleLen ) / ( adj_max - adj_min );
   xOffset = x;
@@ -3369,7 +4022,7 @@ int reverse = 0;
     y0 = y;
     y1 = y0 + label_tick_height;
 
-    if ( labelGrid && count++ ) {
+    if ( labelGrid && count ) {
       if ( erase ) {
         XDrawLine( d, win, gc->eraseGC(), x0, y0, x1, y0-gridHeight );
       }
@@ -3379,6 +4032,7 @@ int reverse = 0;
         gc->setFG( scaleColor );
       }
     }
+    count++;
 
     if ( drawScale ) {
 
@@ -3392,14 +4046,29 @@ int reverse = 0;
       y1 = y0 + (int) ( 1.2 * label_tick_height );
       z = fabs( labelVal - 0.0 ) / labelInc;
       if ( z < 1e-5 ) {
-        formatString( 0.0, buf, 31 );
+        if ( fmt ) {
+          formatString( 0.0, buf, 31, fmt );
+	}
+	else {
+          formatString( 0.0, buf, 31 );
+	}
       }
       else {
 	if ( reverse ) {
-          formatString( -1*labelVal, buf, 31 );
+          if ( fmt ) {
+            formatString( -1*labelVal, buf, 31, fmt );
+	  }
+	  else {
+            formatString( -1*labelVal, buf, 31 );
+	  }
 	}
 	else {
-          formatString( labelVal, buf, 31 );
+          if ( fmt ) {
+            formatString( labelVal, buf, 31, fmt );
+	  }
+	  else {
+            formatString( labelVal, buf, 31 );
+	  }
 	}
       }
       if ( minConstrained ) {
@@ -3428,6 +4097,7 @@ int reverse = 0;
     if ( majors_per_label > 0 ) {
 
       majorInc = labelInc / majors_per_label;
+      if ( majorInc <= 0 ) majorInc = 1;
       majorVal = labelVal;
       for ( ii=0; ii<majors_per_label; ii++ ) {
 
@@ -3463,6 +4133,7 @@ int reverse = 0;
         if ( minors_per_major  > 0 ) {
 
           minorInc = majorInc / minors_per_major;
+          if ( minorInc <= 0 ) minorInc = 1;
           minorVal = majorVal + minorInc;
 
           for ( iii=1; iii<minors_per_major; iii++ ) {
@@ -3543,14 +4214,29 @@ int reverse = 0;
     y1 = y0 + (int) ( 1.2 * label_tick_height );
     z = fabs( labelVal - 0.0 ) / labelInc;
     if ( z < 1e-5 ) {
-      formatString( 0.0, buf, 31 );
+      if ( fmt ) {
+        formatString( 0.0, buf, 31, fmt );
+      }
+      else {
+        formatString( 0.0, buf, 31 );
+      }
     }
     else {
       if ( reverse ) {
-        formatString( -1*labelVal, buf, 31 );
+        if ( fmt ) {
+          formatString( -1*labelVal, buf, 31, fmt );
+	}
+	else {
+          formatString( -1*labelVal, buf, 31 );
+	}
       }
       else {
-        formatString( labelVal, buf, 31 );
+        if ( fmt ) {
+          formatString( labelVal, buf, 31, fmt );
+	}
+	else {
+          formatString( labelVal, buf, 31 );
+	}
       }
     }
     if ( maxConstrained ) {
@@ -3573,6 +4259,66 @@ int reverse = 0;
 
   gc->restoreFg();
   gc->restoreBg();
+
+}
+
+void drawXLinearScale (
+  Display *d,
+  Window win,
+  gcClass *gc,
+  int drawScale,
+  int x,
+  int y,
+  int scaleLen,
+  double adj_min,
+  double adj_max,
+  int num_label_ticks,
+  int majors_per_label,
+  int minors_per_major,
+  unsigned int scaleColor,
+  unsigned int bgColor,
+  int labelGrid,
+  int majorGrid,
+  int minorGrid,
+  int gridHeight,
+  unsigned int gridColor,
+  fontInfoClass *fi,
+  char *fontTag,
+  XFontStruct *fs,
+  int annotateScale,
+  int minConstrained,
+  int maxConstrained,
+  int erase
+) {
+
+  drawXLinearScale (
+   d,
+   win,
+   gc,
+   drawScale,
+   x,
+   y,
+   scaleLen,
+   adj_min,
+   adj_max,
+   num_label_ticks,
+   majors_per_label,
+   minors_per_major,
+   scaleColor,
+   bgColor,
+   labelGrid,
+   majorGrid,
+   minorGrid,
+   gridHeight,
+   gridColor,
+   fi,
+   fontTag,
+   fs,
+   annotateScale,
+   minConstrained,
+   maxConstrained,
+   erase,
+   NULL );
 
 }
 
@@ -3608,7 +4354,7 @@ void drawXLinearScale2 (
 ) {
 
 int count, ii, iii, x0, y0, x1, y1;
-int label_tick_height, major_tick_height, minor_tick_height, first;
+int label_tick_height, major_tick_height, minor_tick_height, first=0;
 double xFactor, xOffset, adjXOffset, labelVal, lastLabelVal, majorInc,
  majorVal, minorInc, minorVal, lastInc, labelInc, z;
 int fontAscent, fontDescent, fontHeight,
@@ -3645,6 +4391,7 @@ int reverse = 0;
   xOffset = adjXOffset;
 
   labelInc = ( adj_max - adj_min ) / num_label_ticks;
+  if ( labelInc <= 0 ) labelInc = 1;
 
   lastLabelVal = labelVal = adj_min;
 
@@ -3691,7 +4438,7 @@ int reverse = 0;
 
     if ( ( x0 >= x ) && ( x0 <= ( x + scaleLen ) ) ) {
 
-      if ( labelGrid && count++ ) {
+      if ( labelGrid && count ) {
         if ( erase ) {
           XDrawLine( d, win, gc->eraseGC(), x0, y0, x1, y0-gridHeight );
         }
@@ -3754,10 +4501,12 @@ int reverse = 0;
       }
 
     }
+    count++;
 
     if ( majors_per_label > 0 ) {
 
       majorInc = labelInc / majors_per_label;
+      if ( majorInc <= 0 ) majorInc = 1;
       majorVal = labelVal;
       for ( ii=0; ii<majors_per_label; ii++ ) {
 
@@ -3799,6 +4548,7 @@ int reverse = 0;
         if ( minors_per_major  > 0 ) {
 
           minorInc = majorInc / minors_per_major;
+          if ( minorInc <= 0 ) minorInc = 1;
           minorVal = majorVal + minorInc;
 
           for ( iii=1; iii<minors_per_major; iii++ ) {
@@ -3835,9 +4585,9 @@ int reverse = 0;
 
               }
 
-              minorVal += minorInc;
-
 	    }
+
+            minorVal += minorInc;
 
 	  }
 
@@ -3954,7 +4704,7 @@ void drawXLog10Scale (
 ) {
 
 int count, ii, iii, x0, y0, x1, y1;
-int label_tick_height, major_tick_height, minor_tick_height, first;
+int label_tick_height, major_tick_height, minor_tick_height, first=0;
 double xFactor, xOffset, labelVal, majorInc, majorVal,
  minorInc, minorVal, lastInc, labelInc, val, val0, val1;
 int fontAscent, fontDescent, fontHeight,
@@ -3978,6 +4728,7 @@ unsigned int white, black;
   gc->setBG( bgColor );
 
   labelInc = ( adj_max - adj_min ) / num_label_ticks;
+  if ( labelInc <= 0 ) labelInc = 1;
 
   xFactor = (double) ( scaleLen ) / ( adj_max - adj_min );
   xOffset = x;
@@ -4025,7 +4776,7 @@ unsigned int white, black;
     y0 = y;
     y1 = y0 + label_tick_height;
 
-    if ( labelGrid && count++ ) {
+    if ( labelGrid && count ) {
       if ( erase ) {
         XDrawLine( d, win, gc->eraseGC(), x0, y0, x1, y0-gridHeight );
       }
@@ -4035,6 +4786,7 @@ unsigned int white, black;
         gc->setFG( scaleColor );
       }
     }
+    count++;
 
     if ( drawScale ) {
 
@@ -4073,6 +4825,7 @@ unsigned int white, black;
     if ( majors_per_label > 0 ) {
 
       majorInc = labelInc / majors_per_label;
+      if ( majorInc <= 0 ) majorInc = 1;
       majorVal = labelVal;
       for ( ii=0; ii<majors_per_label; ii++ ) {
 
@@ -4110,6 +4863,7 @@ unsigned int white, black;
           val0 = pow( 10, majorVal );
           val1 = val0 * 10;
           minorInc = ( val1 - val0 ) / minors_per_major;
+          if ( minorInc <= 0 ) minorInc = 1;
           val = val0 + minorInc;
 
           for ( iii=1; iii<minors_per_major; iii++ ) {
@@ -4244,6 +4998,7 @@ char buf[31+1];
   if ( adj_max <= adj_min ) return;
 
   labelInc = ( adj_max - adj_min ) / num_label_ticks;
+  if ( labelInc <= 0 ) labelInc = 1;
 
   xFactor = (double) ( scaleLen ) / ( adj_max - adj_min );
   xOffset = x;
@@ -4332,6 +5087,7 @@ char buf[31+1];
   if ( adj_max <= adj_min ) return;
 
   labelInc = ( adj_max - adj_min ) / num_label_ticks;
+  if ( labelInc <= 0 ) labelInc = 1;
 
   xFactor = (double) ( scaleLen ) / ( adj_max - adj_min );
   xOffset = x;
@@ -4410,11 +5166,12 @@ void drawYLinearScale (
   int annotateScale,
   int minConstrained,
   int maxConstrained,
-  int erase
+  int erase,
+  char *fmt
 ) {
 
 int count, ii, iii, x0, y0, x1, y1;
-int label_tick_height, major_tick_height, minor_tick_height, first;
+int label_tick_height, major_tick_height, minor_tick_height, first=0;
 double yFactor, yOffset, labelVal, majorInc, majorVal,
  minorInc, minorVal, lastInc, labelInc, z;
 int fontAscent, fontDescent, fontHeight,
@@ -4445,6 +5202,7 @@ int reverse = 0;
   gc->setBG( bgColor );
 
   labelInc = ( adj_max - adj_min ) / num_label_ticks;
+  if ( labelInc <= 0 ) labelInc = 1;
 
   yFactor = (double) ( scaleHeight ) / ( adj_max - adj_min );
   yOffset = y;
@@ -4492,7 +5250,7 @@ int reverse = 0;
     y0 = (int) rint( yOffset - ( labelVal - adj_min ) * yFactor );
     y1 = y0;
 
-    if ( labelGrid && count++ ) {
+    if ( labelGrid && count ) {
       if ( erase ) {
         XDrawLine( d, win, gc->eraseGC(), x0, y0, x0+gridLen, y1 );
       }
@@ -4502,6 +5260,7 @@ int reverse = 0;
         gc->setFG( scaleColor );
       }
     }
+    count++;
 
     if ( drawScale ) {
 
@@ -4516,14 +5275,29 @@ int reverse = 0;
       y1 = y0 - (int) ( fontHeight * 0.5 );
       z = fabs( labelVal - 0.0 ) / labelInc;
       if ( z < 1e-5 ) {
-        formatString( 0.0, buf, 31 );
+        if ( fmt ) {
+          formatString( 0.0, buf, 31, fmt );
+	}
+	else {
+          formatString( 0.0, buf, 31 );
+	}
       }
       else {
 	if ( reverse ) {
-          formatString( -1*labelVal, buf, 31 );
+          if ( fmt ) {
+            formatString( -1*labelVal, buf, 31, fmt );
+	  }
+	  else {
+            formatString( -1*labelVal, buf, 31 );
+	  }
 	}
 	else {
-          formatString( labelVal, buf, 31 );
+          if ( fmt ) {
+            formatString( labelVal, buf, 31, fmt );
+	  }
+	  else {
+            formatString( labelVal, buf, 31 );
+	  }
 	}
       }
       if ( minConstrained ) {
@@ -4552,6 +5326,7 @@ int reverse = 0;
     if ( majors_per_label > 0 ) {
 
       majorInc = labelInc / majors_per_label;
+      if ( majorInc <= 0 ) majorInc = 1;
       majorVal = labelVal;
       for ( ii=0; ii<majors_per_label; ii++ ) {
 
@@ -4587,6 +5362,7 @@ int reverse = 0;
         if ( minors_per_major  > 0 ) {
 
           minorInc = majorInc / minors_per_major;
+          if ( minorInc <= 0 ) minorInc = 1;
           minorVal = majorVal + minorInc;
 
           for ( iii=1; iii<minors_per_major; iii++ ) {
@@ -4665,14 +5441,29 @@ int reverse = 0;
     y1 = y0 - (int) ( fontHeight * 0.5 );
     z = fabs( labelVal - 0.0 ) / labelInc;
     if ( z < 1e-5 ) {
-      formatString( 0.0, buf, 31 );
+      if ( fmt ) {
+        formatString( 0.0, buf, 31, fmt );
+      }
+      else {
+        formatString( 0.0, buf, 31 );
+      }
     }
     else {
       if ( reverse ) {
-        formatString( -1*labelVal, buf, 31 );
+        if ( fmt ) {
+          formatString( -1*labelVal, buf, 31, fmt );
+	}
+	else {
+          formatString( -1*labelVal, buf, 31 );
+	}
       }
       else {
-        formatString( labelVal, buf, 31 );
+        if ( fmt ) {
+          formatString( labelVal, buf, 31, fmt );
+	}
+	else {
+          formatString( labelVal, buf, 31 );
+	}
       }
     }
     if ( maxConstrained ) {
@@ -4695,6 +5486,66 @@ int reverse = 0;
  
   gc->restoreFg();
   gc->restoreBg();
+
+}
+
+void drawYLinearScale (
+  Display *d,
+  Window win,
+  gcClass *gc,
+  int drawScale,
+  int x,
+  int y,
+  int scaleHeight,
+  double adj_min,
+  double adj_max,
+  int num_label_ticks,
+  int majors_per_label,
+  int minors_per_major,
+  unsigned int scaleColor,
+  unsigned int bgColor,
+  int labelGrid,
+  int majorGrid,
+  int minorGrid,
+  int gridLen,
+  unsigned int gridColor,
+  fontInfoClass *fi,
+  char *fontTag,
+  XFontStruct *fs,
+  int annotateScale,
+  int minConstrained,
+  int maxConstrained,
+  int erase
+) {
+
+  drawYLinearScale (
+   d,
+   win,
+   gc,
+   drawScale,
+   x,
+   y,
+   scaleHeight,
+   adj_min,
+   adj_max,
+   num_label_ticks,
+   majors_per_label,
+   minors_per_major,
+   scaleColor,
+   bgColor,
+   labelGrid,
+   majorGrid,
+   minorGrid,
+   gridLen,
+   gridColor,
+   fi,
+   fontTag,
+   fs,
+   annotateScale,
+   minConstrained,
+   maxConstrained,
+   erase,
+   NULL );
 
 }
 
@@ -4730,7 +5581,7 @@ void drawYLinearScale2 (
 ) {
 
 int count, ii, iii, x0, y0, x1, y1;
-int label_tick_height, major_tick_height, minor_tick_height, first;
+int label_tick_height, major_tick_height, minor_tick_height, first=0;
 double yFactor, yOffset, adjYOffset, labelVal, lastLabelVal, majorInc, majorVal,
  minorInc, minorVal, lastInc, labelInc, z;
 int fontAscent, fontDescent, fontHeight,
@@ -4767,6 +5618,7 @@ int reverse = 0;
   yOffset = adjYOffset;
 
   labelInc = ( adj_max - adj_min ) / num_label_ticks;
+  if ( labelInc <= 0 ) labelInc = 1;
 
   lastLabelVal = labelVal = adj_min;
 
@@ -4815,7 +5667,7 @@ int reverse = 0;
 
     if ( ( y0 <= y ) && ( y0 >= ( y - scaleHeight ) ) ) {
 
-      if ( labelGrid && count++ ) {
+      if ( labelGrid && count ) {
         if ( erase ) {
           XDrawLine( d, win, gc->eraseGC(), x0, y0, x0+gridLen, y1 );
         }
@@ -4880,10 +5732,12 @@ int reverse = 0;
       }
 
     }
+    count++;
 
     if ( majors_per_label > 0 ) {
 
       majorInc = labelInc / majors_per_label;
+      if ( majorInc <= 0 ) majorInc = 1;
       majorVal = labelVal;
       for ( ii=0; ii<majors_per_label; ii++ ) {
 
@@ -4925,6 +5779,7 @@ int reverse = 0;
         if ( minors_per_major  > 0 ) {
 
           minorInc = majorInc / minors_per_major;
+          if ( minorInc <= 0 ) minorInc = 1;
           minorVal = majorVal + minorInc;
 
           for ( iii=1; iii<minors_per_major; iii++ ) {
@@ -4960,9 +5815,9 @@ int reverse = 0;
 
               }
 
-              minorVal += minorInc;
-
             }
+
+            minorVal += minorInc;
 
           }
 
@@ -5083,7 +5938,7 @@ void drawY2LinearScale (
 ) {
 
 int count, ii, iii, x0, y0, x1, y1;
-int label_tick_height, major_tick_height, minor_tick_height, first;
+int label_tick_height, major_tick_height, minor_tick_height, first=0;
 double yFactor, yOffset, labelVal, majorInc, majorVal,
  minorInc, minorVal, lastInc, labelInc, z;
 int fontAscent, fontDescent, fontHeight,
@@ -5114,6 +5969,7 @@ int reverse = 0;
   gc->setBG( bgColor );
 
   labelInc = ( adj_max - adj_min ) / num_label_ticks;
+  if ( labelInc <= 0 ) labelInc = 1;
 
   yFactor = (double) ( scaleHeight ) / ( adj_max - adj_min );
   yOffset = y;
@@ -5162,7 +6018,7 @@ int reverse = 0;
     y0 = (int) rint( yOffset - ( labelVal - adj_min ) * yFactor );
     y1 = y0;
 
-    if ( labelGrid && count++ ) {
+    if ( labelGrid && count ) {
       if ( erase ) {
         //XDrawLine( d, win, gc->eraseGC(), x0, y0, x0+gridLen, y1 );
         XDrawLine( d, win, gc->eraseGC(), x0, y0, x0-gridLen, y1 );
@@ -5174,6 +6030,7 @@ int reverse = 0;
         gc->setFG( scaleColor );
       }
     }
+    count++;
 
     if ( drawScale ) {
 
@@ -5229,6 +6086,7 @@ int reverse = 0;
     if ( majors_per_label > 0 ) {
 
       majorInc = labelInc / majors_per_label;
+      if ( majorInc <= 0 ) majorInc = 1;
       majorVal = labelVal;
       for ( ii=0; ii<majors_per_label; ii++ ) {
 
@@ -5267,6 +6125,7 @@ int reverse = 0;
         if ( minors_per_major  > 0 ) {
 
           minorInc = majorInc / minors_per_major;
+          if ( minorInc <= 0 ) minorInc = 1;
           minorVal = majorVal + minorInc;
 
           for ( iii=1; iii<minors_per_major; iii++ ) {
@@ -5421,7 +6280,7 @@ void drawY2LinearScale2 (
 ) {
 
 int count, ii, iii, x0, y0, x1, y1;
-int label_tick_height, major_tick_height, minor_tick_height, first;
+int label_tick_height, major_tick_height, minor_tick_height, first=0;
 double yFactor, yOffset, adjYOffset, labelVal, lastLabelVal, majorInc, majorVal,
  minorInc, minorVal, lastInc, labelInc, z;
 int fontAscent, fontDescent, fontHeight,
@@ -5458,6 +6317,7 @@ int reverse = 0;
   yOffset = adjYOffset;
 
   labelInc = ( adj_max - adj_min ) / num_label_ticks;
+  if ( labelInc <= 0 ) labelInc = 1;
 
   lastLabelVal = labelVal = adj_min;
 
@@ -5506,7 +6366,7 @@ int reverse = 0;
 
     if ( ( y0 <= y ) && ( y0 >= ( y - scaleHeight ) ) ) {
 
-      if ( labelGrid && count++ ) {
+      if ( labelGrid && count ) {
         if ( erase ) {
           XDrawLine( d, win, gc->eraseGC(), x0, y0, x0-gridLen, y1 );
         }
@@ -5571,10 +6431,12 @@ int reverse = 0;
       }
 
     }
+    count++;
 
     if ( majors_per_label > 0 ) {
 
       majorInc = labelInc / majors_per_label;
+      if ( majorInc <= 0 ) majorInc = 1;
       majorVal = labelVal;
       for ( ii=0; ii<majors_per_label; ii++ ) {
 
@@ -5616,6 +6478,7 @@ int reverse = 0;
         if ( minors_per_major  > 0 ) {
 
           minorInc = majorInc / minors_per_major;
+          if ( minorInc <= 0 ) minorInc = 1;
           minorVal = majorVal + minorInc;
 
           for ( iii=1; iii<minors_per_major; iii++ ) {
@@ -5651,9 +6514,9 @@ int reverse = 0;
 
               }
 
-              minorVal += minorInc;
-
             }
+
+            minorVal += minorInc;
 
           }
 
@@ -5774,7 +6637,7 @@ void drawYLog10Scale (
 ) {
 
 int count, ii, iii, x0, y0, x1, y1;
-int label_tick_height, major_tick_height, minor_tick_height, first;
+int label_tick_height, major_tick_height, minor_tick_height, first=0;
 double yFactor, yOffset, labelVal, majorInc, majorVal,
  minorInc, minorVal, lastInc, labelInc, val, val0, val1;
 int fontAscent, fontDescent, fontHeight,
@@ -5801,6 +6664,7 @@ unsigned int white, black;
   gc->setBG( bgColor );
 
   labelInc = ( adj_max - adj_min ) / num_label_ticks;
+  if ( labelInc <= 0 ) labelInc = 1;
 
   yFactor = (double) ( scaleHeight ) / ( adj_max - adj_min );
   yOffset = y;
@@ -5854,7 +6718,7 @@ unsigned int white, black;
     y0 = (int) rint( yOffset - ( labelVal - adj_min ) * yFactor );
     y1 = y0;
 
-    if ( labelGrid && count++ ) {
+    if ( labelGrid && count ) {
       if ( erase ) {
         XDrawLine( d, win, gc->eraseGC(), x0, y0, x0+gridLen, y1 );
       }
@@ -5864,6 +6728,7 @@ unsigned int white, black;
         gc->setFG( scaleColor );
       }
     }
+    count++;
 
     if ( drawScale ) {
 
@@ -5903,6 +6768,7 @@ unsigned int white, black;
     if ( majors_per_label > 0 ) {
 
       majorInc = labelInc / majors_per_label;
+      if ( majorInc <= 0 ) majorInc = 1;
       majorVal = labelVal;
       for ( ii=0; ii<majors_per_label; ii++ ) {
 
@@ -5940,6 +6806,7 @@ unsigned int white, black;
           val0 = pow( 10, majorVal );
           val1 = val0 * 10;
           minorInc = ( val1 - val0 ) / minors_per_major;
+          if ( minorInc <= 0 ) minorInc = 1;
 
 	  //fprintf( stderr, "val0 = %-g\n", val0 );
 	  //fprintf( stderr, "val1 = %-g\n", val1 );
@@ -6081,7 +6948,7 @@ void drawY2Log10Scale (
 ) {
 
 int count, ii, iii, x0, y0, x1, y1;
-int label_tick_height, major_tick_height, minor_tick_height, first;
+int label_tick_height, major_tick_height, minor_tick_height, first=0;
 double yFactor, yOffset, labelVal, majorInc, majorVal,
  minorInc, minorVal, lastInc, labelInc, val, val0, val1;
 int fontAscent, fontDescent, fontHeight,
@@ -6105,6 +6972,7 @@ unsigned int white, black;
   gc->setBG( bgColor );
 
   labelInc = ( adj_max - adj_min ) / num_label_ticks;
+  if ( labelInc <= 0 ) labelInc = 1;
 
   yFactor = (double) ( scaleHeight ) / ( adj_max - adj_min );
   yOffset = y;
@@ -6152,7 +7020,7 @@ unsigned int white, black;
     y0 = (int) rint( yOffset - ( labelVal - adj_min ) * yFactor );
     y1 = y0;
 
-    if ( labelGrid && count++ ) {
+    if ( labelGrid && count ) {
       if ( erase ) {
         XDrawLine( d, win, gc->eraseGC(), x0, y0, x0-gridLen, y1 );
       }
@@ -6162,6 +7030,7 @@ unsigned int white, black;
         gc->setFG( scaleColor );
       }
     }
+    count++;
 
     if ( drawScale ) {
 
@@ -6201,6 +7070,7 @@ unsigned int white, black;
     if ( majors_per_label > 0 ) {
 
       majorInc = labelInc / majors_per_label;
+      if ( majorInc <= 0 ) majorInc = 1;
       majorVal = labelVal;
       for ( ii=0; ii<majors_per_label; ii++ ) {
 
@@ -6238,6 +7108,7 @@ unsigned int white, black;
           val0 = pow( 10, majorVal );
           val1 = val0 * 10;
           minorInc = ( val1 - val0 ) / minors_per_major;
+          if ( minorInc <= 0 ) minorInc = 1;
 
           val = val0 + minorInc;
 
@@ -6364,6 +7235,7 @@ double labelInc, lastInc, labelVal, z;
   label_tick_length = (int) ( 0.8 * (double) abs( fontHeight - 2 ) );
 
   labelInc = ( adj_max - adj_min ) / num_label_ticks;
+  if ( labelInc <= 0 ) labelInc = 1;
 
   lastInc = labelInc * 0.5;
   labelVal = adj_min;
@@ -6418,6 +7290,7 @@ double labelInc, lastInc, labelVal, z, log10Val;
   label_tick_length = (int) ( 0.8 * (double) abs( fontHeight - 2 ) );
 
   labelInc = ( adj_max - adj_min ) / num_label_ticks;
+  if ( labelInc <= 0 ) labelInc = 1;
 
   lastInc = labelInc * 0.5;
   labelVal = adj_min;
@@ -6496,6 +7369,7 @@ char buf[31+1];
   if ( adj_max <= adj_min ) return;
 
   labelInc = ( adj_max - adj_min ) / num_label_ticks;
+  if ( labelInc <= 0 ) labelInc = 1;
 
   yFactor = (double) ( scaleHeight ) / ( adj_max - adj_min );
   yOffset = y;
@@ -6588,6 +7462,7 @@ char buf[31+1];
   if ( adj_max <= adj_min ) return;
 
   labelInc = ( adj_max - adj_min ) / num_label_ticks;
+  if ( labelInc <= 0 ) labelInc = 1;
 
   yFactor = (double) ( scaleHeight ) / ( adj_max - adj_min );
   yOffset = y;
@@ -6680,6 +7555,7 @@ char buf[31+1];
   if ( adj_max <= adj_min ) return;
 
   labelInc = ( adj_max - adj_min ) / num_label_ticks;
+  if ( labelInc <= 0 ) labelInc = 1;
 
   yFactor = (double) ( scaleHeight ) / ( adj_max - adj_min );
   yOffset = y;
@@ -6766,6 +7642,7 @@ char buf[31+1];
   if ( adj_max <= adj_min ) return;
 
   labelInc = ( adj_max - adj_min ) / num_label_ticks;
+  if ( labelInc <= 0 ) labelInc = 1;
 
   yFactor = (double) ( scaleHeight ) / ( adj_max - adj_min );
   yOffset = y;

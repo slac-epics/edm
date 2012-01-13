@@ -30,7 +30,7 @@
 #define RDC_PARENT_OFS_POS 2
 
 #define RDC_MAJOR_VERSION 4
-#define RDC_MINOR_VERSION 2
+#define RDC_MINOR_VERSION 3
 #define RDC_RELEASE 0
 
 typedef struct objAndIndexTag {
@@ -105,6 +105,7 @@ public:
 
 static const int NUMPVS = 4;
 static const int maxDsps = 24;
+static const int maxSymbolLen = 2550;
 
 private:
 
@@ -201,7 +202,7 @@ typedef struct bufTag {
   int bufCascade[maxDsps];
   int bufPropagateMacros[maxDsps];
   char bufDisplayFileName[maxDsps][127+1];
-  char bufSymbols[maxDsps][255+1];
+  char bufSymbols[maxDsps][maxSymbolLen+1];
   int bufReplaceSymbols[maxDsps];
   char bufButtonLabel[127+1];
   char bufLabel[maxDsps][127+1];
@@ -223,10 +224,12 @@ int numDsps, dspIndex;
 
 bufPtr buf;
 
+entryListBase *pvEntry[NUMPVS], *valEntry[NUMPVS];
+
 activeWindowClass *aw;
 int useFocus, needClose, needConnect, needUpdate, needRefresh;
 int needToDrawUnconnected, needToEraseUnconnected;
-int unconnectedTimer;
+XtIntervalId unconnectedTimer;
 
 int topShadowColor;
 int botShadowColor;
@@ -381,6 +384,11 @@ char *getRelatedDisplayMacros (
   int index
 );
 
+int expandTemplate (
+  int numMacros,
+  char *macros[],
+  char *expansions[] );
+
 int expand1st (
   int numMacros,
   char *macros[],
@@ -461,7 +469,23 @@ void mousePointerOut (
   int _y,
   int buttonState );
 
- void executeDeferred ( void );
+void executeDeferred ( void );
+
+void getPvs (
+  int max,
+  ProcessVariable *pvs[],
+  int *n );
+
+char *getSearchString (
+  int i
+);
+
+void replaceString (
+  int i,
+  int max,
+  char *string
+);
+
 
 char *crawlerGetFirstPv ( void );
 

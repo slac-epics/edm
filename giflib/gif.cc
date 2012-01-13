@@ -184,6 +184,7 @@ activeGifClass::activeGifClass ( void ) {
 
   name = new char[strlen("cfcf6c8a_dbeb_11d2_8a97_00104b8742df")+1];
   strcpy( name, "cfcf6c8a_dbeb_11d2_8a97_00104b8742df" );
+  checkBaseClassVersion( activeGraphicClass::MAJOR_VERSION, name );
 
   strcpy( gifFileName, "" );
 
@@ -255,6 +256,8 @@ activeGraphicClass *ago = (activeGraphicClass *) this;
   refreshRate = source->refreshRate;
   fastErase = source->fastErase;
   noErase = source->noErase;
+
+  doAccSubs( gifFileName, 127 );
 
   status = readGifFile();
 
@@ -1137,10 +1140,10 @@ int activeGifClass::eraseActive ( void ) {
 
   if ( !enabled || noFile || !activeMode ) return 1;
 
-  XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.eraseGC(), x, y, w, h );
 
-  XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+  XFillRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.eraseGC(), x, y, w, h );
 
   return 1;
@@ -1158,8 +1161,10 @@ int activeGifClass::draw ( void ) {
     return 1;
   }
 
-  XPutImage( actWin->display(), XtWindow(actWin->drawWidget),
-   actWin->drawGc.normGC(), image, 0, 0, x, y, w, h );
+  if ( image ) {
+    XPutImage( actWin->display(), XtWindow(actWin->drawWidget),
+     actWin->drawGc.normGC(), image, 0, 0, x, y, w, h );
+  }
 
   return 1;
 
@@ -1204,8 +1209,10 @@ int curW, curH;
   curW = x1 - x0;
   curH = y1 - y0;
 
-  XPutImage( actWin->display(), XtWindow(actWin->drawWidget),
-   actWin->drawGc.normGC(), image, x0-x, y0-y, x0, y0, curW, curH );
+  if ( image ) {
+    XPutImage( actWin->display(), XtWindow(actWin->drawWidget),
+     actWin->drawGc.normGC(), image, x0-x, y0-y, x0, y0, curW, curH );
+  }
 
   return 1;
 
@@ -1220,12 +1227,11 @@ Pixmap pixmap;
   stat = drawActive( x, y, x+w, y+h );
   return stat;
 
-//  if ( noFile || !image || !activeMode ) return 1;
   if ( !enabled || noFile || !activeMode ) return 1;
 
   if ( !actWin->appCtx->renderImages() ) {
     actWin->executeGc.setFG( actWin->defaultTextFgColor );
-    XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x, y, w, h );
     return 1;
   }
@@ -1237,22 +1243,21 @@ Pixmap pixmap;
   pixmap = XCreatePixmap( actWin->display(),
    XtWindow(actWin->executeWidget), w, h, depth );
 
-//    XPutImage( actWin->display(), XtWindow(actWin->executeWidget),
-//     actWin->executeGc.normGC(), image, 0, 0, x, y, w, h );
-
-  XPutImage( actWin->display(), pixmap,
-   actWin->executeGc.normGC(), image, 0, 0, 0, 0, w, h );
+  if ( image ) {
+    XPutImage( actWin->display(), pixmap,
+     actWin->executeGc.normGC(), image, 0, 0, 0, 0, w, h );
+  }
 
   if ( needErase ) {
     needErase = 0;
-    XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.eraseGC(), bufX, bufY, bufW, bufH );
-    XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+    XFillRectangle( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.eraseGC(), bufX, bufY, bufW, bufH );
   }
 
   XCopyArea( actWin->display(), pixmap,
-   XtWindow(actWin->executeWidget), actWin->executeGc.normGC(),
+   drawable(actWin->executeWidget), actWin->executeGc.normGC(),
    0, 0, w, h, x, y );
 
   XFreePixmap( actWin->display(), pixmap );
@@ -1275,7 +1280,7 @@ int curW, curH;
 
   if ( !actWin->appCtx->renderImages() ) {
     actWin->executeGc.setFG( actWin->defaultTextFgColor );
-    XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x, y, w, h );
     return 1;
   }
@@ -1301,8 +1306,10 @@ int curW, curH;
   curW = x1 - x0;
   curH = y1 - y0;
 
-  XPutImage( actWin->display(), XtWindow(actWin->executeWidget),
-   actWin->executeGc.normGC(), image, x0-x, y0-y, x0, y0, curW, curH );
+  if ( image ) {
+    XPutImage( actWin->display(), drawable(actWin->executeWidget),
+     actWin->executeGc.normGC(), image, x0-x, y0-y, x0, y0, curW, curH );
+  }
 
   return 1;
 
@@ -1326,7 +1333,7 @@ Pixmap pixmap;
 
   if ( !actWin->appCtx->renderImages() ) {
     actWin->executeGc.setFG( actWin->defaultTextFgColor );
-    XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x, y, w, h );
     return 1;
   }
@@ -1359,18 +1366,13 @@ Pixmap pixmap;
   curW = x1 - x0;
   curH = y1 - y0;
 
-//    XPutImage( actWin->display(), pixmap,
-//     actWin->executeGc.normGC(), image, x0-x, y0-y, x0, y0, curW, curH );
-
-//    XCopyArea( actWin->display(), pixmap,
-//     XtWindow(actWin->executeWidget), actWin->executeGc.normGC(),
-//     x0, y0, curW, curH, x0, y0 );
-
-  XPutImage( actWin->display(), pixmap,
-   actWin->executeGc.normGC(), image, 0, 0, 0, 0, w, h );
+  if ( image ) {
+    XPutImage( actWin->display(), pixmap,
+     actWin->executeGc.normGC(), image, 0, 0, 0, 0, w, h );
+  }
 
   XCopyArea( actWin->display(), pixmap,
-   XtWindow(actWin->executeWidget), actWin->executeGc.normGC(),
+   drawable(actWin->executeWidget), actWin->executeGc.normGC(),
    0, 0, w, h, x, y );
 
   XFreePixmap( actWin->display(), pixmap );
@@ -1495,6 +1497,50 @@ int status;
     }
     status = readGifFile();
     drawAllActive();
+  }
+
+}
+
+char *activeGifClass::getSearchString (
+  int index
+) {
+
+  if ( index == 0 ) {
+    return gifFileName;
+  }
+  else {
+    return NULL;
+  }
+
+}
+
+void activeGifClass::replaceString (
+  int i,
+  int max,
+  char *string
+) {
+
+int status;
+int l = 127;
+
+  if ( max < l ) l = max;
+
+  if ( i == 0 ) {
+
+    strncpy( gifFileName, string, l );
+    gifFileName[l] = 0;
+
+    status = readGifFile();
+
+    initSelectBox();
+
+    if ( !( status & 1 ) ) {
+      char msg[255+1];
+      snprintf( msg, 255, activeGifClass_str1, actWin->fileName,
+       gifFileName );
+      actWin->appCtx->postMessage( msg );
+    }
+
   }
 
 }

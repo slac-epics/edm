@@ -255,7 +255,7 @@ Widget bulBrd, radioBox, pb[MAX_ENUM_STATES];
 
 int needConnectInit, needInfoInit, needDraw, needRefresh,
  needToDrawUnconnected, needToEraseUnconnected;
-int unconnectedTimer;
+XtIntervalId unconnectedTimer;
 int initialConnection;
 
 int firstValueChange;
@@ -313,6 +313,11 @@ int erase ( void );
 int drawActive ( void );
 
 int eraseActive ( void );
+
+int expandTemplate (
+  int numMacros,
+  char *macros[],
+  char *expansions[] );
 
 int expand1st (
   int numMacros,
@@ -378,6 +383,16 @@ void getPvs (
   int max,
   ProcessVariable *pvs[],
   int *n );
+
+char *getSearchString (
+  int i
+);
+
+void replaceString (
+  int i,
+  int max,
+  char *string
+);
 
 char *crawlerGetFirstPv ( void );
 

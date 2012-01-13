@@ -6,12 +6,10 @@
 
 #include<stdio.h>
 #include<stdlib.h>
-#include"epics_pv_factory.h"
-#include"calc_pv_factory.h"
-#include"loc_pv_factory.h"
-//#include"db_pv_factory.h"
+#include "pvBindings.h"
 
 static int edmReadOnly = 0;
+static pvBindingClass pvObj;
 
 void setReadOnly ( void )
 {
@@ -31,59 +29,29 @@ int isReadOnly ( void )
 int pend_io ( double sec )
 {
 
-#ifdef __epics__
-  return (int) ca_pend_io( sec );
-#endif
-
-#ifndef __epics__
-  return (int) ECA_NORMAL;
-#endif
+  return (int) pvObj.pend_io( sec );
 
 }
 
 int pend_event ( double sec )
 {
 
-#ifdef __epics__
-  return (int) ca_pend_event( sec );
-#endif
+  return (int) pvObj.pend_event( sec );
 
-#ifndef __epics__
-  return (int) ECA_NORMAL;
-#endif
+}
+
+void task_exit ( void ) {
+
+  pvObj.task_exit();
 
 }
 
 // Available PV_Factories:
        PV_Factory *the_PV_Factory   = new PV_Factory();
-static PV_Factory *epics_pv_factory = new EPICS_PV_Factory();
-static PV_Factory *calc_pv_factory  = new CALC_PV_Factory();
-static PV_Factory *loc_pv_factory  = new LOC_PV_Factory();
-//static PV_Factory *db_pv_factory  = new DB_PV_Factory();
 
 //extern "C" static void remove_pv_factories()
 static void remove_pv_factories()
 {
-    //if (db_pv_factory)
-    //{
-    //    delete db_pv_factory;
-    //    db_pv_factory = 0;
-    //}
-    if (loc_pv_factory)
-    {
-        delete loc_pv_factory;
-        loc_pv_factory = 0;
-    }
-    if (calc_pv_factory)
-    {
-        delete calc_pv_factory;
-        calc_pv_factory = 0;
-    }
-    if (epics_pv_factory)
-    {
-        delete epics_pv_factory;
-        epics_pv_factory = 0;
-    }
     if (the_PV_Factory)
     {
         delete the_PV_Factory;
@@ -106,18 +74,18 @@ int PV_Factory::legal_pv_type (
   const char *pv_type )
 {
 
-  if ( strcmp( pv_type, "EPICS" ) == 0 ) {
-    return 1;
+char *supportedType;
+
+  supportedType = pvObj.firstPvName();
+  while ( supportedType ) {
+
+    if ( strcmp( pv_type, supportedType ) == 0 ) {
+      return 1;
+    }
+
+    supportedType = pvObj.nextPvName();
+
   }
-  else if ( strcmp(pv_type, "CALC" ) == 0 ) {
-    return 1;
-  }
-  else if ( strcmp(pv_type, "LOC" ) == 0 ) {
-    return 1;
-  }
-  //else if ( strcmp(pv_type, "DB" ) == 0 ) {
-  //  return 1;
-  //}
 
   return 0;
 
@@ -156,56 +124,47 @@ class ProcessVariable *PV_Factory::create(const char *PV_name)
 {
 
 class ProcessVariable *pv;
+char buf[255+1];
+int i, l, pos;
 
-  if (strncmp(PV_name, "EPICS\\", 6)==0) {
-    pv = epics_pv_factory->create(PV_name+6);
-    return pv;
-  }
-  else if (strncmp(PV_name, "CALC\\", 5)==0) {
-    pv = calc_pv_factory->create(PV_name+5);
-    return pv;
-  }
-  else if (strncmp(PV_name, "LOC\\", 4)==0) {
-    pv = loc_pv_factory->create(PV_name+4);
-    return pv;
-  }
-  //else if (strncmp(PV_name, "DB\\", 3)==0) {
-  //  pv = db_pv_factory->create(PV_name+3);
-  //  return pv;
-  //}
-  else if (strchr(PV_name, '\\')) {
-    fprintf(stderr, "Unknown PV Factory for PV '%s'\n", PV_name);
-    return 0;
-  }
+  if ( strchr(PV_name, '\\') ) {
 
-  if ( strcmp( default_pv_type, "" ) ) {
+    strcpy( buf, "" );
+    l = strlen(PV_name);
+    if ( l > 255 ) l = 255;
+    for ( i=0; i<l; i++ ) {
+      if ( PV_name[i] == '\\' ) break;
+      buf[i] = PV_name[i];
+    }
+    buf[i] = 0;
 
-    if (strncmp(default_pv_type, "EPICS", 6)== 0) {
-      pv = epics_pv_factory->create(PV_name);
+    pos = i + 1;
+
+    pv = pvObj.createNew( buf, PV_name+pos );
+    if ( pv ) {
       return pv;
     }
-    else if (strncmp(default_pv_type, "CALC", 5)==0) {
-      pv = calc_pv_factory->create(PV_name);
-      return pv;
-    }
-    else if (strncmp(default_pv_type, "LOC", 4)==0) {
-      pv = loc_pv_factory->create(PV_name);
-      return pv;
-    }
-    //else if (strncmp(default_pv_type, "DB", 3)==0) {
-    //  pv = db_pv_factory->create(PV_name);
-    //  return pv;
-    //}
     else {
-      fprintf(stderr, "Unknown PV Factory for PV '%s\\%s'\n",
-       default_pv_type, PV_name);
+      fprintf(stderr, "Unknown PV Factory for PV '%s'\n", PV_name);
       return 0;
     }
 
   }
-    
-  pv = epics_pv_factory->create(PV_name);
 
+  if ( strcmp( default_pv_type, "" ) ) {
+
+    pv = pvObj.createNew( default_pv_type, PV_name );
+    if ( pv ) {
+      return pv;
+    }
+    else {
+      fprintf(stderr, "Unknown PV Factory for PV '%s'\n", PV_name);
+      return 0;
+    }
+
+  }
+
+  pv = pvObj.createNew( pvObj.firstPvName(), PV_name );
   return pv;
 
 }
@@ -215,56 +174,47 @@ class ProcessVariable *PV_Factory::createWithInitialCallbacks (
 ) {
 
 class ProcessVariable *pv;
+char buf[255+1];
+int i, l, pos;
 
-  if (strncmp(PV_name, "EPICS\\", 6)==0) {
-    pv = epics_pv_factory->create(PV_name+6);
-    return pv;
-  }
-  else if (strncmp(PV_name, "CALC\\", 5)==0) {
-    pv = calc_pv_factory->create(PV_name+5);
-    return pv;
-  }
-  else if (strncmp(PV_name, "LOC\\", 4)==0) {
-    pv = loc_pv_factory->create(PV_name+4);
-    return pv;
-  }
-  //else if (strncmp(PV_name, "DB\\", 3)==0) {
-  //  pv = db_pv_factory->create(PV_name+3);
-  //  return pv;
-  //}
-  else if (strchr(PV_name, '\\')) {
-    fprintf(stderr, "Unknown PV Factory for PV '%s'\n", PV_name);
-    return 0;
-  }
-    
-  if ( strcmp( default_pv_type, "" ) ) {
+  if ( strchr(PV_name, '\\') ) {
 
-    if (strncmp(default_pv_type, "EPICS", 6)== 0) {
-      pv = epics_pv_factory->create(PV_name);
+    strcpy( buf, "" );
+    l = strlen(PV_name);
+    if ( l > 255 ) l = 255;
+    for ( i=0; i<l; i++ ) {
+      if ( PV_name[i] == '\\' ) break;
+      buf[i] = PV_name[i];
+    }
+    buf[i] = 0;
+
+    pos = i + 1;
+
+    pv = pvObj.createNew( buf, PV_name+pos );
+    if ( pv ) {
       return pv;
     }
-    else if (strncmp(default_pv_type, "CALC", 5)==0) {
-      pv = calc_pv_factory->create(PV_name);
-      return pv;
-    }
-    else if (strncmp(default_pv_type, "LOC", 4)==0) {
-      pv = loc_pv_factory->create(PV_name);
-      return pv;
-    }
-    //else if (strncmp(default_pv_type, "DB", 3)==0) {
-    //  pv = db_pv_factory->create(PV_name);
-    //  return pv;
-    //}
     else {
-      fprintf(stderr, "Unknown PV Factory for PV '%s\\%s'\n",
-       default_pv_type, PV_name);
+      fprintf(stderr, "Unknown PV Factory for PV '%s'\n", PV_name);
       return 0;
     }
 
   }
-    
-  pv = epics_pv_factory->create(PV_name);
 
+  if ( strcmp( default_pv_type, "" ) ) {
+
+    pv = pvObj.createNew( default_pv_type, PV_name );
+    if ( pv ) {
+      return pv;
+    }
+    else {
+      fprintf(stderr, "Unknown PV Factory for PV '%s'\n", PV_name);
+      return 0;
+    }
+
+  }
+
+  pv = pvObj.createNew( pvObj.firstPvName(), PV_name );
   return pv;
 
 }
@@ -351,6 +301,24 @@ void ProcessVariable::add_conn_state_callback(PVCallback func, void *userarg)
     }
 }
 
+void ProcessVariable::add_access_security_callback (
+  PVCallback func, void *userarg
+) {
+
+PVCallbackInfo *info = new PVCallbackInfo;
+
+  info->func = func;
+  info->userarg = userarg;
+  // TODO: search for existing one?
+  access_security_callbacks.insert(info);
+  // Perform initial callback in case we already have information
+  // (otherwise user would have to wait until the next change)
+  if (is_valid()) {
+    (*func)(this, userarg);
+  }
+
+}
+
 void ProcessVariable::set_node_name( const char *_nodeName ) {
 
   char *theName;
@@ -382,6 +350,23 @@ void ProcessVariable::remove_conn_state_callback(PVCallback func, void *userarg)
         conn_state_callbacks.erase(entry);
         delete p_item;
     }
+}
+
+void ProcessVariable::remove_access_security_callback (
+  PVCallback func, void *userarg
+) {
+
+PVCallbackInfo info;
+
+  info.func = func;
+  info.userarg = userarg;
+  PVCallbackInfoHash::iterator entry = access_security_callbacks.find(&info);
+  if (entry != access_security_callbacks.end()) {
+    PVCallbackInfo *p_item = *entry;
+    access_security_callbacks.erase(entry);
+    delete p_item;
+  }
+
 }
 
 void ProcessVariable::add_value_callback(PVCallback func, void *userarg)
@@ -432,6 +417,39 @@ void ProcessVariable::do_conn_state_callbacks()
         if (info->func)
             (*info->func) (this, info->userarg);
     }
+
+}
+
+int ProcessVariable::get_num_conn_state_callbacks ( void ) {
+
+    PVCallbackInfo *info;
+    int n = 0;
+
+    for (PVCallbackInfoHash::iterator entry = conn_state_callbacks.begin();
+         entry != conn_state_callbacks.end();
+         ++entry)
+    {
+        info = *entry;
+        if (info->func)
+            n++;
+    }
+
+    return n;
+
+}
+
+void ProcessVariable::do_access_security_callbacks ( void ) {
+
+PVCallbackInfo *info;
+
+  for (PVCallbackInfoHash::iterator entry = access_security_callbacks.begin();
+   entry != access_security_callbacks.end(); ++entry) {
+    info = *entry;
+    if (info->func) {
+      (*info->func) (this, info->userarg);
+    }
+  }
+
 }
 
 void ProcessVariable::do_value_callbacks()
@@ -449,9 +467,34 @@ void ProcessVariable::do_value_callbacks()
             (*info->func) (this, info->userarg);
 	}
     }
+
+}
+
+int ProcessVariable::get_num_value_callbacks ( void ) {
+
+    PVCallbackInfo *info;
+    int n = 0;
+
+    for (PVCallbackInfoHash::iterator entry = value_callbacks.begin();
+         entry != value_callbacks.end();
+         ++entry)
+    {
+        info = *entry;
+        if (info->func) {
+	  n++;
+	}
+    }
+
+    return n;
+
 }
 
 void ProcessVariable::recalc() {
+}
+
+bool ProcessVariable::have_read_access() const
+{
+    return true;
 }
 
 bool ProcessVariable::have_write_access() const
@@ -459,8 +502,39 @@ bool ProcessVariable::have_write_access() const
     return true;
 }
 
+bool ProcessVariable::put(double value) {
+  return true;
+}
+
+bool ProcessVariable::put(const char *dsp, double value) {
+  return put(value);
+}
+
+bool ProcessVariable::put(const char *value) {
+  return true;
+}
+
+bool ProcessVariable::put(const char *dsp, const char *value) {
+  return put(value);
+}
+
 bool ProcessVariable::put(int value)
-{   return put(double(value)); }
+{   return true; }
+
+bool ProcessVariable::put(const char *dsp, int value)
+{   return put(value); }
+
+bool ProcessVariable::putText(char *value) {
+  return true;
+}
+
+bool ProcessVariable::putText(const char *dsp, char *value) {
+  return putText(value);
+}
 
 bool ProcessVariable::putAck(short value)
 {    return true; }
+
+bool ProcessVariable::putAck(const char *dsp, short value)
+{    return putAck(value); }
+

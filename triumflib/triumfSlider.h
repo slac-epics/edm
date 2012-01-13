@@ -61,6 +61,7 @@
 
 static char *dragName[] = {
   activeTriumfSliderClass_str36,
+  activeTriumfSliderClass_str48
 };
 
 static void unconnectedTimeout (
@@ -335,6 +336,11 @@ typedef struct editBufTag {
 
 editBufPtr eBuf;
 
+entryListBase *labelTypeEntry, *labelEntry;
+
+entryListBase *limitsFromDbEntry, *scalePrecEntry, *scaleMinEntry,
+ *scaleMaxEntry;
+
 int bufX, bufY, bufW, bufH;
 
 Widget frameWidget, triumfSliderWidget, scaleWidget, scrollBarWidget;
@@ -410,7 +416,7 @@ int needCtlLabelConnectInit, needCtlLabelInfoInit, needCtlUpdate;
 int needSavedConnectInit, needSavedRefresh;
 int needErase, needDraw;
 int needToDrawUnconnected, needToEraseUnconnected;
-int unconnectedTimer;
+XtIntervalId unconnectedTimer;
 
 char displayFormat[15+1];
 int limitsFromDb;
@@ -547,6 +553,11 @@ int eraseActiveControlText ( void );
 
 int drawActiveControlText ( void );
 
+int expandTemplate (
+  int numMacros,
+  char *macros[],
+  char *expansions[] );
+
 int expand1st (
   int numMacros,
   char *macros[],
@@ -609,6 +620,16 @@ void getPvs (
   int max,
   ProcessVariable *pvs[],
   int *n );
+
+char *getSearchString (
+  int i
+);
+
+void replaceString (
+  int i,
+  int max,
+  char *string
+);
 
 char *crawlerGetFirstPv ( void );
 

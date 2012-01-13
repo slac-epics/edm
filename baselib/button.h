@@ -203,6 +203,8 @@ typedef struct editBufTag {
   int bufTopShadowColor;
   int bufBotShadowColor;
   int bufInconsistentColor;
+  efInt bufEfControlBitPos;
+  efInt bufEfReadBitPos;
   colorButtonClass fgCb;
   colorButtonClass onCb;
   colorButtonClass offCb;
@@ -227,12 +229,18 @@ typedef struct editBufTag {
 
 editBufPtr eBuf;
 
+entryListBase *ctlPvEntry, *ctlPvBitEntry;
+
+entryListBase *rdPvEntry, *rdPvBitEntry;
+
+entryListBase *invisPvEntry, *visInvEntry, *minVisEntry, *maxVisEntry;
+
 short controlV, curControlV, readV, curReadV;
 
 int needCtlConnectInit, needCtlInfoInit, needCtlRefresh;
 int needReadConnectInit, needReadInfoInit, needReadRefresh;
 int needErase, needDraw, needToDrawUnconnected, needToEraseUnconnected;
-int unconnectedTimer;
+XtIntervalId unconnectedTimer;
 
 int fgColorMode;
 pvColorClass fgColor, inconsistentColor, onColor, offColor;
@@ -288,6 +296,13 @@ double colorValue, curColorValue;
 int needColorConnectInit, needColorInit, needColorUpdate;
 
 int oldStat, oldSev;
+
+int controlIsBit, readIsBit;
+efInt efControlBitPos, efReadBitPos;
+int controlBitPos, readBitPos; // 0-31
+int prevControlBit, prevReadBit;
+int controlBit, readBit;
+int initControlBit, initReadBit;
 
 public:
 
@@ -375,6 +390,11 @@ int getButtonActionRequest (
   int *drag,
   int *focus );
 
+int expandTemplate (
+  int numMacros,
+  char *macros[],
+  char *expansions[] );
+
 int expand1st (
   int numMacros,
   char *macros[],
@@ -433,6 +453,16 @@ void getPvs (
   int max,
   ProcessVariable *pvs[],
   int *n );
+
+char *getSearchString (
+  int i
+);
+
+void replaceString (
+  int i,
+  int max,
+  char *string
+);
 
 char *crawlerGetFirstPv ( void );
 

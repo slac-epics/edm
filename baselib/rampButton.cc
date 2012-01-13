@@ -427,12 +427,28 @@ struct timeval curTime;
 
   dval -= rbto->increment * adjust;
 
+  if ( dval <= rbto->rampFinalV ) {
+    dval = rbto->rampFinalV;
+    rbto->incrementTimerActive = 0;
+    rbto->buttonPressed = 0;
+    if ( rbto->rampStateExists ) {
+      rbto->rampStatePvId->put(
+       XDisplayName(rbto->actWin->appCtx->displayName),
+       rbto->buttonPressed );
+    }
+    rbto->actWin->appCtx->proc->lock();
+    rbto->needRefresh = 1;
+    rbto->actWin->addDefExeNode( rbto->aglPtr );
+    rbto->actWin->appCtx->proc->unlock();
+  }
   if ( dval <= rbto->minDv ) {
     dval = rbto->minDv;
     rbto->incrementTimerActive = 0;
     rbto->buttonPressed = 0;
     if ( rbto->rampStateExists ) {
-      rbto->rampStatePvId->put( rbto->buttonPressed );
+      rbto->rampStatePvId->put(
+       XDisplayName(rbto->actWin->appCtx->displayName),
+       rbto->buttonPressed );
     }
     rbto->actWin->appCtx->proc->lock();
     rbto->needRefresh = 1;
@@ -444,19 +460,9 @@ struct timeval curTime;
     rbto->incrementTimerActive = 0;
     rbto->buttonPressed = 0;
     if ( rbto->rampStateExists ) {
-      rbto->rampStatePvId->put( rbto->buttonPressed );
-    }
-    rbto->actWin->appCtx->proc->lock();
-    rbto->needRefresh = 1;
-    rbto->actWin->addDefExeNode( rbto->aglPtr );
-    rbto->actWin->appCtx->proc->unlock();
-  }
-  else if ( dval <= rbto->rampFinalV ) {
-    dval = rbto->rampFinalV;
-    rbto->incrementTimerActive = 0;
-    rbto->buttonPressed = 0;
-    if ( rbto->rampStateExists ) {
-      rbto->rampStatePvId->put( rbto->buttonPressed );
+      rbto->rampStatePvId->put(
+       XDisplayName(rbto->actWin->appCtx->displayName),
+       rbto->buttonPressed );
     }
     rbto->actWin->appCtx->proc->lock();
     rbto->needRefresh = 1;
@@ -465,7 +471,9 @@ struct timeval curTime;
   }
 
   if ( rbto->destExists ) {
-    rbto->destPvId->put( dval );
+    rbto->destPvId->put(
+     XDisplayName(rbto->actWin->appCtx->displayName),
+     dval );
   }
 
 }
@@ -503,12 +511,28 @@ struct timeval curTime;
 
   dval += rbto->increment * adjust;
 
+  if ( dval >= rbto->rampFinalV ) {
+    dval = rbto->rampFinalV;
+    rbto->incrementTimerActive = 0;
+    rbto->buttonPressed = 0;
+    if ( rbto->rampStateExists ) {
+      rbto->rampStatePvId->put(
+       XDisplayName(rbto->actWin->appCtx->displayName),
+       rbto->buttonPressed );
+    }
+    rbto->actWin->appCtx->proc->lock();
+    rbto->needRefresh = 1;
+    rbto->actWin->addDefExeNode( rbto->aglPtr );
+    rbto->actWin->appCtx->proc->unlock();
+  }
   if ( dval <= rbto->minDv ) {
     dval = rbto->minDv;
     rbto->incrementTimerActive = 0;
     rbto->buttonPressed = 0;
     if ( rbto->rampStateExists ) {
-      rbto->rampStatePvId->put( rbto->buttonPressed );
+      rbto->rampStatePvId->put(
+       XDisplayName(rbto->actWin->appCtx->displayName),
+       rbto->buttonPressed );
     }
     rbto->actWin->appCtx->proc->lock();
     rbto->needRefresh = 1;
@@ -520,19 +544,9 @@ struct timeval curTime;
     rbto->incrementTimerActive = 0;
     rbto->buttonPressed = 0;
     if ( rbto->rampStateExists ) {
-      rbto->rampStatePvId->put( rbto->buttonPressed );
-    }
-    rbto->actWin->appCtx->proc->lock();
-    rbto->needRefresh = 1;
-    rbto->actWin->addDefExeNode( rbto->aglPtr );
-    rbto->actWin->appCtx->proc->unlock();
-  }
-  else if ( dval >= rbto->rampFinalV ) {
-    dval = rbto->rampFinalV;
-    rbto->incrementTimerActive = 0;
-    rbto->buttonPressed = 0;
-    if ( rbto->rampStateExists ) {
-      rbto->rampStatePvId->put( rbto->buttonPressed );
+      rbto->rampStatePvId->put(
+       XDisplayName(rbto->actWin->appCtx->displayName),
+       rbto->buttonPressed );
     }
     rbto->actWin->appCtx->proc->lock();
     rbto->needRefresh = 1;
@@ -541,7 +555,9 @@ struct timeval curTime;
   }
 
   if ( rbto->destExists ) {
-    rbto->destPvId->put( dval );
+    rbto->destPvId->put(
+     XDisplayName(rbto->actWin->appCtx->displayName),
+     dval );
   }
 
 }
@@ -550,8 +566,8 @@ activeRampButtonClass::activeRampButtonClass ( void ) {
 
   name = new char[strlen("activeRampButtonClass")+1];
   strcpy( name, "activeRampButtonClass" );
+  checkBaseClassVersion( activeGraphicClass::MAJOR_VERSION, name );
   buttonPressed = 0;
-
   state = RBTC_IDLE;
   _3D = 1;
   invisible = 0;
@@ -632,6 +648,15 @@ activeGraphicClass *rbto = (activeGraphicClass *) this;
   connection.setMaxPvs( 5 );
 
   setBlinkFunction( (void *) doBlink );
+
+  doAccSubs( destPvExpString );
+  doAccSubs( finalPvExpString );
+  doAccSubs( rampStatePvExpString );
+  doAccSubs( label );
+  doAccSubs( colorPvExpString );
+  doAccSubs( visPvExpString );
+  doAccSubs( minVisString, 39 );
+  doAccSubs( maxVisString, 39 );
 
   updateDimensions();
 
@@ -931,8 +956,15 @@ char title[32], *ptr;
    PV_Factory::MAX_PV_NAME );
 
   ef.addToggle( activeRampButtonClass_str26, &eBuf->bufLimitsFromDb );
+  limitsFromDbEntry = ef.getCurItem();
   ef.addTextField( activeRampButtonClass_str27, 35, &eBuf->bufEfScaleMin );
+  minEntry = ef.getCurItem();
+  limitsFromDbEntry->addInvDependency( minEntry );
   ef.addTextField( activeRampButtonClass_str28, 35, &eBuf->bufEfScaleMax );
+  maxEntry = ef.getCurItem();
+  limitsFromDbEntry->addInvDependency( maxEntry );
+  limitsFromDbEntry->addDependencyCallbacks();
+
   ef.addTextField( activeRampButtonClass_str10, 35, &eBuf->bufRampRate );
   ef.addTextField( activeRampButtonClass_str11, 35, &eBuf->bufUpdateRate );
   ef.addToggle( activeRampButtonClass_str12, &eBuf->buf3D );
@@ -952,9 +984,17 @@ char title[32], *ptr;
 
   ef.addTextField( activeRampButtonClass_str29, 30, eBuf->bufVisPvName,
    PV_Factory::MAX_PV_NAME );
+  invisPvEntry = ef.getCurItem();
   ef.addOption( " ", activeRampButtonClass_str30, &eBuf->bufVisInverted );
+  visInvEntry = ef.getCurItem();
+  invisPvEntry->addDependency( visInvEntry );
   ef.addTextField( activeRampButtonClass_str31, 30, eBuf->bufMinVisString, 39 );
+  minVisEntry = ef.getCurItem();
+  invisPvEntry->addDependency( minVisEntry );
   ef.addTextField( activeRampButtonClass_str32, 30, eBuf->bufMaxVisString, 39 );
+  maxVisEntry = ef.getCurItem();
+  invisPvEntry->addDependency( maxVisEntry );
+  invisPvEntry->addDependencyCallbacks();
 
   return 1;
 
@@ -1007,10 +1047,10 @@ int activeRampButtonClass::eraseActive ( void ) {
 
   prevVisibility = visibility;
 
-  XDrawRectangle( actWin->d, XtWindow(actWin->drawWidget),
+  XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->drawGc.eraseGC(), x, y, w, h );
 
-  XFillRectangle( actWin->d, XtWindow(actWin->drawWidget),
+  XFillRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->drawGc.eraseGC(), x, y, w, h );
 
   return 1;
@@ -1138,7 +1178,7 @@ int blink = 0;
       actWin->executeGc.setFG( bgColor.getDisconnectedIndex(), &blink );
       actWin->executeGc.setLineWidth( 1 );
       actWin->executeGc.setLineStyle( LineSolid );
-      XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+      XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
        actWin->executeGc.normGC(), x, y, w, h );
       actWin->executeGc.restoreFg();
       needToEraseUnconnected = 1;
@@ -1148,7 +1188,7 @@ int blink = 0;
   else if ( needToEraseUnconnected ) {
     actWin->executeGc.setLineWidth( 1 );
     actWin->executeGc.setLineStyle( LineSolid );
-    XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.eraseGC(), x, y, w, h );
     needToEraseUnconnected = 0;
     if ( invisible ) {
@@ -1168,7 +1208,7 @@ int blink = 0;
   actWin->executeGc.setLineStyle( LineSolid );
   actWin->executeGc.setLineWidth( 1 );
 
-  XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+  XFillRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x, y, w, h );
 
   if ( !_3D ) {
@@ -1177,7 +1217,7 @@ int blink = 0;
 
   }
 
-  XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x, y, w, h );
 
   if ( !buttonPressed ) {
@@ -1186,50 +1226,50 @@ int blink = 0;
 
     actWin->executeGc.setFG( actWin->ci->pix(botShadowColor) );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x, y, x+w, y );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x, y, x, y+h );
 
     actWin->executeGc.setFG( actWin->ci->pix(topShadowColor) );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x, y+h, x+w, y+h );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x+w, y, x+w, y+h );
 
     // top
     actWin->executeGc.setFG( actWin->ci->pix(topShadowColor) );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x+1, y+1, x+w-1, y+1 );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x+2, y+2, x+w-2, y+2 );
 
     // left
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x+1, y+1, x+1, y+h-1 );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x+2, y+2, x+2, y+h-2 );
 
     // bottom
     actWin->executeGc.setFG( actWin->ci->pix(botShadowColor) );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x+1, y+h-1, x+w-1, y+h-1 );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x+2, y+h-2, x+w-2, y+h-2 );
 
     // right
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x+w-1, y+1, x+w-1, y+h-1 );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x+w-2, y+2, x+w-2, y+h-2 );
 
     }
@@ -1241,10 +1281,10 @@ int blink = 0;
 
     actWin->executeGc.setFG( actWin->ci->pix(botShadowColor) );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x, y, x+w, y );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x, y, x, y+h );
 
     // top
@@ -1255,14 +1295,14 @@ int blink = 0;
 
     actWin->executeGc.setFG( actWin->ci->pix(topShadowColor) );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x, y+h, x+w, y+h );
 
     //right
 
     actWin->executeGc.setFG( actWin->ci->pix(topShadowColor) );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x+w, y, x+w, y+h );
 
     }
@@ -1271,7 +1311,7 @@ int blink = 0;
 
   actWin->executeGc.setFG( fgColor.getIndex(), &blink );
 
-  //XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  //XDrawLine( actWin->d, drawable(actWin->executeWidget),
   // actWin->executeGc.normGC(), x+5, y+9, x+w-5, y+9 );
 
   if ( fs ) {
@@ -1288,8 +1328,8 @@ int blink = 0;
     tX = x + w/2;
     tY = y + h/2 - fontAscent/2;
 
-    drawText( actWin->executeWidget, &actWin->executeGc, fs, tX, tY,
-     XmALIGNMENT_CENTER, string );
+    drawText( actWin->executeWidget, drawable(actWin->executeWidget),
+     &actWin->executeGc, fs, tX, tY, XmALIGNMENT_CENTER, string );
 
     actWin->executeGc.removeNormXClipRectangle();
 
@@ -1519,6 +1559,7 @@ int activeRampButtonClass::deactivate (
 
   if ( incrementTimerActive ) {
     if ( incrementTimer ) {
+      actWin->appCtx->postMessage( activeRampButtonClass_str35 );
       XtRemoveTimeOut( incrementTimer );
       incrementTimer = 0;
     }
@@ -1567,6 +1608,11 @@ int activeRampButtonClass::deactivate (
 
   if ( rampStateExists ) {
     if ( rampStatePvId ) {
+      if ( rampStateExists ) {
+        rampStatePvId->put(
+         XDisplayName(actWin->appCtx->displayName),
+         0 );
+      }
       rampStatePvId->remove_conn_state_callback( rbtc_monitor_rampState_connect_state,
        this );
       rampStatePvId->release();
@@ -1643,7 +1689,9 @@ double dval;
     buttonPressed = 0;
 
     if ( rampStateExists ) {
-      rampStatePvId->put( buttonPressed );
+      rampStatePvId->put(
+       XDisplayName(actWin->appCtx->displayName),
+       buttonPressed );
     }
 
     actWin->appCtx->proc->lock();
@@ -1658,7 +1706,9 @@ double dval;
   buttonPressed = 1;
 
   if ( rampStateExists ) {
-    rampStatePvId->put( buttonPressed );
+    rampStatePvId->put(
+     XDisplayName(actWin->appCtx->displayName),
+     buttonPressed );
   }
 
   actWin->appCtx->proc->lock();
@@ -1700,7 +1750,9 @@ double dval;
     incrementTimerActive = 0;
     buttonPressed = 0;
     if ( rampStateExists ) {
-      rampStatePvId->put( buttonPressed );
+      rampStatePvId->put(
+       XDisplayName(actWin->appCtx->displayName),
+       buttonPressed );
     }
     actWin->appCtx->proc->lock();
     needRefresh = 1;
@@ -1751,6 +1803,42 @@ int activeRampButtonClass::getButtonActionRequest (
 
   *down = 1;
   *up = 1;
+
+  return 1;
+
+}
+
+int activeRampButtonClass::expandTemplate (
+  int numMacros,
+  char *macros[],
+  char *expansions[] )
+{
+
+expStringClass tmpStr;
+
+  tmpStr.setRaw( destPvExpString.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  destPvExpString.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( finalPvExpString.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  finalPvExpString.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( rampStatePvExpString.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  rampStatePvExpString.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( label.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  label.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( visPvExpString.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  visPvExpString.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( colorPvExpString.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  colorPvExpString.setRaw( tmpStr.getExpanded() );
 
   return 1;
 
@@ -1926,7 +2014,9 @@ int stat, index, invisColor;
       initialRampStateValueConnection = 0;
 
       if ( rampStateExists ) {
-        rampStatePvId->put( 0 );
+        rampStatePvId->put(
+         XDisplayName(actWin->appCtx->displayName),
+         0 );
       }
 
     }
@@ -2260,6 +2350,78 @@ void activeRampButtonClass::getPvs (
   *n = 2;
   pvs[0] = destPvId;
   pvs[1] = finalPvId;
+
+}
+
+char *activeRampButtonClass::getSearchString (
+  int i
+) {
+
+  if ( i == 0 ) {
+    return destPvExpString.getRaw();
+  }
+  else if ( i == 1 ) {
+    return finalPvExpString.getRaw();
+  }
+  else if ( i == 2 ) {
+    return rampStatePvExpString.getRaw();
+  }
+  else if ( i == 3 ) {
+    return colorPvExpString.getRaw();
+  }
+  else if ( i == 4 ) {
+    return visPvExpString.getRaw();
+  }
+  else if ( i == 5 ) {
+    return label.getRaw();
+  }
+  else if ( i == 6 ) {
+    return minVisString;
+  }
+  else if ( i == 7 ) {
+    return maxVisString;
+  }
+
+  return NULL;
+
+}
+
+void activeRampButtonClass::replaceString (
+  int i,
+  int max,
+  char *string
+) {
+
+  if ( i == 0 ) {
+    destPvExpString.setRaw( string );
+  }
+  else if ( i == 1 ) {
+    finalPvExpString.setRaw( string );
+  }
+  else if ( i == 2 ) {
+    rampStatePvExpString.setRaw( string );
+  }
+  else if ( i == 3 ) {
+    colorPvExpString.setRaw( string );
+  }
+  else if ( i == 4 ) {
+    visPvExpString.setRaw( string );
+  }
+  else if ( i == 5 ) {
+    label.setRaw( string );
+  }
+  else if ( i == 6 ) {
+    int l = max;
+    if ( 39 < max ) l = 39;
+    strncpy( minVisString, string, l );
+    minVisString[l] = 0;
+  }
+  else if ( i == 7 ) {
+    int l = max;
+    if ( 39 < max ) l = 39;
+    strncpy( maxVisString, string, l );
+    maxVisString[l] = 0;
+  }
 
 }
 

@@ -88,11 +88,22 @@ public:
       ProcessVariable *pvs[],
       int *n);
 
+    char *getSearchString (
+      int i
+    );
+
+    void replaceString (
+      int i,
+      int max,
+      char *string
+    );
+
     char *crawlerGetFirstPv ( void );
     char *crawlerGetNextPv ( void );
     
     // Macro support
     int containsMacros();
+    int expandTemplate (int numMacros, char *macros[], char *expansions[]);
     int expand1st(int numMacros, char *macros[], char *expansions[]);
     int expand2nd(int numMacros, char *macros[], char *expansions[]);
     
@@ -156,6 +167,9 @@ protected:
     // len has to be initialized with the text buffer size.
     // Returns 1 if PV is valid
     bool get_current_values(char *text, size_t &len);
+
+    entryListBase *lineEntry, *alarmSensLineEntry;
+    entryListBase *fillEntry, *fillColorEntry;
 
     void redraw_text(Display *dis,
                      Drawable drw,

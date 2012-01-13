@@ -23,7 +23,7 @@
 #include "entry_form.h"
 
 #define SHCMDC_MAJOR_VERSION 4
-#define SHCMDC_MINOR_VERSION 2
+#define SHCMDC_MINOR_VERSION 3
 #define SHCMDC_RELEASE 0
 
 #ifdef __shell_cmd_cc
@@ -209,7 +209,7 @@ typedef struct bufTag {
   int bufBgColor;
   int bufInvisible;
   int bufCloseAction;
-  char bufShellCommand[maxCmds][255+1];
+  char bufShellCommand[maxCmds][2550+1];
   char bufLabel[maxCmds][127+1];
   char bufButtonLabel[127+1];
   char bufFontTag[63+1];;
@@ -221,6 +221,7 @@ typedef struct bufTag {
   int bufOneShot;
   int bufSwapButtons;
   int bufIncludeHelpIcon;
+  int bufExecCursor;
 } bufType, *bufPtr;
 
 // static char * const nullHost = "";
@@ -259,7 +260,7 @@ int opComplete;
 double threadSecondsToDelay, autoExecInterval;
 XtIntervalId timer;
 int oneShot, timerActive, timerValue, multipleInstancesAllowed,
- swapButtons, includeHelpIcon;
+ swapButtons, includeHelpIcon, execCursor;
 THREAD_HANDLE thread;
 
 int pwFormX, pwFormY, pwFormW, pwFormH, pwFormMaxH;
@@ -338,6 +339,11 @@ int deactivate ( int pass );
 
 void updateDimensions ( void );
 
+int expandTemplate (
+  int numMacros,
+  char *macros[],
+  char *expansions[] );
+
 int expand1st (
   int numMacros,
   char *macros[],
@@ -398,6 +404,15 @@ void changeDisplayParams (
 
 void executeDeferred ( void );
 
+char *getSearchString (
+  int i
+);
+
+void replaceString (
+  int i,
+  int max,
+  char *string
+);
 
 };
 

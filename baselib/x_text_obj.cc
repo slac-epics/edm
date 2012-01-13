@@ -350,6 +350,7 @@ activeXTextClass::activeXTextClass ( void ) {
 
   name = new char[strlen("activeXTextClass")+1];
   strcpy( name, "activeXTextClass" );
+  checkBaseClassVersion( activeGraphicClass::MAJOR_VERSION, name );
 
   visibility = 0;
   prevVisibility = -1;
@@ -368,6 +369,7 @@ activeXTextClass::activeXTextClass ( void ) {
   lineThk = 1;
   bufValue = NULL;
   eBuf = NULL;
+  savedDims = 0;
 
 }
 
@@ -433,7 +435,15 @@ activeGraphicClass *ago = (activeGraphicClass *) this;
   bufValue = NULL;
   eBuf = NULL;
 
+  savedDims = 0;
+
   setBlinkFunction( (void *) doBlink );
+
+  doAccSubs( alarmPvExpStr );
+  doAccSubs( visPvExpStr );
+  doAccSubs( value );
+  doAccSubs( minVisString, 39 );
+  doAccSubs( maxVisString, 39 );
 
 }
 
@@ -593,18 +603,35 @@ char title[32], *ptr;
    &eBuf->bufLineThk );
   ef.addColorButton( activeXTextClass_str13, actWin->ci, &eBuf->fgCb, &eBuf->bufFgColor );
   ef.addToggle( activeXTextClass_str14, &eBuf->bufFgColorMode );
+
   ef.addToggle( activeXTextClass_str15, &eBuf->bufUseDisplayBg );
+  fillEntry = ef.getCurItem();
   ef.addColorButton( activeXTextClass_str16, actWin->ci, &eBuf->bgCb, &eBuf->bufBgColor );
+  fillColorEntry = ef.getCurItem();
+  fillEntry->addInvDependency( fillColorEntry );
   ef.addToggle( activeXTextClass_str17, &eBuf->bufBgColorMode );
+  fillAlarmSensEntry = ef.getCurItem();
+  fillEntry->addInvDependency( fillAlarmSensEntry );
+  fillEntry->addDependencyCallbacks();
+
   ef.addFontMenu( activeXTextClass_str12, actWin->fi, &fm, fontTag );
   fm.setFontAlignment( alignment );
   ef.addTextField( activeXTextClass_str18, 35, eBuf->bufAlarmPvName,
    PV_Factory::MAX_PV_NAME );
+
   ef.addTextField( activeXTextClass_str19, 35, eBuf->bufVisPvName,
    PV_Factory::MAX_PV_NAME );
+  invisPvEntry = ef.getCurItem();
   ef.addOption( " ", activeXTextClass_str20, &eBuf->bufVisInverted );
+  visInvEntry = ef.getCurItem();
+  invisPvEntry->addDependency( visInvEntry );
   ef.addTextField( activeXTextClass_str21, 35, eBuf->bufMinVisString, 39 );
+  minVisEntry = ef.getCurItem();
+  invisPvEntry->addDependency( minVisEntry );
   ef.addTextField( activeXTextClass_str22, 35, eBuf->bufMaxVisString, 39 );
+  maxVisEntry = ef.getCurItem();
+  invisPvEntry->addDependency( maxVisEntry );
+  invisPvEntry->addDependencyCallbacks();
 
   return 1;
 
@@ -1251,13 +1278,12 @@ int blink = 0;
   if ( !init ) {
     if ( needToDrawUnconnected ) {
       actWin->executeGc.saveFg();
-      //actWin->executeGc.setFG( fgColor.getDisconnected() );
       actWin->executeGc.setFG( fgColor.getDisconnectedIndex(), &blink );
       if ( strcmp( fontTag, "" ) != 0 ) {
         actWin->executeGc.setFontTag( fontTag, actWin->fi );
       }
       clipStat = actWin->executeGc.addNormXClipRectangle( xR );
-      XDrawStringsAligned( actWin->d, XtWindow(actWin->executeWidget),
+      XDrawStringsAligned( actWin->d, drawable(actWin->executeWidget),
        actWin->executeGc.normGC(), x, stringY, w,
        value.getExpanded(), stringLength, &fs, alignment );
       if ( clipStat & 1 ) actWin->executeGc.removeNormXClipRectangle();
@@ -1267,13 +1293,16 @@ int blink = 0;
     }
   }
   else if ( needToEraseUnconnected ) {
+    actWin->executeGc.saveFg();
     needToEraseUnconnected = 0;
     if ( strcmp( fontTag, "" ) != 0 ) {
       actWin->executeGc.setFontTag( fontTag, actWin->fi );
     }
-    XDrawStringsAligned( actWin->d, XtWindow(actWin->executeWidget),
-     actWin->executeGc.normGC(), x, stringY, w,
+    clipStat = actWin->executeGc.addEraseXClipRectangle( xR );
+    XDrawStringsAligned( actWin->d, drawable(actWin->executeWidget),
+     actWin->executeGc.eraseGC(), x, stringY, w,
      value.getExpanded(), stringLength, &fs, alignment );
+    if ( clipStat & 1 ) actWin->executeGc.removeEraseXClipRectangle();
     actWin->executeGc.restoreFg();
   }
 
@@ -1295,7 +1324,7 @@ int blink = 0;
 
       actWin->executeGc.setFG( fgColor.getIndex(), &blink );
 
-      XDrawStringsAligned( actWin->d, XtWindow(actWin->executeWidget),
+      XDrawStringsAligned( actWin->d, drawable(actWin->executeWidget),
        actWin->executeGc.normGC(), x, stringY, w,
        value.getExpanded(), stringLength, &fs, alignment );
 
@@ -1304,10 +1333,10 @@ int blink = 0;
 
       actWin->executeGc.setFG( bgColor.getColor() );
 
-      XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+      XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
        actWin->executeGc.normGC(), x, y, w, h );
 
-      XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+      XFillRectangle( actWin->d, drawable(actWin->executeWidget),
        actWin->executeGc.normGC(), x, y, w, h );
 
       actWin->executeGc.setFG( fgColor.getIndex(), &blink );
@@ -1315,7 +1344,7 @@ int blink = 0;
       actWin->executeGc.saveBg();
       actWin->executeGc.setBG( bgColor.getColor() );
 
-      XDrawImageStringsAligned( actWin->d, XtWindow(actWin->executeWidget),
+      XDrawImageStringsAligned( actWin->d, drawable(actWin->executeWidget),
        actWin->executeGc.normGC(), x, stringY, w,
        value.getExpanded(), stringLength, &fs, alignment );
 
@@ -1326,7 +1355,7 @@ int blink = 0;
     if ( border ) {
       actWin->executeGc.setFG( fgColor.getIndex(), &blink );
       actWin->executeGc.setLineWidth( lineThk );
-      XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+      XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
        actWin->executeGc.normGC(), x+lineThk/2, y+lineThk/2, w-lineThk, h-lineThk );
       actWin->executeGc.setLineWidth( 1 );
     }
@@ -1359,20 +1388,20 @@ XRectangle xR = { x, y, w, h };
 
   if ( useDisplayBg ) {
 
-    XDrawStringsAligned( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawStringsAligned( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.eraseGC(), x, stringY, w,
      value.getExpanded(), stringLength, &fs, alignment );
 
   }
   else {
 
-    XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.eraseGC(), x, y, w, h );
 
-    XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+    XFillRectangle( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.eraseGC(), x, y, w, h );
 
-    XDrawImageStringsAligned( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawImageStringsAligned( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.eraseGC(), x, stringY, w,
      value.getExpanded(), stringLength, &fs, alignment );
 
@@ -1380,7 +1409,7 @@ XRectangle xR = { x, y, w, h };
 
   if ( border ) {
     actWin->executeGc.setLineWidth( lineThk );
-    XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.eraseGC(), x+lineThk/2, y+lineThk/2, w-lineThk, h-lineThk );
     actWin->executeGc.setLineWidth( 1 );
   }
@@ -1412,7 +1441,7 @@ XRectangle xR = { x, y, w, h };
 
     actWin->executeGc.addEraseXClipRectangle( xR );
 
-    XDrawStringsAligned( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawStringsAligned( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.eraseGC(), x, stringY, w,
      value.getExpanded(), stringLength, &fs, alignment );
 
@@ -1433,22 +1462,22 @@ XRectangle xR = { x, y, w, h };
 
       if ( bufInvalid ) {
 
-        XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+        XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.eraseGC(), x, y, w, h );
 
-        XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+        XFillRectangle( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.eraseGC(), x, y, w, h );
 
       }
       else {
 
-        XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+        XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.normGC(), x, y, w, h );
 
-        XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+        XFillRectangle( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.normGC(), x, y, w, h );
 
-        XDrawImageStringsAligned( actWin->d, XtWindow(actWin->executeWidget),
+        XDrawImageStringsAligned( actWin->d, drawable(actWin->executeWidget),
          actWin->executeGc.normGC(), x, stringY, w,
          value.getExpanded(), stringLength, &fs, alignment );
 
@@ -1458,7 +1487,7 @@ XRectangle xR = { x, y, w, h };
 
     if ( border ) {
       actWin->executeGc.setLineWidth( lineThk );
-      XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+      XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
        actWin->executeGc.eraseGC(), x+lineThk/2, y+lineThk/2, w-lineThk, h-lineThk );
       actWin->executeGc.setLineWidth( 1 );
     }
@@ -1469,6 +1498,63 @@ XRectangle xR = { x, y, w, h };
     actWin->executeGc.removeNormXClipRectangle();
 
   }
+
+  return 1;
+
+}
+
+int activeXTextClass::expandTemplate (
+  int numMacros,
+  char *macros[],
+  char *expansions[] )
+{
+
+expStringClass tmpStr;
+
+  tmpStr.setRaw( alarmPvExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  alarmPvExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( visPvExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  visPvExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( value.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  value.setRaw( tmpStr.getExpanded() );
+
+  actWin->fi->loadFontTag( fontTag );
+  actWin->drawGc.setFontTag( fontTag, actWin->fi );
+
+  if ( value.getRaw() )
+    stringLength = strlen( value.getRaw() );
+  else
+    stringLength = 0;
+
+  fs = actWin->fi->getXFontStruct( fontTag );
+
+  if ( value.getRaw() )
+    updateFont( value.getRaw(), fontTag, &fs, &fontAscent, &fontDescent,
+     &fontHeight, &stringWidth );
+  else
+    updateFont( " ", fontTag, &fs, &fontAscent, &fontDescent,
+     &fontHeight, &stringWidth );
+
+  updateDimensions();
+
+  if ( autoSize && fs ) {
+    sboxW = w = stringBoxWidth;
+    sboxH = h = stringBoxHeight;
+  }
+
+  stringY = y + fontAscent + h/2 - stringBoxHeight/2;
+
+  if ( alignment == XmALIGNMENT_BEGINNING )
+    stringX = x;
+  else if ( alignment == XmALIGNMENT_CENTER )
+    stringX = x + w/2 - stringWidth/2;
+  else if ( alignment == XmALIGNMENT_END )
+    stringX = x + w - stringWidth;
 
   return 1;
 
@@ -1533,6 +1619,11 @@ int activeXTextClass::activate (
 
     if ( !opComplete ) {
 
+      savedX = x;
+      savedW = w;
+      savedH = h;
+      savedDims = 1;
+
       connection.init();
       initEnable();
 
@@ -1574,6 +1665,14 @@ int activeXTextClass::activate (
       updateDimensions();
 
       if ( autoSize && fs ) {
+        if ( alignment == XmALIGNMENT_CENTER ) {
+          x = x - stringBoxWidth/2 + w/2;
+          sboxX = x;
+	}
+        else if ( alignment == XmALIGNMENT_END ) {
+          x = x - stringBoxWidth + w;
+          sboxX = x;
+	}
         sboxW = w = stringBoxWidth;
         sboxH = h = stringBoxHeight;
       }
@@ -1666,6 +1765,13 @@ int activeXTextClass::deactivate (
 {
 
   if ( pass == 1 ) {
+
+  if ( savedDims ) {
+    savedDims = 0;
+    x = sboxX = savedX;
+    w = sboxW = savedW;
+    h = sboxH = savedH;
+  }
 
   activeMode = 0;
 
@@ -1835,7 +1941,7 @@ XRectangle xR = { x, y, w, h };
 
   if ( border ) {
     actWin->drawGc.setLineWidth( lineThk );
-    XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawRectangle( actWin->d, XtWindow(actWin->drawWidget),
      actWin->drawGc.eraseGC(), x+lineThk/2, y+lineThk/2, w-lineThk, h-lineThk );
     actWin->drawGc.setLineWidth( 1 );
   }
@@ -2389,6 +2495,67 @@ void activeXTextClass::getPvs (
   *n = 2;
   pvs[0] = alarmPvId;
   pvs[1] = visPvId;
+
+}
+
+char *activeXTextClass::getSearchString (
+  int i
+) {
+
+  if ( i == 0 ) {
+    return value.getRaw();
+  }
+  else if ( i == 1 ) {
+    return alarmPvExpStr.getRaw();
+  }
+  else if ( i == 2 ) {
+    return visPvExpStr.getRaw();
+  }
+  else if ( i == 3 ) {
+    return minVisString;
+  }
+  else if ( i == 4 ) {
+    return maxVisString;
+  }
+
+  return NULL;
+
+}
+
+void activeXTextClass::replaceString (
+  int i,
+  int max,
+  char *string
+) {
+
+  if ( i == 0 ) {
+    value.setRaw( string );
+  }
+  else if ( i == 1 ) {
+    alarmPvExpStr.setRaw( string );
+  }
+  else if ( i == 2 ) {
+    visPvExpStr.setRaw( string );
+  }
+  else if ( i == 3 ) {
+    int l = max;
+    if ( 39 < max ) l = 39;
+    strncpy( minVisString, string, l );
+    minVisString[l] = 0;
+  }
+  else if ( i == 4 ) {
+    int l = max;
+    if ( 39 < max ) l = 39;
+    strncpy( maxVisString, string, l );
+    maxVisString[l] = 0;
+  }
+
+  updateDimensions();
+
+  if ( autoSize && fs ) {
+    sboxW = w = stringBoxWidth;
+    sboxH = h = stringBoxHeight;
+  }
 
 }
 

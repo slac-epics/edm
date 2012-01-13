@@ -334,6 +334,7 @@ activeMeterClass::activeMeterClass ( void ) {
 
   name = new char[strlen("activeMeterClass")+1];
   strcpy( name, "activeMeterClass" );
+  checkBaseClassVersion( activeGraphicClass::MAJOR_VERSION, name );
   minW = 100;
   minH = 50;
   strcpy( scaleFontTag, "" );
@@ -457,6 +458,10 @@ activeGraphicClass *metero = (activeGraphicClass *) this;
 
   updateDimensions();
 
+  doAccSubs( readPvExpStr );
+  doAccSubs( literalLabel, PV_Factory::MAX_PV_NAME );
+  readPvLabelExpStr.setRaw( literalLabel );
+
 }
 
 activeMeterClass::~activeMeterClass ( void ) {
@@ -542,6 +547,9 @@ static int labelTypeEnum[3] = {
   major = METERC_MAJOR_VERSION;
   minor = METERC_MINOR_VERSION;
   release = METERC_RELEASE;
+
+  strncpy( literalLabel, readPvLabelExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
+  literalLabel[PV_Factory::MAX_PV_NAME] = 0;
 
   tag.init();
   tag.loadW( "beginObjectProperties" );
@@ -1222,27 +1230,57 @@ char title[32], *ptr;
   ef.addTextField( activeMeterClass_str7, 35, &eBuf->bufH );
   ef.addTextField( activeMeterClass_str9, 35, eBuf->bufReadPvName,
    PV_Factory::MAX_PV_NAME );
+
   ef.addOption( activeMeterClass_str10, activeMeterClass_str11, &eBuf->bufLabelType );
+  labelTypeEntry = ef.getCurItem();
+  labelTypeEntry->setNumValues( 3 );
   ef.addTextField( activeMeterClass_str12, 35, eBuf->bufLiteralLabel,
    PV_Factory::MAX_PV_NAME );
+  labelEntry = ef.getCurItem();
+  labelTypeEntry->addInvDependency( 0, labelEntry );
+  labelTypeEntry->addDependencyCallbacks();
+
   ef.addColorButton( activeMeterClass_str14, actWin->ci,&eBuf->labelCb,&eBuf->bufLabelColor);
   ef.addTextField(activeMeterClass_str15, 35, &eBuf->bufMeterAngle);
   ef.addToggle( activeMeterClass_str45, &eBuf->bufTrackDelta );
+
   ef.addToggle( activeMeterClass_str16, &eBuf->bufShowScale );
+  showScaleEntry = ef.getCurItem();
   ef.addOption( activeMeterClass_str17, activeMeterClass_str43,
    eBuf->bufScaleFormat, 15 );
-  //ef.addTextField( activeMeterClass_str19, 35, &eBuf->bufScalePrecision );
+  scaleFormatEntry = ef.getCurItem();
+  showScaleEntry->addDependency( scaleFormatEntry );
   ef.addTextField(activeMeterClass_str19, 35, eBuf->bufScalePrecision, 15 );
+  scalePrecEntry = ef.getCurItem();
+  showScaleEntry->addDependency( scalePrecEntry );
+
   ef.addToggle( activeMeterClass_str20, &eBuf->bufScaleLimitsFromDb );
-  //ef.addTextField(activeMeterClass_str21, 35, &eBuf->bufScaleMin);
+  scaleLimFromDbEntry = ef.getCurItem();
   ef.addTextField(activeMeterClass_str21, 35, eBuf->bufScaleMin, 15 );
-  //ef.addTextField(activeMeterClass_str22, 35, &eBuf->bufScaleMax );
+  scaleMinEntry = ef.getCurItem();
+  scaleLimFromDbEntry->addInvDependency( scaleMinEntry );
   ef.addTextField(activeMeterClass_str22, 35, eBuf->bufScaleMax, 15 );
+  scaleMaxEntry = ef.getCurItem();
+  scaleLimFromDbEntry->addInvDependency( scaleMaxEntry );
+  scaleLimFromDbEntry->addDependencyCallbacks();
+
   ef.addColorButton( activeMeterClass_str24, actWin->ci,&eBuf->scaleCb,&eBuf->bufScaleColor);
+  scaleColorEntry = ef.getCurItem();
+  showScaleEntry->addDependency( scaleColorEntry );
   ef.addToggle( activeMeterClass_str25, &eBuf->bufScaleColorMode );
+  scaleColorModeEntry = ef.getCurItem();
+  showScaleEntry->addDependency( scaleColorModeEntry );
   ef.addTextField(activeMeterClass_str44, 35, eBuf->bufLabelIntervals, 15 );
+  labelIntEntry = ef.getCurItem();
+  showScaleEntry->addDependency( labelIntEntry );
   ef.addTextField(activeMeterClass_str26, 35, eBuf->bufMajorIntervals, 15 );
+  majorIntEntry = ef.getCurItem();
+  showScaleEntry->addDependency( majorIntEntry );
   ef.addTextField(activeMeterClass_str27, 35, eBuf->bufMinorIntervals, 15 );
+  minorIntEntry = ef.getCurItem();
+  showScaleEntry->addDependency( minorIntEntry );
+  showScaleEntry->addDependencyCallbacks();
+
   ef.addToggle(activeMeterClass_str28, &eBuf->bufNeedleType);  
   ef.addColorButton( activeMeterClass_str29, actWin->ci, &eBuf->fgCb, &eBuf->bufFgColor );
   ef.addToggle( activeMeterClass_str30, &eBuf->bufFgColorMode );
@@ -1311,10 +1349,10 @@ int activeMeterClass::eraseActive ( void ) {
     actWin->executeGc.setLineStyle( LineSolid );
     actWin->executeGc.setLineWidth( 1 );
 
-    XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
 		    actWin->executeGc.eraseGC(), x, y, w, h );
 
-    XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+    XFillRectangle( actWin->d, drawable(actWin->executeWidget),
 		    actWin->executeGc.eraseGC(), x, y, w, h );
   }
 
@@ -1705,7 +1743,7 @@ XPoint xpoints[6];
       actWin->executeGc.setFG( meterColor.getDisconnected() );
       actWin->executeGc.setLineWidth( 1 );
       actWin->executeGc.setLineStyle( LineSolid );
-      XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+      XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
        actWin->executeGc.normGC(), x, y, w, h );
       actWin->executeGc.restoreFg();
       needToEraseUnconnected = 1;
@@ -1714,7 +1752,7 @@ XPoint xpoints[6];
   else if ( needToEraseUnconnected ) {
     actWin->executeGc.setLineWidth( 1 );
     actWin->executeGc.setLineStyle( LineSolid );
-    XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.eraseGC(), x, y, w, h );
     needToEraseUnconnected = 0;
   }
@@ -1875,13 +1913,13 @@ if (drawStaticFlag){
 
    actWin->executeGc.setFG( meterColor.getColor() );
    
-   XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+   XFillRectangle( actWin->d, drawable(actWin->executeWidget),
 		   actWin->executeGc.normGC(), x, y, w, h );
 
    
    actWin->executeGc.setFG( bgColor.getColor() );
    
-   XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+   XFillRectangle( actWin->d, drawable(actWin->executeWidget),
 		   actWin->executeGc.normGC(),
 		   faceX, faceY, faceW, faceH );
 
@@ -1897,9 +1935,9 @@ if (drawStaticFlag){
      xR.width  = faceW;
      xR.height = h - faceH;
      actWin->executeGc.addNormXClipRectangle( xR );
-     drawText (actWin->executeWidget, &actWin->executeGc,
-	       labelFs, x+w/2, faceY + faceH + 2,
-	       XmALIGNMENT_CENTER, label);
+     drawText (actWin->executeWidget, drawable(actWin->executeWidget),
+      &actWin->executeGc, labelFs, x+w/2, faceY + faceH + 2,
+      XmALIGNMENT_CENTER, label);
      actWin->executeGc.removeNormXClipRectangle();
    }
 
@@ -1907,31 +1945,31 @@ if (drawStaticFlag){
 
      actWin->executeGc.setFG( tsColor.getColor() );
 
-     XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+     XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
 		   actWin->executeGc.normGC(), x, y, w, h );
 
-     XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+     XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
 		   actWin->executeGc.normGC(),
 		     faceX, faceY, faceW, faceH );
 
     actWin->executeGc.setFG( bsColor.getColor() );
 
-    XDrawLine (actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine (actWin->d, drawable(actWin->executeWidget),
 	       actWin->executeGc.normGC(),
 	       x,y+h,
 	       x+w,y+h);
 
-    XDrawLine (actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine (actWin->d, drawable(actWin->executeWidget),
 	       actWin->executeGc.normGC(),
 	       x+w, y,
 	       x+w,y+h);
 
-    XDrawLine (actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine (actWin->d, drawable(actWin->executeWidget),
 	       actWin->executeGc.normGC(),
 	       faceX, faceY,
 	       faceX, faceY + faceH);
 
-    XDrawLine (actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine (actWin->d, drawable(actWin->executeWidget),
 	       actWin->executeGc.normGC(),
 	       faceX, faceY,
 	       faceX + faceW, faceY );
@@ -1971,7 +2009,7 @@ if (drawStaticFlag){
        nearEndY = (int) (meterNeedleYorigin - insideArc * sin(labelAngle));
        
        actWin->executeGc.setFG( scaleColor.getColor() );
-       XDrawLine (actWin->d, XtWindow(actWin->executeWidget),
+       XDrawLine (actWin->d, drawable(actWin->executeWidget),
 		  actWin->executeGc.normGC(),
 		  farEndX,farEndY,
 		  nearEndX,nearEndY);
@@ -1985,35 +2023,40 @@ if (drawStaticFlag){
        if (labelAngle < (beginAngle + 0.001)){
 	 tX = farEndX + 2;
 	 tY = farEndY - scaleFontAscent/2;
-	 drawText (actWin->executeWidget, &actWin->executeGc, scaleFs, tX, tY,
-		   XmALIGNMENT_BEGINNING, scaleMaxString);
+	 drawText (actWin->executeWidget, drawable(actWin->executeWidget),
+          &actWin->executeGc, scaleFs, tX, tY,
+          XmALIGNMENT_BEGINNING, scaleMaxString);
        }
        else if (labelAngle <= 1.50){
 	 sprintf (scaleString, fmt, scaleValue);
 	 tX = farEndX + 2;
 	 tY = farEndY - scaleFontAscent;
-	 drawText (actWin->executeWidget, &actWin->executeGc, scaleFs, tX, tY,
-		   XmALIGNMENT_BEGINNING, scaleString);
+	 drawText (actWin->executeWidget, drawable(actWin->executeWidget),
+          &actWin->executeGc, scaleFs, tX, tY,
+          XmALIGNMENT_BEGINNING, scaleString);
        }
        else if (labelAngle <= 1.65){
 	 sprintf (scaleString, fmt, scaleValue);
 	 tX = farEndX;
 	 tY = farEndY - scaleFontAscent - 2;
-	 drawText (actWin->executeWidget, &actWin->executeGc, scaleFs, tX, tY,
-		   XmALIGNMENT_CENTER, scaleString);
+	 drawText (actWin->executeWidget, drawable(actWin->executeWidget),
+          &actWin->executeGc, scaleFs, tX, tY,
+          XmALIGNMENT_CENTER, scaleString);
        }
        else if (labelAngle <= (endAngle - 0.001)){
 	 sprintf (scaleString, fmt, scaleValue);
 	 tX = farEndX - 2;
 	 tY = farEndY - scaleFontAscent;
-	 drawText (actWin->executeWidget, &actWin->executeGc, scaleFs, tX, tY,
-		   XmALIGNMENT_END, scaleString);
+	 drawText (actWin->executeWidget, drawable(actWin->executeWidget),
+          &actWin->executeGc, scaleFs, tX, tY,
+          XmALIGNMENT_END, scaleString);
        }
        else if (labelAngle > (endAngle - 0.001)){
 	 tX = farEndX -2;
 	 tY = farEndY - scaleFontAscent/2;
-	 drawText (actWin->executeWidget, &actWin->executeGc, scaleFs, tX, tY,
-		   XmALIGNMENT_END, scaleMinString);
+	 drawText (actWin->executeWidget, drawable(actWin->executeWidget),
+          &actWin->executeGc, scaleFs, tX, tY,
+          XmALIGNMENT_END, scaleMinString);
        }       
 
      }
@@ -2040,7 +2083,7 @@ if (drawStaticFlag){
            nearEndY = (int) (meterNeedleYorigin -
             insideArc * sin(ii * minorAngleIncr + labelAngle +
             i * majorAngleIncr));
-           XDrawLine (actWin->d, XtWindow(actWin->executeWidget),
+           XDrawLine (actWin->d, drawable(actWin->executeWidget),
             actWin->executeGc.normGC(), farEndX, farEndY, nearEndX, nearEndY );
 
          }
@@ -2057,7 +2100,7 @@ if (drawStaticFlag){
             insideArc * cos(i * majorAngleIncr + labelAngle));
            nearEndY = (int) (meterNeedleYorigin -
             insideArc * sin(i * majorAngleIncr + labelAngle));
-           XDrawLine (actWin->d, XtWindow(actWin->executeWidget),
+           XDrawLine (actWin->d, drawable(actWin->executeWidget),
             actWin->executeGc.normGC(), farEndX, farEndY, nearEndX, nearEndY );
 
          }
@@ -2087,7 +2130,7 @@ if (drawStaticFlag){
 
    if (needleType == 0){
 
-   XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+   XDrawLine( actWin->d, drawable(actWin->executeWidget),
 	      actWin->executeGc.normGC(),
 	      oldMeterNeedleXEnd, oldMeterNeedleYEnd,
 	      oldMeterNeedleXOrigin, oldMeterNeedleYOrigin);
@@ -2112,7 +2155,7 @@ if (drawStaticFlag){
      xpoints[5].x = oldMeterNeedleXOrigin;
      xpoints[5].y = oldMeterNeedleYOrigin+1;
 
-    XDrawLines( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLines( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), xpoints, 6, CoordModeOrigin );
 
    }
@@ -2124,7 +2167,7 @@ if (drawStaticFlag){
 
    if (needleType == 0){
 
-   XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+   XDrawLine( actWin->d, drawable(actWin->executeWidget),
 	      actWin->executeGc.normGC(),
 	      meterNeedleXend, meterNeedleYend,
 	      meterNeedleXorigin, meterNeedleYorigin);
@@ -2149,7 +2192,7 @@ if (drawStaticFlag){
      xpoints[5].x = meterNeedleXorigin;
      xpoints[5].y = meterNeedleYorigin+1;
 
-     XDrawLines( actWin->d, XtWindow(actWin->executeWidget),
+     XDrawLines( actWin->d, drawable(actWin->executeWidget),
       actWin->executeGc.normGC(), xpoints, 6, CoordModeOrigin );
 
      actWin->executeGc.setFG( meterColor.getColor() );
@@ -2176,7 +2219,7 @@ if (drawStaticFlag){
 
    if (needleType == 0){
 
-     XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+     XDrawLine( actWin->d, drawable(actWin->executeWidget),
 		actWin->executeGc.normGC(),
 		meterNeedleXend, meterNeedleYend,
 		meterNeedleXorigin, meterNeedleYorigin);
@@ -2201,7 +2244,7 @@ if (drawStaticFlag){
      xpoints[5].x = meterNeedleXorigin;
      xpoints[5].y = meterNeedleYorigin+1;
 
-     XDrawLines( actWin->d, XtWindow(actWin->executeWidget),
+     XDrawLines( actWin->d, drawable(actWin->executeWidget),
       actWin->executeGc.normGC(), xpoints, 6, CoordModeOrigin );
 
    }
@@ -2507,6 +2550,54 @@ void activeMeterClass::bufInvalidate ( void )
 
 }
 
+int activeMeterClass::expandTemplate (
+  int numMacros,
+  char *macros[],
+  char *expansions[] )
+{
+
+expStringClass tmpStr;
+
+  tmpStr.setRaw( readPvExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  readPvExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( scaleMinExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  scaleMinExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( scaleMaxExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  scaleMaxExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( scalePrecExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  scalePrecExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( labIntExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  labIntExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( majorIntExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  majorIntExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( minorIntExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  minorIntExpStr.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( readPvLabelExpStr.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  readPvLabelExpStr.setRaw( tmpStr.getExpanded() );
+
+  strncpy( literalLabel, readPvLabelExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
+  literalLabel[PV_Factory::MAX_PV_NAME] = 0;
+
+  return 1;
+
+}
+
+
 int activeMeterClass::expand1st (
   int numMacros,
   char *macros[],
@@ -2514,6 +2605,12 @@ int activeMeterClass::expand1st (
 {
 
 int stat, retStat = 1;
+
+  stat = readPvLabelExpStr.expand1st( numMacros, macros, expansions );
+  if ( !(stat & 1 ) ) retStat = stat;
+  strncpy( literalLabel, readPvLabelExpStr.getExpanded(),
+   PV_Factory::MAX_PV_NAME );
+  literalLabel[PV_Factory::MAX_PV_NAME] = 0;
 
   stat = readPvExpStr.expand1st( numMacros, macros, expansions );
   if ( !(stat & 1 ) ) retStat = stat;
@@ -2548,6 +2645,12 @@ int activeMeterClass::expand2nd (
 
 int stat, retStat = 1;
 
+  stat = readPvLabelExpStr.expand2nd( numMacros, macros, expansions );
+  if ( !(stat & 1 ) ) retStat = stat;
+  strncpy( literalLabel, readPvLabelExpStr.getExpanded(),
+   PV_Factory::MAX_PV_NAME );
+  literalLabel[PV_Factory::MAX_PV_NAME] = 0;
+
   stat = readPvExpStr.expand2nd( numMacros, macros, expansions );
   if ( !(stat & 1 ) ) retStat = stat;
 
@@ -2566,10 +2669,8 @@ int stat, retStat = 1;
   stat = majorIntExpStr.expand2nd( numMacros, macros, expansions );
   if ( !(stat & 1 ) ) retStat = stat;
 
-
   stat = minorIntExpStr.expand2nd( numMacros, macros, expansions );
   if ( !(stat & 1 ) ) retStat = stat;
-
 
   return retStat;
 
@@ -2580,6 +2681,9 @@ int activeMeterClass::containsMacros ( void ) {
 int result;
 
  return 1;
+
+  result = readPvLabelExpStr.containsPrimaryMacros();
+  if ( result ) return 1;
 
   result = readPvExpStr.containsPrimaryMacros();
   if ( result ) return 1;
@@ -2889,6 +2993,43 @@ void activeMeterClass::getPvs (
 
   *n = 1;
   pvs[0] = readPvId;
+
+}
+
+char *activeMeterClass::getSearchString (
+  int i
+) {
+
+  if ( i == 0 ) {
+    return readPvExpStr.getRaw();
+  }
+  else if ( i == 1 ) {
+    return literalLabel;
+    // return readPvLabelExpStr.getRaw();
+  }
+
+  return NULL;
+
+}
+
+void activeMeterClass::replaceString (
+  int i,
+  int max,
+  char *string
+) {
+
+int l;
+
+  if ( i == 0 ) {
+    readPvExpStr.setRaw( string );
+  }
+  else if ( i == 1 ) {
+    l = max;
+    if ( l > PV_Factory::MAX_PV_NAME ) l = PV_Factory::MAX_PV_NAME;
+    strncpy( literalLabel, string, l );
+    literalLabel[PV_Factory::MAX_PV_NAME] = 0;
+    readPvLabelExpStr.setRaw( string );
+  }
 
 }
 

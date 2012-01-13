@@ -134,6 +134,7 @@ activeExitButtonClass::activeExitButtonClass ( void ) {
 
   name = new char[strlen("activeExitButtonClass")+1];
   strcpy( name, "activeExitButtonClass" );
+  checkBaseClassVersion( activeGraphicClass::MAJOR_VERSION, name );
   deleteRequest = 0;
   selected = 0;
   iconify = 0;
@@ -175,6 +176,8 @@ activeGraphicClass *ebto = (activeGraphicClass *) this;
   controlParent = source->controlParent;
   invisible = source->invisible;
   strncpy( label, source->label, 31 );
+
+  doAccSubs( label, 31 );
 
   updateDimensions();
 
@@ -597,10 +600,10 @@ int activeExitButtonClass::eraseActive ( void ) {
 
   if ( !enabled || !activeMode || invisible ) return 1;
 
-  XDrawRectangle( actWin->d, XtWindow(actWin->drawWidget),
+  XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->drawGc.eraseGC(), x, y, w, h );
 
-  XFillRectangle( actWin->d, XtWindow(actWin->drawWidget),
+  XFillRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->drawGc.eraseGC(), x, y, w, h );
 
   return 1;
@@ -697,9 +700,89 @@ XRectangle xR = { x, y, w, h };
 
 int activeExitButtonClass::drawActive ( void ) {
 
+int tX, tY;
+XRectangle xR = { x, y, w, h };
+
   if ( !enabled || !activeMode || invisible ) return 1;
 
-  draw();
+  if ( deleteRequest ) return 1;
+
+  actWin->executeGc.saveFg();
+
+  actWin->executeGc.setFG( actWin->ci->pix(bgColor) );
+
+  XFillRectangle( actWin->d, drawable(actWin->executeWidget),
+   actWin->executeGc.normGC(), x, y, w, h );
+
+  XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
+   actWin->executeGc.normGC(), x, y, w, h );
+
+  if ( _3D ) {
+
+  actWin->executeGc.setFG( actWin->ci->pix(botShadowColor) );
+
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
+   actWin->executeGc.normGC(), x, y, x+w, y );
+
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
+   actWin->executeGc.normGC(), x, y, x, y+h );
+
+   actWin->executeGc.setFG( actWin->ci->pix(topShadowColor) );
+
+   XDrawLine( actWin->d, drawable(actWin->executeWidget),
+    actWin->executeGc.normGC(), x, y+h, x+w, y+h );
+
+   XDrawLine( actWin->d, drawable(actWin->executeWidget),
+    actWin->executeGc.normGC(), x+w, y, x+w, y+h );
+
+  actWin->executeGc.setFG( actWin->ci->pix(topShadowColor) );
+
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
+   actWin->executeGc.normGC(), x+1, y+1, x+w-1, y+1 );
+
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
+   actWin->executeGc.normGC(), x+2, y+2, x+w-2, y+2 );
+
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
+   actWin->executeGc.normGC(), x+1, y+1, x+1, y+h-1 );
+
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
+   actWin->executeGc.normGC(), x+2, y+2, x+2, y+h-2 );
+
+  actWin->executeGc.setFG( actWin->ci->pix(botShadowColor) );
+
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
+   actWin->executeGc.normGC(), x+1, y+h-1, x+w-1, y+h-1 );
+
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
+   actWin->executeGc.normGC(), x+2, y+h-2, x+w-2, y+h-2 );
+
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
+   actWin->executeGc.normGC(), x+w-1, y+1, x+w-1, y+h-1 );
+
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
+   actWin->executeGc.normGC(), x+w-2, y+2, x+w-2, y+h-2 );
+
+  }
+
+  if ( fs ) {
+
+    actWin->executeGc.addNormXClipRectangle( xR );
+
+    actWin->executeGc.setFG( actWin->ci->pix(fgColor) );
+    actWin->executeGc.setFontTag( fontTag, actWin->fi );
+
+    tX = x + w/2;
+    tY = y + h/2 - fontAscent/2;
+
+    drawText( actWin->executeWidget, drawable(actWin->executeWidget),
+     &actWin->executeGc, fs, tX, tY, XmALIGNMENT_CENTER, label );
+
+    actWin->executeGc.removeNormXClipRectangle();
+
+  }
+
+  actWin->executeGc.restoreFg();
 
   return 1;
 
@@ -773,6 +856,7 @@ void activeExitButtonClass::btnDown (
 activeWindowClass *aw0, *aw1;
 
   *action = 0;
+  aw1 = NULL;
 
   if ( !enabled ) return;
 
@@ -905,6 +989,33 @@ void activeExitButtonClass::changeDisplayParams (
 
     updateDimensions();
 
+  }
+
+}
+
+char *activeExitButtonClass::getSearchString (
+  int i
+) {
+
+  if ( i == 0 ) {
+    return label;
+  }
+
+  return NULL;
+
+}
+
+void activeExitButtonClass::replaceString (
+  int i,
+  int max,
+  char *string
+) {
+
+  if ( i == 0 ) {
+    int l = max;
+    if ( 31 < max ) l = 31;
+    strncpy( label, string, l );
+    label[l] = 0;
   }
 
 }

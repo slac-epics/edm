@@ -211,7 +211,7 @@ static void shcmdc_executeCmd (
 shellCmdClass *shcmdo = (shellCmdClass *) client;
 threadParamBlockPtr threadParamBlock;
 int stat, i;
-char buffer[255+1];
+char buffer[2550+1];
 
   if ( shcmdo->numCmds != 1 ) return;
 
@@ -235,7 +235,7 @@ char buffer[255+1];
      shcmdo->timerValue, shcmdc_executeCmd, client );
   }
 
-  shcmdo->actWin->substituteSpecial( 255,
+  shcmdo->actWin->substituteSpecial( 2550,
    shcmdo->shellCommand[i].getExpanded(),
    buffer );
 
@@ -400,6 +400,8 @@ int i;
 
   shcmdo->includeHelpIcon = shcmdo->buf->bufIncludeHelpIcon;
 
+  shcmdo->execCursor = shcmdo->buf->bufExecCursor;
+
   shcmdo->updateDimensions();
 
 }
@@ -476,6 +478,7 @@ shellCmdClass::shellCmdClass ( void ) {
 
   name = new char[strlen("shellCmdClass")+1];
   strcpy( name, "shellCmdClass" );
+  checkBaseClassVersion( activeGraphicClass::MAJOR_VERSION, name );
 
   activeMode = 0;
   invisible = 0;
@@ -491,6 +494,7 @@ shellCmdClass::shellCmdClass ( void ) {
   oneShot = 0;
   swapButtons = 0;
   includeHelpIcon = 0;
+  execCursor = 0;
   numCmds = 0;
   cmdIndex = 0;
   buf = NULL;
@@ -566,6 +570,8 @@ int i;
 
   includeHelpIcon = source->includeHelpIcon;
 
+  execCursor = source->execCursor;
+
   numCmds = source->numCmds;
   cmdIndex = 0;
 
@@ -577,6 +583,13 @@ int i;
   requiredHostName[15] = 0;
 
   buf = NULL;
+
+  doAccSubs( buttonLabel );
+  doAccSubs( requiredHostName, 15 );
+  for ( i=0; i<maxCmds; i++ ) {
+    doAccSubs( shellCommand[i] );
+    doAccSubs( label[i] );
+  }
 
 }
 
@@ -660,6 +673,7 @@ char *emptyStr = "";
   tag.loadW( "commandLabel", label, numCmds, emptyStr );
   tag.loadW( "command", shellCommand, numCmds, emptyStr );
   tag.loadBoolW( "includeHelpIcon", &includeHelpIcon, &zero );
+  tag.loadBoolW( "execCursor", &execCursor, &zero );
   tag.loadW( unknownTags );
   tag.loadW( "endObjectProperties" );
   tag.loadW( "" );
@@ -800,6 +814,7 @@ char *emptyStr = "";
   tag.loadR( "commandLabel", maxCmds, label, &n, emptyStr );
   tag.loadR( "command", maxCmds, shellCommand, &n, emptyStr );
   tag.loadR( "includeHelpIcon", &includeHelpIcon, &zero );
+  tag.loadR( "execCursor", &execCursor, &zero );
   tag.loadR( "endObjectProperties" );
 
   stat = tag.readTags( f, "endObjectProperties" );
@@ -853,7 +868,7 @@ int shellCmdClass::old_createFromFile (
 int i, r, g, b, index;
 int major, minor, release;
 unsigned int pixel;
-char oneName[255+1];
+char oneName[2550+1];
 float val;
 
   this->actWin = _actWin;
@@ -874,6 +889,7 @@ float val;
 
   swapButtons = 0;
   includeHelpIcon = 0;
+  execCursor = 0;
 
   if ( ( major > 2 ) || ( ( major == 2 ) && ( minor > 2 ) ) ) {
 
@@ -931,7 +947,7 @@ float val;
 
   }
 
-  readStringFromFile( oneName, 255+1, f ); actWin->incLine();
+  readStringFromFile( oneName, 2550+1, f ); actWin->incLine();
   shellCommand[0].setRaw( oneName );
 
   readStringFromFile( oneName, 127+1, f ); actWin->incLine();
@@ -982,7 +998,7 @@ float val;
   }
 
   // after v 2.3 menu label 0, numCmds, and then the array data
-  if ( ( major > 2 ) || ( major == 2 ) && ( minor > 3 ) ) {
+  if ( ( major > 2 ) || ( ( major == 2 ) && ( minor > 3 ) ) ) {
 
     readStringFromFile( oneName, 127+1, f ); actWin->incLine();
     label[0].setRaw( oneName );
@@ -991,7 +1007,7 @@ float val;
 
     for ( i=1; i<numCmds; i++ ) {
 
-      readStringFromFile( oneName, 255+1, f ); actWin->incLine();
+      readStringFromFile( oneName, 2550+1, f ); actWin->incLine();
       shellCommand[i].setRaw( oneName );
 
       readStringFromFile( oneName, 127+1, f ); actWin->incLine();
@@ -1012,7 +1028,7 @@ float val;
     label[i].setRaw( "" );
   }
 
-  if ( ( major > 2 ) || ( major == 2 ) && ( minor > 4 ) ) {
+  if ( ( major > 2 ) || ( ( major == 2 ) && ( minor > 4 ) ) ) {
     readStringFromFile( requiredHostName, 15+1, f );
   }
   else {
@@ -1039,7 +1055,7 @@ int shellCmdClass::importFromXchFile (
 
 int fgR, fgG, fgB, bgR, bgG, bgB, more, index;
 unsigned int pixel;
-char *tk, *gotData, *context, buffer[255+1];
+char *tk, *gotData, *context, buffer[2550+1];
 
   fgR = 0xffff;
   fgG = 0xffff;
@@ -1061,12 +1077,13 @@ char *tk, *gotData, *context, buffer[255+1];
 
   swapButtons = 0;
   includeHelpIcon = 0;
+  execCursor = 0;
 
   // continue until tag is <eod>
 
   do {
 
-    gotData = getNextDataString( buffer, 255, f );
+    gotData = getNextDataString( buffer, 2550, f );
     if ( !gotData ) {
       actWin->appCtx->postMessage( shellCmdClass_str1 );
       return 0;
@@ -1293,7 +1310,7 @@ char *tk, *gotData, *context, buffer[255+1];
 int shellCmdClass::genericEdit ( void ) {
 
 int i;
-char title[32], *ptr, *envPtr, saveLock;
+char title[32], *ptr, *envPtr, saveLock = 0;
 
   buf = new bufType;
 
@@ -1332,16 +1349,16 @@ char title[32], *ptr, *envPtr, saveLock;
 
   for ( i=0; i<maxCmds; i++ ) {
     if ( shellCommand[i].getRaw() )
-      strncpy( buf->bufShellCommand[i], shellCommand[i].getRaw(), 255 );
+      strncpy( buf->bufShellCommand[i], shellCommand[i].getRaw(), 2550 );
     else
-      strncpy( buf->bufShellCommand[i], "", 255 );
+      strncpy( buf->bufShellCommand[i], "", 2550 );
     if ( label[i].getRaw() )
       strncpy( buf->bufLabel[i], label[i].getRaw(), 127 );
     else
       strncpy( buf->bufLabel[i], "", 127 );
   }
   for ( i=numCmds; i<maxCmds; i++ ) {
-    strncpy( buf->bufShellCommand[i], "", 255 );
+    strncpy( buf->bufShellCommand[i], "", 2550 );
     strncpy( buf->bufLabel[i], "", 127 );
   }
 
@@ -1381,6 +1398,8 @@ char title[32], *ptr, *envPtr, saveLock;
 
   buf->bufIncludeHelpIcon = includeHelpIcon;
 
+  buf->bufExecCursor = execCursor;
+
   ef.create( actWin->top, actWin->appCtx->ci.getColorMap(),
    &actWin->appCtx->entryFormX,
    &actWin->appCtx->entryFormY, &actWin->appCtx->entryFormW,
@@ -1393,10 +1412,10 @@ char title[32], *ptr, *envPtr, saveLock;
   ef.addTextField( shellCmdClass_str7, 35, &buf->bufH );
 
   if ( !lock ) {
-    ef.addTextField( shellCmdClass_str14, 35, buf->bufShellCommand[0], 255 );
+    ef.addTextField( shellCmdClass_str14, 35, buf->bufShellCommand[0], 2550 );
   }
   else {
-    ef.addLockedField( shellCmdClass_str14, 35, buf->bufShellCommand[0], 255 );
+    ef.addLockedField( shellCmdClass_str14, 35, buf->bufShellCommand[0], 2550 );
   }
 
   ef.addTextField( shellCmdClass_str13, 35, buf->bufLabel[0], 127 );
@@ -1415,11 +1434,11 @@ char title[32], *ptr, *envPtr, saveLock;
     ef1->addLabel( shellCmdClass_str23 );
     if ( !lock ) {
       ef1->addTextField( shellCmdClass_str14, 35, buf->bufShellCommand[i],
-       255 );
+       2550 );
     }
     else {
       ef1->addLockedField( shellCmdClass_str14, 35, buf->bufShellCommand[i],
-       255 );
+       2550 );
     }
     ef1->endSubForm();
   }
@@ -1448,6 +1467,7 @@ char title[32], *ptr, *envPtr, saveLock;
   ef.addToggle( shellCmdClass_str33, &buf->bufOneShot );
   ef.addToggle( shellCmdClass_str34, &buf->bufSwapButtons );
   ef.addToggle( shellCmdClass_str35, &buf->bufIncludeHelpIcon );
+  ef.addToggle( shellCmdClass_str36, &buf->bufExecCursor );
 
   ef.addColorButton( shellCmdClass_str8, actWin->ci, &fgCb, &buf->bufFgColor );
   ef.addColorButton( shellCmdClass_str9, actWin->ci, &bgCb, &buf->bufBgColor );
@@ -1511,10 +1531,10 @@ int shellCmdClass::eraseActive ( void ) {
 
   if ( !enabled || !activeMode || invisible ) return 1;
 
-  XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.eraseGC(), x, y, w, h );
 
-  XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+  XFillRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.eraseGC(), x, y, w, h );
 
   return 1;
@@ -1621,10 +1641,10 @@ XRectangle xR = { x, y, w, h };
 
   actWin->executeGc.setFG( bgColor.getColor() );
 
-  XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+  XFillRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x, y, w, h );
 
-  XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x, y, w, h );
 
   if ( buttonLabel.getExpanded() )
@@ -1634,50 +1654,50 @@ XRectangle xR = { x, y, w, h };
 
   actWin->executeGc.setFG( actWin->ci->pix(botShadowColor) );
 
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x, y, x+w, y );
 
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x, y, x, y+h );
 
   actWin->executeGc.setFG( actWin->ci->pix(topShadowColor) );
 
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x, y+h, x+w, y+h );
 
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x+w, y, x+w, y+h );
 
   // top
   actWin->executeGc.setFG( actWin->ci->pix(topShadowColor) );
 
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x+1, y+1, x+w-1, y+1 );
 
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x+2, y+2, x+w-2, y+2 );
 
   // left
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x+1, y+1, x+1, y+h-1 );
 
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x+2, y+2, x+2, y+h-2 );
 
   // bottom
   actWin->executeGc.setFG( actWin->ci->pix(botShadowColor) );
 
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x+1, y+h-1, x+w-1, y+h-1 );
 
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x+2, y+h-2, x+w-2, y+h-2 );
 
   // right
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x+w-1, y+1, x+w-1, y+h-1 );
 
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x+w-2, y+2, x+w-2, y+h-2 );
 
   if ( fs ) {
@@ -1690,8 +1710,8 @@ XRectangle xR = { x, y, w, h };
     tX = x + w/2;
     tY = y + h/2 - fontAscent/2;
 
-    drawText( actWin->executeWidget, &actWin->executeGc, fs, tX, tY,
-     XmALIGNMENT_CENTER, string );
+    drawText( actWin->executeWidget, drawable(actWin->executeWidget),
+     &actWin->executeGc, fs, tX, tY, XmALIGNMENT_CENTER, string );
 
     actWin->executeGc.removeNormXClipRectangle();
 
@@ -1833,6 +1853,35 @@ void shellCmdClass::updateDimensions ( void )
 
 }
 
+int shellCmdClass::expandTemplate (
+  int numMacros,
+  char *macros[],
+  char *expansions[] )
+{
+
+int i;
+expStringClass tmpStr;
+
+  for ( i=0; i<numCmds; i++ ) {
+
+    tmpStr.setRaw( shellCommand[i].getRaw() );
+    tmpStr.expand1st( numMacros, macros, expansions );
+    shellCommand[i].setRaw( tmpStr.getExpanded() );
+
+    tmpStr.setRaw( label[i].getRaw() );
+    tmpStr.expand1st( numMacros, macros, expansions );
+    label[i].setRaw( tmpStr.getExpanded() );
+
+  }
+
+  tmpStr.setRaw( buttonLabel.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  buttonLabel.setRaw( tmpStr.getExpanded() );
+
+  return 1;
+
+}
+
 int shellCmdClass::expand1st (
   int numMacros,
   char *macros[],
@@ -1918,7 +1967,7 @@ void shellCmdClass::executeCmd ( void ) {
 
 int stat;
 threadParamBlockPtr threadParamBlock;
-char buffer[255+1];
+char buffer[2550+1];
 
   if ( !blank( requiredHostName ) && !blank( hostName ) ) {
     if ( strcmp( requiredHostName, hostName ) != 0 ) {
@@ -1928,7 +1977,7 @@ char buffer[255+1];
     }
   }
 
-  actWin->substituteSpecial( 255, shellCommand[cmdIndex].getExpanded(),
+  actWin->substituteSpecial( 2550, shellCommand[cmdIndex].getExpanded(),
    buffer );
 
   if ( multipleInstancesAllowed ) {
@@ -2082,13 +2131,29 @@ void shellCmdClass::pointerIn (
 
   activeGraphicClass::pointerIn( me, me->x, me->y, buttonState );
 
-  if ( includeHelpIcon ) {
-    actWin->cursor.set( XtWindow(actWin->executeWidget),
-     CURSOR_K_RUN_WITH_HELP );
+  if ( execCursor ) {
+
+    if ( includeHelpIcon ) {
+      actWin->cursor.set( XtWindow(actWin->executeWidget),
+       CURSOR_K_RUN_WITH_HELP );
+    }
+    else {
+      actWin->cursor.set( XtWindow(actWin->executeWidget),
+       CURSOR_K_RUN );
+    }
+
   }
   else {
-    actWin->cursor.set( XtWindow(actWin->executeWidget),
-     CURSOR_K_RUN );
+
+    if ( includeHelpIcon ) {
+      actWin->cursor.set( XtWindow(actWin->executeWidget),
+       CURSOR_K_PNTR_WITH_HELP );
+    }
+    else {
+      actWin->cursor.set( XtWindow(actWin->executeWidget),
+       CURSOR_K_DEFAULT );
+    }
+
   }
 
 }
@@ -2177,6 +2242,67 @@ void shellCmdClass::executeDeferred ( void ) {
 
     actWin->appCtx->postMessage( shellCmdClass_str29 );
 
+  }
+
+}
+
+char *shellCmdClass::getSearchString (
+  int i
+) {
+
+int num = 1 + 1 + maxCmds + maxCmds;
+int ii, selector, index;
+
+  if ( i == 0 ) {
+    return buttonLabel.getRaw();
+  }
+  else if ( i == 1 ) {
+    return requiredHostName;
+  }
+  else if ( ( i > 1 ) && ( i < num ) ) {
+    ii = i - 2;
+    selector = ii % 2;
+    index = ii / 2;
+    if ( selector == 0 ) {
+      return shellCommand[index].getRaw();
+    }
+    else if ( selector == 1 ) {
+      return label[index].getRaw();
+    }
+  }
+
+  return NULL;
+
+}
+
+void shellCmdClass::replaceString (
+  int i,
+  int max,
+  char *string
+) {
+
+int num = 1 + 1 + maxCmds + maxCmds;
+int ii, selector, index;
+
+  if ( i == 0 ) {
+    buttonLabel.setRaw( string );
+  }
+  else if ( i == 1 ) {
+    int l = max;
+    if ( 15 < max ) l = 15;
+    strncpy( requiredHostName, string, l );
+    requiredHostName[l] = 0;
+  }
+  else if ( ( i > 1 ) && ( i < num ) ) {
+    ii = i - 2;
+    selector = ii % 2;
+    index = ii / 2;
+    if ( selector == 0 ) {
+      shellCommand[index].setRaw( string );
+    }
+    else if ( selector == 1 ) {
+      label[index].setRaw( string );
+    }
   }
 
 }

@@ -48,6 +48,7 @@ activeGraphicClass::activeGraphicClass ( void ) : unknownTags() {
   currentDragIndex = 0;
   curUndoObj = NULL;
   startEdit = 0;
+  editConfirmed = 0;
   objType = activeGraphicClass::UNKNOWN;
   onBlinkList = 0;
   blinkFunc = NULL;
@@ -87,6 +88,7 @@ void activeGraphicClass::clone ( const activeGraphicClass *source ) {
   currentDragIndex = 0;
   curUndoObj = NULL;
   startEdit = 0;
+  editConfirmed = 0;
   onBlinkList = 0;
   blinkFunc = NULL;
   blinkDisable = 0;
@@ -128,6 +130,14 @@ activeGraphicClass::~activeGraphicClass ( void ) {
 
 }
 
+Drawable activeGraphicClass::drawable (
+  Widget w
+) {
+
+  return actWin->drawable( w );
+
+}
+
 int activeGraphicClass::baseMajorVersion ( void ) {
 
    return MAJOR_VERSION;
@@ -142,12 +152,11 @@ int activeGraphicClass::baseMinorVersion ( void ) {
 
 void activeGraphicClass::checkBaseClassVersion (
   int ver,
-  char *file
+  char *name
 ) {
 
   if ( baseMajorVersion() != ver ) {
-    fprintf( stderr, "Incompatible base class version - %s\n", file );
-    exit(-1);
+    fprintf(stderr, "Incompatible base class version - %s\n", name );
   }
 
 }
@@ -901,6 +910,45 @@ XRectangle xR = { this->x-5, this->y-5, this->w+10, this->h+10 };
 
 }
 
+int activeGraphicClass::doSmartDrawAllButMeActive ( void ) {
+
+activeGraphicListPtr cur;
+int x0, x1, y0, y1;
+XRectangle xR = { this->x-5, this->y-5, this->w+10, this->h+10 };
+
+  resetSmartDrawCount();
+
+  x0 = this->getX0();
+  y0 = this->getY0();
+  x1 = this->getX1();
+  y1 = this->getY1();
+
+  this->bufInvalidate();
+  this->eraseActive();
+
+  actWin->executeGc.addNormXClipRectangle( xR );
+  actWin->executeGc.addXorXClipRectangle( xR );
+  actWin->executeGc.addEraseXClipRectangle( xR );
+
+  cur = actWin->head->flink;
+  while ( cur != actWin->head ) {
+
+    if ( this != cur->node ) {
+      cur->node->drawActiveIfIntersects( x0, y0, x1, y1 );
+    }
+
+    cur = cur->flink;
+
+  }
+
+  actWin->executeGc.removeNormXClipRectangle();
+  actWin->executeGc.removeXorXClipRectangle();
+  actWin->executeGc.removeEraseXClipRectangle();
+
+  return 1;
+
+}
+
 int activeGraphicClass::drawActiveIfIntersects (
   int x0,
   int y0,
@@ -944,7 +992,7 @@ int activeGraphicClass::clear ( void ) {
 
 int activeGraphicClass::clearActive ( void ) {
 
-  XClearWindow( actWin->d, XtWindow(actWin->executeWidget) );
+  actWin->clearActive();
 
   return 1;
 
@@ -2385,12 +2433,15 @@ void activeGraphicClass::pointerIn (
   actWin->executeGc.setLineWidth( 2 );
   actWin->executeGc.setLineStyle( LineSolid );
 
-  XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x-2, y-2, w+4, h+4 );
 
   actWin->executeGc.setLineWidth( 1 );
 
   actWin->executeGc.restoreFg();
+
+  actWin->needCopy = 1;
+  actWin->updateCopyRegion( x-4, y-4, w+8, h+8 );
 
 }
 
@@ -2416,8 +2467,11 @@ void activeGraphicClass::pointerOut (
   actWin->executeGc.setLineWidth( 2 );
   actWin->executeGc.setLineStyle( LineSolid );
 
-  XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.eraseGC(), x-2, y-2, w+4, h+4 );
+
+  actWin->needCopy = 1;
+  actWin->updateCopyRegion( x-4, y-4, w+8, h+8 );
 
   actWin->executeGc.setLineWidth( 1 );
 
@@ -3199,7 +3253,7 @@ Widget mkDragIcon( Widget w, activeGraphicClass *agc )
   unsigned long   fg, bg;
   XGCValues       gcValues;
   unsigned long   gcValueMask;
-  char tmpStr[131+1];
+  char tmpStr[PV_Factory::MAX_PV_NAME+1];
 
   Display *display = XtDisplay(w);
   int screenNum = DefaultScreen(display);
@@ -3224,8 +3278,8 @@ Widget mkDragIcon( Widget w, activeGraphicClass *agc )
   char *str = agc->dragValue(agc->getCurrentDragIndex());
   if ( str ) {
     if ( !blank(str) ) {
-      strncpy( tmpStr, str, 131 );
-      tmpStr[131] = 0;
+      strncpy( tmpStr, str, PV_Factory::MAX_PV_NAME );
+      tmpStr[PV_Factory::MAX_PV_NAME] = 0;
     }
   }
 
@@ -3518,6 +3572,12 @@ time_t timet;
       actWin->appCtx->postMessage( msg );
       snprintf( msg, 79, "  Num references = %-d\n",
        pv->get_num_references() );
+      actWin->appCtx->postMessage( msg );
+      snprintf( msg, 79, "  Num conn state callbacks in list = %-d\n",
+       pv->get_num_conn_state_callbacks() );
+      actWin->appCtx->postMessage( msg );
+      snprintf( msg, 79, "  Num value callbacks in list = %-d\n",
+       pv->get_num_value_callbacks() );
       actWin->appCtx->postMessage( msg );
       if ( pv->is_valid() ) {
         timet = pv->get_time_t(); // - 631152000;
@@ -3914,6 +3974,9 @@ int stat;
         setBlink();
       }
 
+      actWin->needCopy = 1;
+      actWin->updateCopyRegion( x-4, y-4, w+8, h+8 );
+
     }
     else {
 
@@ -4011,7 +4074,7 @@ void activeGraphicClass::initEnable ( void ) {
 
 void activeGraphicClass::enable ( void ) { // smartDrawAllActive should be
                                            // called after this
-  if ( enabled ) return;
+  //if ( enabled ) return;
 
   bufInvalidate();
   enabled = 1;
@@ -4021,7 +4084,7 @@ void activeGraphicClass::enable ( void ) { // smartDrawAllActive should be
 
 void activeGraphicClass::disable ( void ) {
 
-  if ( !enabled ) return;
+  //if ( !enabled ) return;
 
   bufInvalidate();
   eraseActive();
@@ -4089,3 +4152,16 @@ char *activeGraphicClass::crawlerGetNextPv ( void ) {
 
 }
 
+void activeGraphicClass::getSelBoxDims (
+  int *x,
+  int *y,
+  int *w,
+  int *h
+) {
+
+  *x = sboxX;
+  *y = sboxY;
+  *w = sboxW;
+  *h = sboxH;
+
+}

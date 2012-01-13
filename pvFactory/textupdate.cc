@@ -10,8 +10,12 @@
 #include "textupdate.h"
 #include "app_pkg.h"
 #include "act_win.h"
-#include "epics_pv_factory.h"
+#include "pv_factory.h"
 #include "cvtFast.h"
+
+#ifdef SOLARIS
+  #include "ieeefp.h"
+#endif
 
 static int g_transInit = 1;
 static XtTranslations g_parsedTrans;
@@ -19,9 +23,9 @@ static XtTranslations g_parsedTrans;
 static char g_dragTrans[] =
   "#override\n\
   ~Ctrl~Shift<Btn2Down>: startDrag()\n\
-  Ctrl~Shift<Btn2Down>: pvInfo()\n\
-  Shift Ctrl<Btn2Up>: selectActions()\n\
-  Shift<Btn2Up>: selectDrag()";
+  Ctrl~Shift<Btn2Up>: selectActions()\n\
+  Shift Ctrl<Btn2Down>: pvInfo()\n\
+  Shift~Ctrl<Btn2Up>: selectDrag()";
 
 static XtActionsRec g_dragActions[] =
 {
@@ -45,18 +49,18 @@ static void localCvtDoubleToExpNotationString(double value,
     absVal = fabs(value);
     minus = value < 0.0;
     newVal = absVal;
-    if (absVal < 1.)
+    if ( !finite(absVal) || absVal==0.0 ) { /* don't try to evaluate Inf, NaN, 0.0 */
+        cvtDoubleToExpString(newVal, textField ,precision);
+    }
+    else if (absVal < 1.)
     {
         exp = 0;
-        if (absVal != 0.)
-        {		/* really ought to test against some epsilon */
-            do
-            {
-                newVal *= 1000.0;
-                exp += 3;
-            }
-            while (newVal < 1.);
+        do
+        {
+            newVal *= 1000.0;
+            exp += 3;
         }
+        while (newVal < 1.);
         cvtDoubleToString(newVal, TF ,precision);
         k = 0; l = 0;
         if (minus)
@@ -118,6 +122,7 @@ edmTextupdateClass::edmTextupdateClass()
 void edmTextupdateClass::init(const char *classname)
 {
     name = strdup(classname);
+    checkBaseClassVersion( activeGraphicClass::MAJOR_VERSION, name );
     is_executing = false;
     pv = 0;
 
@@ -132,6 +137,8 @@ void edmTextupdateClass::init(const char *classname)
 edmTextupdateClass::edmTextupdateClass(edmTextupdateClass *rhs)
 {
     clone(rhs, TEXTUPDATE_CLASSNAME);
+    doAccSubs( pv_name );
+    doAccSubs( color_pv_name );
 }
 
 void edmTextupdateClass::clone(const edmTextupdateClass *rhs,
@@ -624,11 +631,19 @@ int edmTextupdateClass::genericEdit() // create Property Dialog
     ef.addOption("Mode", "default|decimal|hex|engineer|exp", &buf_displayMode);
     ef.addTextField("Precision", 35, &buf_precision);
     ef.addTextField("Line Width", 35, &buf_line_width);
+    lineEntry = ef.getCurItem();
     ef.addToggle("Alarm Sensitive Line", &buf_alarm_sensitive_line);
+    alarmSensLineEntry = ef.getCurItem();
+    lineEntry->addDependency( alarmSensLineEntry );
+    lineEntry->addDependencyCallbacks();
     ef.addColorButton("Fg Color", actWin->ci, &textCb, &bufTextColor);
     ef.addToggle("Alarm Sensitive Text", &buf_alarm_sensitive);
     ef.addToggle("Filled?", &bufIsFilled);
+    fillEntry = ef.getCurItem();
     ef.addColorButton("Bg Color", actWin->ci, &fillCb, &bufFillColor);
+    fillColorEntry = ef.getCurItem();
+    fillEntry->addDependency( fillColorEntry );
+    fillEntry->addDependencyCallbacks();
     ef.addTextField("Color PV", 35, bufColorPvName, PV_Factory::MAX_PV_NAME);
     ef.addFontMenu("Font", actWin->fi, &fm, fontTag );
     fm.setFontAlignment(alignment);
@@ -914,7 +929,37 @@ void edmTextupdateClass::getPvs(int max,
   pvs[1] = color_pv;
 
 }
-    
+
+char *edmTextupdateClass::getSearchString (
+  int i
+) {
+
+  if ( i == 0 ) {
+    return pv_name.getRaw();
+  }
+  else if ( i == 1 ) {
+    return color_pv_name.getRaw();
+  }
+
+  return NULL;
+
+}
+
+void edmTextupdateClass::replaceString (
+  int i,
+  int max,
+  char *string
+) {
+
+  if ( i == 0 ) {
+    pv_name.setRaw( string );
+  }
+  else if ( i == 1 ) {
+    color_pv_name.setRaw( string );
+  }
+
+}
+
 // --------------------------------------------------------
 // Macro support
 // --------------------------------------------------------
@@ -922,6 +967,26 @@ int edmTextupdateClass::containsMacros()
 {
     return pv_name.containsPrimaryMacros() ||
         color_pv_name.containsPrimaryMacros();
+}
+
+int edmTextupdateClass::expandTemplate (
+  int numMacros,
+  char *macros[],
+  char *expansions[]
+) {
+
+expStringClass tmpStr;
+
+  tmpStr.setRaw( color_pv_name.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  color_pv_name.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( pv_name.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  pv_name.setRaw( tmpStr.getExpanded() );
+
+  return 1;
+
 }
 
 int edmTextupdateClass::expand1st(int numMacros, char *macros[],
@@ -1087,7 +1152,7 @@ int edmTextupdateClass::drawActive()
     size_t len = PV_Factory::MAX_PV_NAME;
     get_current_values(text, len);
     redraw_text(actWin->d,
-                XtWindow(actWin->executeWidget),
+                drawable(actWin->executeWidget),
                 actWin->executeGc,
                 actWin->executeGc.normGC(),
                 text, len);
@@ -1101,7 +1166,7 @@ int edmTextupdateClass::eraseActive()
     if ( !enabled || !is_executing )
         return 1;
     remove_text(actWin->d,
-                XtWindow(actWin->executeWidget),
+                drawable(actWin->executeWidget),
                 actWin->executeGc,
                 actWin->executeGc.eraseGC());
     return 1;
@@ -1463,20 +1528,24 @@ void edmTextentryClass::text_entered_callback(Widget w,
                     ProcessVariable::Type::enumerated)
                 {
                     num = strtod(text, 0);
-                    me->pv->put(num);
+                    me->pv->put(
+                     XDisplayName(me->actWin->appCtx->displayName),num);
                 }
                 else
                 {
-                    me->pv->put(text);
+                    me->pv->put(
+                     XDisplayName(me->actWin->appCtx->displayName),text);
                 }
                 break;
             case dm_hex:
                 hexnum = strtol(text, 0, 16);
                 // fprintf( stderr,"Text: %s -> %d\n", text, hexnum);
-                me->pv->put(hexnum);
+                me->pv->put(
+                 XDisplayName(me->actWin->appCtx->displayName),hexnum);
                 break;
             default:
-                me->pv->put(text);
+                me->pv->put(
+                 XDisplayName(me->actWin->appCtx->displayName),text);
         }
     }
     XtFree(text);

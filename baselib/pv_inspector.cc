@@ -568,6 +568,7 @@ int i;
 
   name = new char[strlen("pvInspectorClass")+1];
   strcpy( name, "pvInspectorClass" );
+  checkBaseClassVersion( activeGraphicClass::MAJOR_VERSION, name );
 
   activeMode = 0;
   ofsX = 0;
@@ -615,8 +616,14 @@ activeWindowListPtr cur;
     }
 
     if ( okToClose ) {
-      aw->returnToEdit( 1 );
-      aw = NULL;
+      if ( aw->okToDeactivate() ) {
+        aw->returnToEdit( 1 );
+        aw = NULL;
+      }
+      else {
+        aw->closeDeferred( 20 );
+        aw = NULL;
+      }
     }
 
   }
@@ -690,6 +697,13 @@ activeGraphicClass *pio = (activeGraphicClass *) this;
   buf = NULL;
   unconnectedTimer = 0;
   rtypeUnconnectedTimer = 0;
+
+  doAccSubs( buttonLabel );
+  for ( i=0; i<maxDsps; i++ ) {
+    doAccSubs( label[i] );
+    doAccSubs( displayFileName[i] );
+    doAccSubs( displayFileExt[i] );
+  }
 
 }
 
@@ -1113,11 +1127,11 @@ char oneName[255+1];
   }
 
   // after v 2.3 read numDsps and then the data
-  if ( ( major < 2 ) || ( major == 2 ) && ( minor < 4 ) ) {
+  if ( ( major < 2 ) || ( ( major == 2 ) && ( minor < 4 ) ) ) {
 
     md = 8;
 
-    if ( ( major > 2 ) || ( major == 2 ) && ( minor > 0 ) ) {
+    if ( ( major > 2 ) || ( ( major == 2 ) && ( minor > 0 ) ) ) {
 
       for ( i=1; i<md; i++ ) { // for forward compatibility
 
@@ -1150,7 +1164,7 @@ char oneName[255+1];
 
     }
 
-    if ( ( major > 2 ) || ( major == 2 ) && ( minor > 1 ) ) {
+    if ( ( major > 2 ) || ( ( major == 2 ) && ( minor > 1 ) ) ) {
       readStringFromFile( oneName, 127+1, f ); actWin->incLine();
       buttonLabel.setRaw( oneName );
     }
@@ -1158,7 +1172,7 @@ char oneName[255+1];
       buttonLabel.setRaw( label[0].getRaw() );
     }
 
-    if ( ( major > 2 ) || ( major == 2 ) && ( minor > 2 ) ) {
+    if ( ( major > 2 ) || ( ( major == 2 ) && ( minor > 2 ) ) ) {
       fscanf( f, "%d\n", &noEdit ); actWin->incLine();
     }
     else {
@@ -1203,7 +1217,7 @@ char oneName[255+1];
 
   }
 
-  if ( ( major > 2 ) || ( major == 2 ) && ( minor > 5 ) ) {
+  if ( ( major > 2 ) || ( ( major == 2 ) && ( minor > 5 ) ) ) {
     fscanf( f, "%d\n", &ofsX ); actWin->incLine();
     fscanf( f, "%d\n", &ofsY ); actWin->incLine();
   }
@@ -1414,10 +1428,10 @@ int pvInspectorClass::eraseActive ( void ) {
 
   if ( !enabled || !activeMode ) return 1;
 
-  XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.eraseGC(), x, y, w, h );
 
-  XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+  XFillRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.eraseGC(), x, y, w, h );
 
   return 1;
@@ -1526,10 +1540,10 @@ XRectangle xR = { x, y, w, h };
 
   actWin->executeGc.setFG( bgColor.getColor() );
 
-  XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+  XFillRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x, y, w, h );
 
-  XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x, y, w, h );
 
   if ( buttonLabel.getExpanded() )
@@ -1539,50 +1553,50 @@ XRectangle xR = { x, y, w, h };
 
   actWin->executeGc.setFG( actWin->ci->pix(botShadowColor) );
 
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x, y, x+w, y );
 
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x, y, x, y+h );
 
   actWin->executeGc.setFG( actWin->ci->pix(topShadowColor) );
 
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x, y+h, x+w, y+h );
 
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x+w, y, x+w, y+h );
 
   // top
   actWin->executeGc.setFG( actWin->ci->pix(topShadowColor) );
 
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x+1, y+1, x+w-1, y+1 );
 
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x+2, y+2, x+w-2, y+2 );
 
   // left
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x+1, y+1, x+1, y+h-1 );
 
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x+2, y+2, x+2, y+h-2 );
 
   // bottom
   actWin->executeGc.setFG( actWin->ci->pix(botShadowColor) );
 
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x+1, y+h-1, x+w-1, y+h-1 );
 
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x+2, y+h-2, x+w-2, y+h-2 );
 
   // right
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x+w-1, y+1, x+w-1, y+h-1 );
 
-  XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawLine( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x+w-2, y+2, x+w-2, y+h-2 );
 
   if ( fs ) {
@@ -1595,8 +1609,8 @@ XRectangle xR = { x, y, w, h };
     tX = x + w/2;
     tY = y + h/2 - fontAscent/2;
 
-    drawText( actWin->executeWidget, &actWin->executeGc, fs, tX, tY,
-     XmALIGNMENT_CENTER, string );
+    drawText( actWin->executeWidget, drawable(actWin->executeWidget),
+     &actWin->executeGc, fs, tX, tY, XmALIGNMENT_CENTER, string );
 
     actWin->executeGc.removeNormXClipRectangle();
 
@@ -1661,6 +1675,8 @@ Atom importList[2];
       else {
         textFontList = NULL;
       }
+
+      strcpy( entryValue, "" );
 
       tf_widget = XtVaCreateManagedWidget( "", xmTextFieldWidgetClass,
        actWin->executeWidget,
@@ -1812,6 +1828,39 @@ void pvInspectorClass::updateDimensions ( void )
     fontDescent = 5;
     fontHeight = fontAscent + fontDescent;
   }
+
+}
+
+int pvInspectorClass::expandTemplate (
+  int numMacros,
+  char *macros[],
+  char *expansions[] )
+{
+
+int i;
+expStringClass tmpStr;
+
+  for ( i=0; i<maxDsps; i++ ) {
+
+    tmpStr.setRaw( label[i].getRaw() );
+    tmpStr.expand1st( numMacros, macros, expansions );
+    label[i].setRaw( tmpStr.getExpanded() );
+
+    tmpStr.setRaw( displayFileName[i].getRaw() );
+    tmpStr.expand1st( numMacros, macros, expansions );
+    displayFileName[i].setRaw( tmpStr.getExpanded() );
+
+    tmpStr.setRaw( displayFileExt[i].getRaw() );
+    tmpStr.expand1st( numMacros, macros, expansions );
+    displayFileExt[i].setRaw( tmpStr.getExpanded() );
+
+  }
+
+  tmpStr.setRaw( buttonLabel.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  buttonLabel.setRaw( tmpStr.getExpanded() );
+
+  return 1;
 
 }
 
@@ -2654,8 +2703,14 @@ activeWindowListPtr cur;
       }
 
       if ( okToClose ) {
-        aw->returnToEdit( 1 );
-        aw = NULL;
+        if ( aw->okToDeactivate() ) {
+          aw->returnToEdit( 1 );
+          aw = NULL;
+	}
+        else {
+          aw->closeDeferred( 20 );
+          aw = NULL;
+	}
       }
       else {
         aw = NULL;
@@ -2663,6 +2718,64 @@ activeWindowListPtr cur;
 
     }
 
+  }
+
+}
+
+char *pvInspectorClass::getSearchString (
+  int i
+) {
+
+int num = 3 * numDsps + 1;
+int ii, selector, index;
+
+  if ( i == 0 ) {
+    return buttonLabel.getRaw();
+  }
+  else if ( ( i > 0 ) && ( i < num ) ) {
+    ii = i - 1;
+    selector = ii % 3;
+    index = ii / 3;
+    if ( selector == 0 ) {
+      return label[index].getRaw();
+    }
+    else if ( selector == 1 ) {
+      return displayFileName[index].getRaw();
+    }
+    else if ( selector == 2 ) {
+      return displayFileExt[index].getRaw();
+    }
+  }
+
+  return NULL;
+
+}
+
+void pvInspectorClass::replaceString (
+  int i,
+  int max,
+  char *string
+) {
+
+int num = 3 * numDsps + 1;
+int ii, selector, index;
+
+  if ( i == 0 ) {
+    buttonLabel.setRaw( string );
+  }
+  else if ( ( i > 0 ) && ( i < num ) ) {
+    ii = i - 1;
+    selector = ii % 3;
+    index = ii / 3;
+    if ( selector == 0 ) {
+      label[index].setRaw( string );
+    }
+    else if ( selector == 1 ) {
+      displayFileName[index].setRaw( string );
+    }
+    else if ( selector == 2 ) {
+      displayFileExt[index].setRaw( string );
+    }
   }
 
 }

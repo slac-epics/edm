@@ -51,6 +51,10 @@ static void doBlink (
   void *ptr
 );
 
+static void retryTimeout (
+  XtPointer client,
+  XtIntervalId *id );
+
 static void unconnectedTimeout (
   XtPointer client,
   XtIntervalId *id );
@@ -120,6 +124,10 @@ private:
 friend void doBlink (
   void *ptr
 );
+
+friend void retryTimeout (
+  XtPointer client,
+  XtIntervalId *id );
 
 friend void unconnectedTimeout (
   XtPointer client,
@@ -208,6 +216,8 @@ typedef struct editBufTag {
 
 editBufPtr eBuf;
 
+entryListBase *pvNameEntry, *iniStateEntry;
+
 int controlV, curControlV;
 
 int topShadowColor;
@@ -253,8 +263,10 @@ Widget popUpMenu, pullDownMenu, pb[MAX_ENUM_STATES];
 
 int needConnectInit, needDisconnect, needInfoInit, needUpdate, needDraw,
  needToDrawUnconnected, needToEraseUnconnected;
-int unconnectedTimer;
+XtIntervalId unconnectedTimer;
 int initialConnection;
+
+XtIntervalId retryTimer;
 
 int buttonPressed;
 
@@ -311,6 +323,11 @@ int erase ( void );
 int drawActive ( void );
 
 int eraseActive ( void );
+
+int expandTemplate (
+  int numMacros,
+  char *macros[],
+  char *expansions[] );
 
 int expand1st (
   int numMacros,
@@ -408,6 +425,16 @@ void getPvs (
   int max,
   ProcessVariable *pvs[],
   int *n );
+
+char *getSearchString (
+  int i
+);
+
+void replaceString (
+  int i,
+  int max,
+  char *string
+);
 
 char *crawlerGetFirstPv ( void );
 

@@ -380,12 +380,9 @@ activeMessageButtonClass::activeMessageButtonClass ( void ) {
 
   name = new char[strlen("activeMessageButtonClass")+1];
   strcpy( name, "activeMessageButtonClass" );
+  checkBaseClassVersion( activeGraphicClass::MAJOR_VERSION, name );
   buttonPressed = 0;
 
-  // strcpy( sourcePressPvName, "" );
-  // strcpy( sourceReleasePvName, "" );
-  // strcpy( onLabel, "" );
-  // strcpy( offLabel, "" );
   toggle = 0;
   pressAction = 0;
   releaseAction = 0;
@@ -445,13 +442,8 @@ activeGraphicClass *msgbto = (activeGraphicClass *) this;
   visPvExpString.copy( source->visPvExpString );
   colorPvExpString.copy( source->colorPvExpString );
 
-  // strncpy( sourcePressPvName, source->sourcePressPvName, 39 );
-  // strncpy( sourceReleasePvName, source->sourceReleasePvName, 39 );
-
   onLabel.copy( source->onLabel );
   offLabel.copy( source->offLabel );
-  // strncpy( onLabel, source->onLabel, MAX_ENUM_STRING_SIZE );
-  // strncpy( offLabel, source->offLabel, MAX_ENUM_STRING_SIZE );
 
   toggle = source->toggle;
   pressAction = source->pressAction;
@@ -478,6 +470,14 @@ activeGraphicClass *msgbto = (activeGraphicClass *) this;
   connection.setMaxPvs( 3 );
 
   setBlinkFunction( (void *) doBlink );
+
+  doAccSubs( destPvExpString );
+  doAccSubs( visPvExpString );
+  doAccSubs( colorPvExpString );
+  doAccSubs( onLabel );
+  doAccSubs( offLabel );
+  doAccSubs( minVisString, 39 );
+  doAccSubs( maxVisString, 39 );
 
   updateDimensions();
 
@@ -648,22 +648,15 @@ int index;
   else
     writeStringToFile( f, "" );
 
-  // writeStringToFile( f, sourcePressPvName );
-  // writeStringToFile( f, sourceReleasePvName );
-
   if ( onLabel.getRaw() )
     writeStringToFile( f, onLabel.getRaw() );
   else
     writeStringToFile( f, "" );
 
-  // writeStringToFile( f, onLabel );
-
   if ( offLabel.getRaw() )
     writeStringToFile( f, offLabel.getRaw() );
   else
     writeStringToFile( f, "" );
-
-  // writeStringToFile( f, offLabel );
 
   fprintf( f, "%-d\n", toggle );
 
@@ -915,19 +908,17 @@ char oneName[PV_Factory::MAX_PV_NAME+1];
    actWin->incLine();
   destPvExpString.setRaw( oneName );
 
-  readStringFromFile( oneName, 39+1, f ); actWin->incLine();
+  readStringFromFile( oneName, PV_Factory::MAX_PV_NAME+1, f ); actWin->incLine();
   sourcePressPvExpString.setRaw( oneName );
 
-  readStringFromFile( oneName, 39+1, f ); actWin->incLine();
+  readStringFromFile( oneName, PV_Factory::MAX_PV_NAME+1, f ); actWin->incLine();
   sourceReleasePvExpString.setRaw( oneName );
 
   readStringFromFile( oneName, MAX_ENUM_STRING_SIZE+1, f ); actWin->incLine();
   onLabel.setRaw( oneName );
-  //readStringFromFile( onLabel, MAX_ENUM_STRING_SIZE+1, f ); actWin->incLine();
 
   readStringFromFile( oneName, MAX_ENUM_STRING_SIZE+1, f ); actWin->incLine();
   offLabel.setRaw( oneName );
-  //readStringFromFile( offLabel, MAX_ENUM_STRING_SIZE+1, f ); actWin->incLine();
 
   fscanf( f, "%d\n", &toggle ); actWin->incLine();
 
@@ -1015,7 +1006,7 @@ int activeMessageButtonClass::importFromXchFile (
 int fgR, fgG, fgB, bgR, bgG, bgB, more, index;
 unsigned int pixel;
 char *tk, *gotData, *context, buf[255+1];
-char tmpDestPvName[39+1], tmpSourcePressPvName[39+1];
+char tmpDestPvName[PV_Factory::MAX_PV_NAME+1], tmpSourcePressPvName[PV_Factory::MAX_PV_NAME+1];
 
   fgR = 0xffff;
   fgG = 0xffff;
@@ -1223,8 +1214,8 @@ char tmpDestPvName[39+1], tmpSourcePressPvName[39+1];
 
         tk = strtok_r( NULL, "\"\n \t", &context );
         if ( tk ) {
-          strncpy( tmpSourcePressPvName, tk, 39 );
-          tmpSourcePressPvName[39] = 0;
+          strncpy( tmpSourcePressPvName, tk, PV_Factory::MAX_PV_NAME );
+          tmpSourcePressPvName[PV_Factory::MAX_PV_NAME] = 0;
           sourcePressPvExpString.setRaw( tmpSourcePressPvName );
 	}
 
@@ -1290,7 +1281,7 @@ char tmpDestPvName[39+1], tmpSourcePressPvName[39+1];
 
 int activeMessageButtonClass::genericEdit ( void ) {
 
-char title[32], *ptr, *envPtr, saveLock;
+char title[32], *ptr, *envPtr, saveLock = 0;
 
   if ( !eBuf ) {
     eBuf = new editBufType;
@@ -1336,14 +1327,14 @@ char title[32], *ptr, *envPtr, saveLock;
     strcpy( eBuf->bufDestPvName, "" );
 
   if ( sourcePressPvExpString.getRaw() )
-    strncpy( eBuf->bufSourcePressPvName, sourcePressPvExpString.getRaw(), 39 );
+    strncpy( eBuf->bufSourcePressPvName, sourcePressPvExpString.getRaw(), PV_Factory::MAX_PV_NAME );
   else
-    strncpy( eBuf->bufSourcePressPvName, "", 39 );
+    strncpy( eBuf->bufSourcePressPvName, "", PV_Factory::MAX_PV_NAME );
 
   if ( sourceReleasePvExpString.getRaw() )
-    strncpy( eBuf->bufSourceReleasePvName, sourceReleasePvExpString.getRaw(), 39 );
+    strncpy( eBuf->bufSourceReleasePvName, sourceReleasePvExpString.getRaw(), PV_Factory::MAX_PV_NAME );
   else
-    strncpy( eBuf->bufSourceReleasePvName, "", 39 );
+    strncpy( eBuf->bufSourceReleasePvName, "", PV_Factory::MAX_PV_NAME );
 
   if ( onLabel.getRaw() )
     strncpy( eBuf->bufOnLabel, onLabel.getRaw(), MAX_ENUM_STRING_SIZE );
@@ -1428,11 +1419,11 @@ char title[32], *ptr, *envPtr, saveLock;
 
   if ( !lock ) {
     ef.addTextField( activeMessageButtonClass_str16, 35, eBuf->bufSourcePressPvName,
-     39 );
+     PV_Factory::MAX_PV_NAME );
   }
   else {
     ef.addLockedField( activeMessageButtonClass_str16, 35,
-     eBuf->bufSourcePressPvName, 39 );
+     eBuf->bufSourcePressPvName, PV_Factory::MAX_PV_NAME );
   }
 
   ef.addTextField( activeMessageButtonClass_str15, 35, eBuf->bufOffLabel,
@@ -1441,7 +1432,7 @@ char title[32], *ptr, *envPtr, saveLock;
   if ( !lock ) {
 
     ef.addTextField( activeMessageButtonClass_str17, 35,
-     eBuf->bufSourceReleasePvName, 39 );
+     eBuf->bufSourceReleasePvName, PV_Factory::MAX_PV_NAME );
 
     ef.addPasswordField( activeMessageButtonClass_str36, 35, bufPw1, 31 );
     ef.addPasswordField( activeMessageButtonClass_str37, 35, bufPw2, 31 );
@@ -1451,7 +1442,7 @@ char title[32], *ptr, *envPtr, saveLock;
   else {
 
     ef.addLockedField( activeMessageButtonClass_str17, 35,
-     eBuf->bufSourceReleasePvName, 39 );
+     eBuf->bufSourceReleasePvName, PV_Factory::MAX_PV_NAME );
 
     ef.addLockedField( activeMessageButtonClass_str36, 35, bufPw1, 31 );
     ef.addLockedField( activeMessageButtonClass_str37, 35, bufPw2, 31 );
@@ -1482,9 +1473,17 @@ char title[32], *ptr, *envPtr, saveLock;
 
   ef.addTextField( activeMessageButtonClass_str28, 30, eBuf->bufVisPvName,
    PV_Factory::MAX_PV_NAME );
+  invisPvEntry = ef.getCurItem();
   ef.addOption( " ", activeMessageButtonClass_str29, &eBuf->bufVisInverted );
+  visInvEntry = ef.getCurItem();
+  invisPvEntry->addDependency( visInvEntry );
   ef.addTextField( activeMessageButtonClass_str30, 30, eBuf->bufMinVisString, 39 );
+  minVisEntry = ef.getCurItem();
+  invisPvEntry->addDependency( minVisEntry );
   ef.addTextField( activeMessageButtonClass_str31, 30, eBuf->bufMaxVisString, 39 );
+  maxVisEntry = ef.getCurItem();
+  invisPvEntry->addDependency( maxVisEntry );
+  invisPvEntry->addDependencyCallbacks();
 
   if ( envPtr ) {
     if ( strcmp( envPtr, "TRUE" ) == 0 ) {
@@ -1543,10 +1542,10 @@ int activeMessageButtonClass::eraseActive ( void ) {
 
   prevVisibility = visibility;
 
-  XDrawRectangle( actWin->d, XtWindow(actWin->drawWidget),
+  XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->drawGc.eraseGC(), x, y, w, h );
 
-  XFillRectangle( actWin->d, XtWindow(actWin->drawWidget),
+  XFillRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->drawGc.eraseGC(), x, y, w, h );
 
   return 1;
@@ -1673,7 +1672,7 @@ int blink = 0;
       actWin->executeGc.setFG( onColor.getDisconnectedIndex(), &blink );
       actWin->executeGc.setLineWidth( 1 );
       actWin->executeGc.setLineStyle( LineSolid );
-      XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+      XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
        actWin->executeGc.normGC(), x, y, w, h );
       actWin->executeGc.restoreFg();
       needToEraseUnconnected = 1;
@@ -1683,7 +1682,7 @@ int blink = 0;
   else if ( needToEraseUnconnected ) {
     actWin->executeGc.setLineWidth( 1 );
     actWin->executeGc.setLineStyle( LineSolid );
-    XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.eraseGC(), x, y, w, h );
     needToEraseUnconnected = 0;
     if ( invisible ) {
@@ -1709,7 +1708,7 @@ int blink = 0;
     actWin->executeGc.setFG( onColor.getIndex(), &blink );
   }
 
-  XFillRectangle( actWin->d, XtWindow(actWin->executeWidget),
+  XFillRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x, y, w, h );
 
   if ( !_3D ) {
@@ -1718,7 +1717,7 @@ int blink = 0;
 
   }
 
-  XDrawRectangle( actWin->d, XtWindow(actWin->executeWidget),
+  XDrawRectangle( actWin->d, drawable(actWin->executeWidget),
    actWin->executeGc.normGC(), x, y, w, h );
 
   if ( !buttonPressed ) {
@@ -1734,50 +1733,50 @@ int blink = 0;
 
     actWin->executeGc.setFG( actWin->ci->pix(botShadowColor) );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x, y, x+w, y );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x, y, x, y+h );
 
     actWin->executeGc.setFG( actWin->ci->pix(topShadowColor) );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x, y+h, x+w, y+h );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x+w, y, x+w, y+h );
 
     // top
     actWin->executeGc.setFG( actWin->ci->pix(topShadowColor) );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x+1, y+1, x+w-1, y+1 );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x+2, y+2, x+w-2, y+2 );
 
     // left
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x+1, y+1, x+1, y+h-1 );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x+2, y+2, x+2, y+h-2 );
 
     // bottom
     actWin->executeGc.setFG( actWin->ci->pix(botShadowColor) );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x+1, y+h-1, x+w-1, y+h-1 );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x+2, y+h-2, x+w-2, y+h-2 );
 
     // right
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x+w-1, y+1, x+w-1, y+h-1 );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x+w-2, y+2, x+w-2, y+h-2 );
 
     }
@@ -1796,10 +1795,10 @@ int blink = 0;
 
     actWin->executeGc.setFG( actWin->ci->pix(botShadowColor) );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x, y, x+w, y );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x, y, x, y+h );
 
     // top
@@ -1810,14 +1809,14 @@ int blink = 0;
 
     actWin->executeGc.setFG( actWin->ci->pix(topShadowColor) );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x, y+h, x+w, y+h );
 
     //right
 
     actWin->executeGc.setFG( actWin->ci->pix(topShadowColor) );
 
-    XDrawLine( actWin->d, XtWindow(actWin->executeWidget),
+    XDrawLine( actWin->d, drawable(actWin->executeWidget),
      actWin->executeGc.normGC(), x+w, y, x+w, y+h );
 
     }
@@ -1835,8 +1834,8 @@ int blink = 0;
     tX = x + w/2;
     tY = y + h/2 - fontAscent/2;
 
-    drawText( actWin->executeWidget, &actWin->executeGc, fs, tX, tY,
-     XmALIGNMENT_CENTER, string );
+    drawText( actWin->executeWidget, drawable(actWin->executeWidget),
+     &actWin->executeGc, fs, tX, tY, XmALIGNMENT_CENTER, string );
 
     actWin->executeGc.removeNormXClipRectangle();
 
@@ -2085,6 +2084,7 @@ void activeMessageButtonClass::updateDimensions ( void )
 void activeMessageButtonClass::performBtnUpAction ( void ) {
 
 int stat;
+char tmpBuf[PV_Factory::MAX_PV_NAME+1];
 
   if ( toggle ) return;
 
@@ -2093,10 +2093,21 @@ int stat;
 
   if ( strcmp( sourceReleasePvExpString.getExpanded(), "" ) == 0 ) return;
 
+  if ( destPvId ) {
+    if ( !destPvId->have_write_access() ) {
+      return;
+    }
+  }
+
+  actWin->substituteSpecial( PV_Factory::MAX_PV_NAME,
+   sourceReleasePvExpString.getExpanded(),
+   tmpBuf );
+  tmpBuf[PV_Factory::MAX_PV_NAME] = 0;
+
   if ( destIsAckS ) {
 
-    destV.s = (short) atol( sourceReleasePvExpString.getExpanded() );
-    destPvId->putAck( destV.s );
+    destV.s = (short) atol( tmpBuf );
+    destPvId->putAck( XDisplayName(actWin->appCtx->displayName), destV.s );
 
   }
   else {
@@ -2104,33 +2115,33 @@ int stat;
     switch ( destType ) {
 
     case ProcessVariable::Type::real:
-      destV.d = atof( sourceReleasePvExpString.getExpanded() );
-      destPvId->put( destV.d );
+      destV.d = atof( tmpBuf );
+      destPvId->put( XDisplayName(actWin->appCtx->displayName), destV.d );
       break;
 
     case ProcessVariable::Type::integer:
-      destV.l = atol( sourceReleasePvExpString.getExpanded() );
-      destPvId->put( destV.l );
+      destV.l = atol( tmpBuf );
+      destPvId->put( XDisplayName(actWin->appCtx->displayName), destV.l );
       break;
 
     case ProcessVariable::Type::text:
-      strncpy( destV.str, sourceReleasePvExpString.getExpanded(), 39 );
-      destPvId->put( destV.str );
+      strncpy( destV.str, tmpBuf, 39 );
+      destV.str[39] = 0;
+      destPvId->put( XDisplayName(actWin->appCtx->displayName), destV.str );
       break;
 
     case ProcessVariable::Type::enumerated:
       if ( useEnumNumeric ) {
-        destV.l = atol( sourceReleasePvExpString.getExpanded() );
-        destPvId->put( destV.l );
+        destV.l = atol( tmpBuf );
+        destPvId->put( XDisplayName(actWin->appCtx->displayName), destV.l );
       }
       else {
-        stat = getEnumNumeric( sourceReleasePvExpString.getExpanded(),
-         &destV.l );
+        stat = getEnumNumeric( tmpBuf, &destV.l );
         if ( !( stat & 1 ) ) {
           actWin->appCtx->postMessage( activeMessageButtonClass_str40 );
         }
         else {
-          destPvId->put( destV.l );
+          destPvId->put( XDisplayName(actWin->appCtx->displayName), destV.l );
         }
       }
       break;
@@ -2155,6 +2166,12 @@ void activeMessageButtonClass::btnUp (
     return;
   }
 
+  if ( destPvId ) {
+    if ( !destPvId->have_write_access() ) {
+      return;
+    }
+  }
+
   if ( usePassword ) {
     *action = 0;
     return;
@@ -2174,7 +2191,7 @@ void activeMessageButtonClass::btnUp (
 void activeMessageButtonClass::performBtnDownAction ( void ) {
 
 int stat;
-char labelValue[39+1];
+char labelValue[PV_Factory::MAX_PV_NAME+1];
 
   if ( toggle ) {
     if ( buttonPressed ) {
@@ -2189,20 +2206,32 @@ char labelValue[39+1];
   }
 
   if ( buttonPressed ) {
-    strncpy( labelValue, sourcePressPvExpString.getExpanded(), 39 );
+    actWin->substituteSpecial( PV_Factory::MAX_PV_NAME,
+     sourcePressPvExpString.getExpanded(),
+     labelValue );
+    labelValue[PV_Factory::MAX_PV_NAME] = 0;
   }
   else {
-    strncpy( labelValue, sourceReleasePvExpString.getExpanded(), 39 );
+    actWin->substituteSpecial( PV_Factory::MAX_PV_NAME,
+     sourceReleasePvExpString.getExpanded(),
+     labelValue );
+    labelValue[PV_Factory::MAX_PV_NAME] = 0;
   }
 
   smartDrawAllActive();
 
   if ( strcmp( labelValue, "" ) == 0 ) return;
 
+  if ( destPvId ) {
+    if ( !destPvId->have_write_access() ) {
+      return;
+    }
+  }
+
   if ( destIsAckS ) {
 
     destV.s = (short) atol( labelValue );
-    destPvId->putAck( destV.s );
+    destPvId->putAck( XDisplayName(actWin->appCtx->displayName), destV.s );
 
   }
   else {
@@ -2211,23 +2240,23 @@ char labelValue[39+1];
 
     case ProcessVariable::Type::real:
       destV.d = atof( labelValue );
-      destPvId->put( destV.d );
+      destPvId->put( XDisplayName(actWin->appCtx->displayName), destV.d );
       break;
 
     case ProcessVariable::Type::integer:
       destV.l = atol( labelValue );
-      destPvId->put( destV.l );
+      destPvId->put( XDisplayName(actWin->appCtx->displayName), destV.l );
       break;
 
     case ProcessVariable::Type::text:
       strncpy( destV.str, labelValue, 39 );
-      destPvId->put( destV.str );
+      destPvId->put( XDisplayName(actWin->appCtx->displayName), destV.str );
       break;
 
     case ProcessVariable::Type::enumerated:
       if ( useEnumNumeric ) {
         destV.l = atol( labelValue );
-        destPvId->put( destV.l );
+        destPvId->put( XDisplayName(actWin->appCtx->displayName), destV.l );
       }
       else {
         stat = getEnumNumeric( labelValue, &destV.l );
@@ -2235,7 +2264,7 @@ char labelValue[39+1];
           actWin->appCtx->postMessage( activeMessageButtonClass_str39 );
         }
         else {
-          destPvId->put( destV.l );
+          destPvId->put( XDisplayName(actWin->appCtx->displayName), destV.l );
         }
       }
       break;
@@ -2260,6 +2289,12 @@ void activeMessageButtonClass::btnDown (
   if ( !enabled || !visibility ) {
     *action = 0;
     return;
+  }
+
+  if ( destPvId ) {
+    if ( !destPvId->have_write_access() ) {
+      return;
+    }
   }
 
   if ( usePassword ) {
@@ -2318,11 +2353,13 @@ void activeMessageButtonClass::pointerIn (
 
   if ( !enabled || !active || !visibility ) return;
 
-  if ( !destPvId->have_write_access() ) {
-    actWin->cursor.set( XtWindow(actWin->executeWidget), CURSOR_K_NO );
-  }
-  else {
-    actWin->cursor.set( XtWindow(actWin->executeWidget), CURSOR_K_DEFAULT );
+  if ( destPvId ) {
+    if ( !destPvId->have_write_access() ) {
+      actWin->cursor.set( XtWindow(actWin->executeWidget), CURSOR_K_NO );
+    }
+    else {
+      actWin->cursor.set( XtWindow(actWin->executeWidget), CURSOR_K_DEFAULT );
+    }
   }
 
   activeGraphicClass::pointerIn( _x, _y, buttonState );
@@ -2351,6 +2388,46 @@ int activeMessageButtonClass::getButtonActionRequest (
 
   *down = 1;
   *up = 1;
+
+  return 1;
+
+}
+
+int activeMessageButtonClass::expandTemplate (
+  int numMacros,
+  char *macros[],
+  char *expansions[] )
+{
+
+expStringClass tmpStr;
+
+  tmpStr.setRaw( destPvExpString.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  destPvExpString.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( sourcePressPvExpString.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  sourcePressPvExpString.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( sourceReleasePvExpString.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  sourceReleasePvExpString.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( onLabel.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  onLabel.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( offLabel.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  offLabel.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( visPvExpString.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  visPvExpString.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( colorPvExpString.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  colorPvExpString.setRaw( tmpStr.getExpanded() );
 
   return 1;
 
@@ -2850,6 +2927,72 @@ void activeMessageButtonClass::getPvs (
 
   *n = 1;
   pvs[0] = destPvId;
+
+}
+
+char *activeMessageButtonClass::getSearchString (
+  int i
+) {
+
+  if ( i == 0 ) {
+    return destPvExpString.getRaw();
+  }
+  else if ( i == 1 ) {
+    return colorPvExpString.getRaw();
+  }
+  else if ( i == 2 ) {
+    return visPvExpString.getRaw();
+  }
+  else if ( i == 3 ) {
+    return onLabel.getRaw();
+  }
+  else if ( i == 4 ) {
+    return offLabel.getRaw();
+  }
+  else if ( i == 5 ) {
+    return minVisString;
+  }
+  else if ( i == 6 ) {
+    return maxVisString;
+  }
+
+  return NULL;
+
+}
+
+void activeMessageButtonClass::replaceString (
+  int i,
+  int max,
+  char *string
+) {
+
+  if ( i == 0 ) {
+    destPvExpString.setRaw( string );
+  }
+  else if ( i == 1 ) {
+    colorPvExpString.setRaw( string );
+  }
+  else if ( i == 2 ) {
+    visPvExpString.setRaw( string );
+  }
+  else if ( i == 3 ) {
+    onLabel.setRaw( string );
+  }
+  else if ( i == 4 ) {
+    offLabel.setRaw( string );
+  }
+  else if ( i == 5 ) {
+    int l = max;
+    if ( 39 < max ) l = 39;
+    strncpy( minVisString, string, l );
+    minVisString[l] = 0;
+  }
+  else if ( i == 6 ) {
+    int l = max;
+    if ( 39 < max ) l = 39;
+    strncpy( maxVisString, string, l );
+    maxVisString[l] = 0;
+  }
 
 }
 
