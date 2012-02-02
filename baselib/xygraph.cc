@@ -2189,7 +2189,7 @@ int ctl;
             }
             else {
               ( (unsigned short *) xyo->xPvData[i] )[ii] =
-               (unsigned short) pv->get_int_array()[ii];
+               (unsigned short) pv->get_short_array()[ii];
             }
             break;
 
@@ -2247,11 +2247,11 @@ int ctl;
 
           case ProcessVariable::specificType::shrt:
             if ( xyo->xSigned[i] ) {
-              ( (short *) xyo->xPvData[i] )[ii] = (short) pv->get_int_array()[ii];
+              ( (short *) xyo->xPvData[i] )[ii] = (short) pv->get_short_array()[ii];
             }
             else {
               ( (unsigned short *) xyo->xPvData[i] )[ii] =
-               (unsigned short) pv->get_int_array()[ii];
+               (unsigned short) pv->get_short_array()[ii];
             }
             break;
 
@@ -2741,7 +2741,7 @@ int ctl;
             }
             else {
               ( (unsigned short *) xyo->yPvData[i] )[ii] =
-               (unsigned short) pv->get_int_array()[ii];
+               (unsigned short) pv->get_short_array()[ii];
             }
             break;
 
@@ -2799,11 +2799,11 @@ int ctl;
 
           case ProcessVariable::specificType::shrt:
             if ( xyo->ySigned[i] ) {
-              ( (short *) xyo->yPvData[i] )[ii] = (short) pv->get_int_array()[ii];
+              ( (short *) xyo->yPvData[i] )[ii] = (short) pv->get_short_array()[ii];
             }
             else {
               ( (unsigned short *) xyo->yPvData[i] )[ii] =
-               (unsigned short) pv->get_int_array()[ii];
+               (unsigned short) pv->get_short_array()[ii];
             }
             break;
 
@@ -3208,7 +3208,7 @@ int ctl;
             }
             else {
               ( (unsigned short *) xyo->yPvData[i] )[ii] =
-               (unsigned short) pv->get_int_array()[ii];
+               (unsigned short) pv->get_short_array()[ii];
             }
             break;
 
@@ -3266,11 +3266,11 @@ int ctl;
 
           case ProcessVariable::specificType::shrt:
             if ( xyo->ySigned[i] ) {
-              ( (short *) xyo->yPvData[i] )[ii] = (short) pv->get_int_array()[ii];
+              ( (short *) xyo->yPvData[i] )[ii] = (short) pv->get_short_array()[ii];
             }
             else {
               ( (unsigned short *) xyo->yPvData[i] )[ii] =
-               (unsigned short) pv->get_int_array()[ii];
+               (unsigned short) pv->get_short_array()[ii];
             }
             break;
 
@@ -8941,7 +8941,7 @@ void xyGraphClass::executeDeferred ( void ) {
 
 int i, ii, nc, ni, nu, nvu, nru, nr, ne, nd, ntcc, ntu, nrstc, nrst, ntrgc,
  tmpC, ntrg, nxrescl, nbs, nbrescl, nnl, nol, nasu, nnc, nni, nasc,
- eleSize, doRescale, anyRescale, size,
+ doRescale, anyRescale, size,
  ny1rescl[NUM_Y_AXES], num, maxDim;
 double dyValue, dxValue, range, oneMax, oldXMin, xmin, xmax, ymin[2], ymax[2],
  scaledX, scaledY;
@@ -9048,40 +9048,14 @@ int autoScaleX=0, autoScaleY[NUM_Y_AXES];
             yPvCount[i] = traceSize[i];
           }
 
-          // There are two views of pv types, Type and specificType; this uses
-          // specificType
-          switch ( yPvType[i] ) {
-          case ProcessVariable::specificType::flt:
-            eleSize = sizeof(float);
-            break;
-          case ProcessVariable::specificType::real: 
-            eleSize = sizeof(double);
-            break;
-          case ProcessVariable::specificType::shrt:
-            eleSize = sizeof(short);
-            break;
-          case ProcessVariable::specificType::chr:
-            eleSize = sizeof(char);
-            break;
-          case ProcessVariable::specificType::integer:
-            // At some places in the code, integers are assumed to
-            // be longs. As on some platforms (64-bit) long has
-            // 8 bytes and int has only 4 bytes, we assume the 
-            // longer one here to be save.
-            eleSize = sizeof(long);
-            break;
-          case ProcessVariable::specificType::enumerated:
-            eleSize = sizeof(short);
-            break;
-          default:
-            eleSize = sizeof(double);
-            break;
-          }
-
-          yPvSize[i] = yPvDim[i] * eleSize;
+          yPvSize[i] = yPvDim[i] * (int) yPv[i]->get_specific_type().size / 8;
           dbYMin[i] = yPv[i]->get_lower_disp_limit();
           dbYMax[i] = yPv[i]->get_upper_disp_limit();
           dbYPrec[i] = yPv[i]->get_precision();
+
+	  printf( "y pv ele size = %-d\n", (int) yPv[i]->get_specific_type().size / 8 );
+	  printf( "y pv dim = %-d\n", yPvDim[i] );
+	  printf( "y pv size = %-d\n\n", yPvSize[i] );
 
           ni = 1;
           yArrayNeedInit[i] = 1;
@@ -9107,40 +9081,14 @@ int autoScaleX=0, autoScaleY[NUM_Y_AXES];
             xPvCount[i] = traceSize[i];
           }
 
-          // There are two views of pv types, Type and specificType; this uses
-          // specificType
-          switch ( xPvType[i] ) {
-          case ProcessVariable::specificType::flt:
-            eleSize = sizeof(float);
-            break;
-          case ProcessVariable::specificType::real: 
-            eleSize = sizeof(double);
-            break;
-          case ProcessVariable::specificType::shrt:
-            eleSize = sizeof(short);
-            break;
-          case ProcessVariable::specificType::chr:
-            eleSize = sizeof(char);
-            break;
-          case ProcessVariable::specificType::integer:
-            // At some places in the code, integers are assumed to
-            // be longs. As on some platforms (64-bit) long has
-            // 8 bytes and int has only 4 bytes, we assume the 
-            // longer one here to be save.
-            eleSize = sizeof(long);
-            break;
-          case ProcessVariable::specificType::enumerated:
-            eleSize = sizeof(short);
-            break;
-          default:
-            eleSize = sizeof(double);
-            break;
-          }
-
-          xPvSize[i] = xPvDim[i] * eleSize;
+          xPvSize[i] = xPvDim[i] * (int) xPv[i]->get_specific_type().size / 8;
           dbXMin[i] = xPv[i]->get_lower_disp_limit();
           dbXMax[i] = xPv[i]->get_upper_disp_limit();
           dbXPrec[i] = xPv[i]->get_precision();
+
+	  printf( "x pv ele size = %-d\n", (int) xPv[i]->get_specific_type().size / 8 );
+	  printf( "x pv dim = %-d\n", xPvDim[i] );
+	  printf( "x pv size = %-d\n\n", xPvSize[i] );
 
           ni = 1;
           xArrayNeedInit[i] = 1;

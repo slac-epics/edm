@@ -496,12 +496,12 @@ size_t hash(const HashedCalcPvList *item, size_t N)
   return generic_string_hash( (const char *) item->pv, N );
 }
 
-bool equals(const HashedCalcPvList *lhs, const HashedCalcPvList *rhs)
+int equals(const HashedCalcPvList *lhs, const HashedCalcPvList *rhs)
 {
-  if ( (unsigned int ) lhs->pv < (unsigned int ) rhs->pv ) {
+  if ( (unsigned long ) lhs->pv < (unsigned long ) rhs->pv ) {
     return 1;
   }
-  else if ( (unsigned int ) lhs->pv > (unsigned int ) rhs->pv ) {
+  else if ( (unsigned long ) lhs->pv > (unsigned long ) rhs->pv ) {
     return -1;
   }
   return 0;
@@ -1445,6 +1445,9 @@ size_t CALC_ProcessVariable::get_dimension() const
 {   return 1; }
 
 const char *CALC_ProcessVariable::get_char_array() const
+{   return 0; }
+
+const short *CALC_ProcessVariable::get_short_array() const
 {   return 0; }
 
 const int *CALC_ProcessVariable::get_int_array() const
