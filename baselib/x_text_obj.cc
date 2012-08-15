@@ -2037,7 +2037,7 @@ pvValType pvV;
     fgColor.setConnected();
     bgColor.setConnected();
 
-    if ( alarmPvExists ) {
+    if ( alarmPvId ) {
 
       curStatus = alarmPvId->get_status();
       curSeverity = alarmPvId->get_severity();
@@ -2096,36 +2096,37 @@ pvValType pvV;
 
     change = 0;
 
-    if ( curStatus != alarmPvId->get_status() ) {
-      curStatus = alarmPvId->get_status();
-      change = 1;
-    }
+	if ( alarmPvId ) {
+		int	newStatus	= alarmPvId->get_status();
+		int	newSeverity	= alarmPvId->get_severity();
+		if ( curStatus != newStatus ) {
+		  curStatus = newStatus;
+		  change = 1;
+		}
 
-    if ( curSeverity != alarmPvId->get_severity() ) {
-      curSeverity = alarmPvId->get_severity();
-      change = 1;
-    }
+		if ( curSeverity != newSeverity ) {
+		  curSeverity = newSeverity;
+		  change = 1;
+		}
+		if ( change ) {
+		  fgColor.setStatus( curStatus, curSeverity );
+		  bgColor.setStatus( curStatus, curSeverity );
+		}
 
-    if ( change ) {
-      fgColor.setStatus( curStatus, curSeverity );
-      bgColor.setStatus( curStatus, curSeverity );
-    }
+		index = actWin->ci->evalRule(	fgColor.pixelIndex(),
+										alarmPvId->get_double() );
+		if ( curFgColorIndex != index ) {
+		  curFgColorIndex = index;
+		  change = 1;
+		}
 
-    index = actWin->ci->evalRule( fgColor.pixelIndex(),
-     alarmPvId->get_double() );
-
-    if ( curFgColorIndex != index ) {
-      curFgColorIndex = index;
-      change = 1;
-    }
-
-    index = actWin->ci->evalRule( bgColor.pixelIndex(),
-     alarmPvId->get_double() );
-
-    if ( curBgColorIndex != index ) {
-      curBgColorIndex = index;
-      change = 1;
-    }
+		index = actWin->ci->evalRule(	bgColor.pixelIndex(),
+										alarmPvId->get_double() );
+		if ( curBgColorIndex != index ) {
+		  curBgColorIndex = index;
+		  change = 1;
+		}
+	}
 
     if ( change ) {
 
@@ -2436,39 +2437,36 @@ void activeXTextClass::changePvNames (
 void activeXTextClass::updateColors (
   double colorValue )
 {
+	int		index;
+	int		change = 0;
 
-int index, change;
+	if ( alarmPvId ) {
+		int	newStatus	= alarmPvId->get_status();
+		if( curStatus != newStatus ) {
+			curStatus = newStatus;
+			change = 1;
+		}
 
-  change = 0;
+		int	newSeverity	= alarmPvId->get_severity();
+		if( curSeverity != newSeverity ) {
+			curSeverity = newSeverity;
+			change = 1;
+		}
 
-  if ( curStatus != alarmPvId->get_status() ) {
-    curStatus = alarmPvId->get_status();
-    change = 1;
-  }
+		index = actWin->ci->evalRule( fgColor.pixelIndex(), alarmPvId->get_double() );
+		if( curFgColorIndex != index ) {
+			curFgColorIndex = index;
+			change = 1;
+		}
 
-  if ( curSeverity != alarmPvId->get_severity() ) {
-    curSeverity = alarmPvId->get_severity();
-    change = 1;
-  }
-
-  index = actWin->ci->evalRule( fgColor.pixelIndex(),
-   alarmPvId->get_double() );
-
-  if ( curFgColorIndex != index ) {
-    curFgColorIndex = index;
-    change = 1;
-  }
-
-  index = actWin->ci->evalRule( bgColor.pixelIndex(),
-   alarmPvId->get_double() );
-
-  if ( curBgColorIndex != index ) {
-    curBgColorIndex = index;
-    change = 1;
-  }
+		index = actWin->ci->evalRule( bgColor.pixelIndex(), alarmPvId->get_double() );
+		if( curBgColorIndex != index ) {
+			curBgColorIndex = index;
+			change = 1;
+		}
+	}
 
   if ( change ) {
-
     if ( actWin->ci->isInvisible( curFgColorIndex ) ) {
       fgVisibility = 0;
     }
