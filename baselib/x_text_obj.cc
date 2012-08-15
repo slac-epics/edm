@@ -25,8 +25,8 @@
 #include "thread.h"
 
 static void doBlink (
-  void *ptr
-) {
+  void *ptr )
+{
 
 activeXTextClass *axto = (activeXTextClass *) ptr;
 
@@ -230,8 +230,8 @@ activeXTextClass *axto = (activeXTextClass *) client;
 
 void activeXTextClass::alarmPvConnectStateCallback (
   ProcessVariable *pv,
-  void *userarg
-) {
+  void *userarg )
+{
 
 activeXTextClass *axto = (activeXTextClass *) userarg;
 
@@ -255,8 +255,8 @@ activeXTextClass *axto = (activeXTextClass *) userarg;
 
 void activeXTextClass::alarmPvValueCallback (
   ProcessVariable *pv,
-  void *userarg
-) {
+  void *userarg )
+{
 
 activeXTextClass *axto = (activeXTextClass *) userarg;
 
@@ -290,7 +290,8 @@ activeXTextClass *axto = (activeXTextClass *) userarg;
 void activeXTextClass::visPvConnectStateCallback (
   ProcessVariable *pv,
   void *userarg
-) {
+)
+{
 
 activeXTextClass *axto = (activeXTextClass *) userarg;
 
@@ -315,7 +316,8 @@ activeXTextClass *axto = (activeXTextClass *) userarg;
 void activeXTextClass::visPvValueCallback (
   ProcessVariable *pv,
   void *userarg
-) {
+)
+{
 
 activeXTextClass *axto = (activeXTextClass *) userarg;
 
@@ -346,7 +348,8 @@ activeXTextClass *axto = (activeXTextClass *) userarg;
 
 }
 
-activeXTextClass::activeXTextClass ( void ) {
+activeXTextClass::activeXTextClass ( void )
+{
 
   name = new char[strlen("activeXTextClass")+1];
   strcpy( name, "activeXTextClass" );
@@ -375,7 +378,8 @@ activeXTextClass::activeXTextClass ( void ) {
 
 // copy constructor
 activeXTextClass::activeXTextClass
- ( const activeXTextClass *source ) {
+ ( const activeXTextClass *source )
+{
 
 activeGraphicClass *ago = (activeGraphicClass *) this;
 
@@ -447,7 +451,8 @@ activeGraphicClass *ago = (activeGraphicClass *) this;
 
 }
 
-activeXTextClass::~activeXTextClass ( void ) {
+activeXTextClass::~activeXTextClass ( void )
+{
 
   if ( name ) delete[] name;
 
@@ -469,7 +474,8 @@ int activeXTextClass::createInteractive (
   int _x,
   int _y,
   int _w,
-  int _h ) {
+  int _h )
+{
 
 int stat = 1;
 
@@ -517,7 +523,8 @@ int stat = 1;
 
 }
 
-int activeXTextClass::genericEdit ( void ) {
+int activeXTextClass::genericEdit ( void )
+{
 
 char title[32], *ptr;
 
@@ -637,7 +644,8 @@ char title[32], *ptr;
 
 }
 
-int activeXTextClass::editCreate ( void ) {
+int activeXTextClass::editCreate ( void )
+{
 
   this->genericEdit();
   ef.finished( axtc_edit_ok, axtc_edit_apply, axtc_edit_cancel_delete, this );
@@ -648,7 +656,8 @@ int activeXTextClass::editCreate ( void ) {
 
 }
 
-int activeXTextClass::edit ( void ) {
+int activeXTextClass::edit ( void )
+{
 
   this->genericEdit();
   ef.finished( axtc_edit_ok, axtc_edit_apply, axtc_edit_cancel, this );
@@ -665,26 +674,27 @@ int activeXTextClass::createFromFile (
   char *name,
   activeWindowClass *_actWin )
 {
+    int major, minor, release, stat;
 
-int major, minor, release, stat;
+    tagClass tag;
 
-tagClass tag;
+    int zero = 0;
+    int one = 1;
+    char *emptyStr = "";
 
-int zero = 0;
-int one = 1;
-char *emptyStr = "";
-
-int left = XmALIGNMENT_BEGINNING;
-static char *alignEnumStr[3] = {
-  "left",
-  "center",
-  "right"
-};
-static int alignEnum[3] = {
-  XmALIGNMENT_BEGINNING,
-  XmALIGNMENT_CENTER,
-  XmALIGNMENT_END
-};
+    int left = XmALIGNMENT_BEGINNING;
+    static char *alignEnumStr[3] =
+    {
+      "left",
+      "center",
+      "right"
+    };
+    static int alignEnum[3] =
+    {
+      XmALIGNMENT_BEGINNING,
+      XmALIGNMENT_CENTER,
+      XmALIGNMENT_END
+    };
 
   this->actWin = _actWin;
 
@@ -1269,7 +1279,8 @@ static int alignEnum[3] = {
 
 }
 
-int activeXTextClass::drawActive ( void ) {
+int activeXTextClass::drawActive ( void )
+{
 
 XRectangle xR = { x, y, w, h };
 int clipStat;
@@ -1374,7 +1385,8 @@ int blink = 0;
 
 }
 
-int activeXTextClass::eraseUnconditional ( void ) {
+int activeXTextClass::eraseUnconditional ( void )
+{
 
 XRectangle xR = { x, y, w, h };
 
@@ -1420,7 +1432,8 @@ XRectangle xR = { x, y, w, h };
 
 }
 
-int activeXTextClass::eraseActive ( void ) {
+int activeXTextClass::eraseActive ( void )
+{
 
 XRectangle xR = { x, y, w, h };
 
@@ -1592,7 +1605,8 @@ int stat;
 
 }
 
-int activeXTextClass::containsMacros ( void ) {
+int activeXTextClass::containsMacros ( void )
+{
 
   if ( alarmPvExpStr.containsPrimaryMacros() ) return 1;
   if ( visPvExpStr.containsPrimaryMacros() ) return 1;
@@ -1695,7 +1709,7 @@ int activeXTextClass::activate (
       init = 1; // this stays true if there are no pvs
 
       if ( !alarmPvExpStr.getExpanded() ||
-           // ( strcmp( alarmPvExpStr.getExpanded(), "" ) == 0 ) ) {
+           // ( strcmp( alarmPvExpStr.getExpanded(), "" ) == 0 ) ) 
            blankOrComment( alarmPvExpStr.getExpanded() ) ) {
         alarmPvExists = 0;
         fgVisibility = bgVisibility = 1;
@@ -1709,7 +1723,7 @@ int activeXTextClass::activate (
       }
 
       if ( !visPvExpStr.getExpanded() ||
-           //( strcmp( visPvExpStr.getExpanded(), "" ) == 0 ) ) {
+           //( strcmp( visPvExpStr.getExpanded(), "" ) == 0 ) ) 
            blankOrComment( visPvExpStr.getExpanded() ) ) {
         visPvExists = 0;
         visibility = 1;
@@ -1826,7 +1840,8 @@ int activeXTextClass::deactivate (
 
 }
 
-int activeXTextClass::draw ( void ) {
+int activeXTextClass::draw ( void )
+{
 
 XRectangle xR = { x, y, w, h };
 int clipStat;
@@ -1901,7 +1916,8 @@ int blink = 0;
 
 }
 
-int activeXTextClass::erase ( void ) {
+int activeXTextClass::erase ( void )
+{
 
 XRectangle xR = { x, y, w, h };
 
@@ -1994,7 +2010,8 @@ void activeXTextClass::updateDimensions ( void )
 
 }
 
-void activeXTextClass::executeDeferred ( void ) {
+void activeXTextClass::executeDeferred ( void )
+{
 
 int stat, nc, nau, nvu, nr, npu, index, change;
 pvValType pvV;
@@ -2215,7 +2232,8 @@ int activeXTextClass::setProperty (
 
 }
 
-char *activeXTextClass::firstDragName ( void ) {
+char *activeXTextClass::firstDragName ( void )
+{
 
 #define MAXDRAGNAMES 2
 
@@ -2271,7 +2289,8 @@ int present[MAXDRAGNAMES];
 
 }
 
-char *activeXTextClass::nextDragName ( void ) {
+char *activeXTextClass::nextDragName ( void )
+{
 
   if ( !enabled ) return NULL;
 
@@ -2285,8 +2304,8 @@ char *activeXTextClass::nextDragName ( void ) {
 
 }
 
-char *activeXTextClass::dragValue (
-  int i ) {
+char *activeXTextClass::dragValue ( int i )
+{
 
 int offset = 0;
 
@@ -2476,7 +2495,8 @@ int index, change;
 
 }
 
-void activeXTextClass::bufInvalidate ( void ) {
+void activeXTextClass::bufInvalidate ( void )
+{
 
   bufInvalid = 1;
 
@@ -2485,7 +2505,8 @@ void activeXTextClass::bufInvalidate ( void ) {
 void activeXTextClass::getPvs (
   int max,
   ProcessVariable *pvs[],
-  int *n ) {
+  int *n )
+{
 
   if ( max < 2 ) {
     *n = 0;
@@ -2498,9 +2519,8 @@ void activeXTextClass::getPvs (
 
 }
 
-char *activeXTextClass::getSearchString (
-  int i
-) {
+char *activeXTextClass::getSearchString ( int i )
+{
 
   if ( i == 0 ) {
     return value.getRaw();
@@ -2525,8 +2545,8 @@ char *activeXTextClass::getSearchString (
 void activeXTextClass::replaceString (
   int i,
   int max,
-  char *string
-) {
+  char *string )
+{
 
   if ( i == 0 ) {
     value.setRaw( string );
@@ -2560,14 +2580,16 @@ void activeXTextClass::replaceString (
 }
 
 // crawler functions may return blank pv names
-char *activeXTextClass::crawlerGetFirstPv ( void ) {
+char *activeXTextClass::crawlerGetFirstPv ( void )
+{
 
   crawlerPvIndex = 0;
   return alarmPvExpStr.getExpanded();
 
 }
 
-char *activeXTextClass::crawlerGetNextPv ( void ) {
+char *activeXTextClass::crawlerGetNextPv ( void )
+{
 
   if ( crawlerPvIndex >= 1 ) return NULL;
   crawlerPvIndex++;
@@ -2579,7 +2601,8 @@ char *activeXTextClass::crawlerGetNextPv ( void ) {
 extern "C" {
 #endif
 
-void *create_activeXTextClassPtr ( void ) {
+void *create_activeXTextClassPtr ( void )
+{
 
 activeXTextClass *ptr;
 
