@@ -5,6 +5,7 @@ include $(TOP)/configure/CONFIG
 EDMTOP = $(TOP)/src/edm
 
 SHARED_LIBRARIES = YES
+STATIC_BUILD = NO
 
 USR_CFLAGS += -D__osf__=1
 

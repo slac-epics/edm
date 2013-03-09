@@ -1324,10 +1324,10 @@ activeXTextDspClass *axtdo = (activeXTextDspClass *) userarg;
       if ( axtdo->pvType == ProcessVariable::specificType::chr ) {
         if ( axtdo->pvCount == 1 ) {
           axtdo->pvType = ProcessVariable::specificType::integer;
-	}
+        }
         else {
           axtdo->pvType = ProcessVariable::specificType::text;
-	}
+        }
       }
 
       // if format is hex, force double/float type to long
@@ -1335,7 +1335,7 @@ activeXTextDspClass *axtdo = (activeXTextDspClass *) userarg;
         if ( ( axtdo->pvType == ProcessVariable::specificType::real ) ||
              ( axtdo->pvType == ProcessVariable::specificType::flt ) ) {
           axtdo->pvType = ProcessVariable::specificType::integer;
-	}
+        }
       }
 
       axtdo->connection.setPvConnected( (void *) axtdo->pvConnection );
@@ -1380,10 +1380,10 @@ activeXTextDspClass *axtdo = (activeXTextDspClass *) userarg;
       if ( axtdo->svalPvType == ProcessVariable::specificType::chr ) {
         if ( axtdo->svalPvCount == 1 ) {
           axtdo->svalPvType = ProcessVariable::specificType::integer;
-	}
+        }
         else {
           axtdo->svalPvType = ProcessVariable::specificType::text;
-	}
+        }
       }
 
       axtdo->connection.setPvConnected( (void *) axtdo->svalPvConnection );
@@ -1479,22 +1479,22 @@ unsigned short svalue;
           if ( axtdo->curDoubleValue == axtdo->curSvalValue ) {
             axtdo->fgColor.setNull();
             axtdo->bufInvalidate();
-	  }
-	  else {
+          }
+          else {
             axtdo->fgColor.setNotNull();
             axtdo->bufInvalidate();
-	  }
-	}
-	else if ( axtdo->nullDetectMode == 1 ) {
+          }
+        }
+        else if ( axtdo->nullDetectMode == 1 ) {
           if ( axtdo->curSvalValue == 0 ) {
             axtdo->fgColor.setNull();
             axtdo->bufInvalidate();
-	  }
-	  else {
+          }
+          else {
             axtdo->fgColor.setNotNull();
             axtdo->bufInvalidate();
-	  }
-	}
+          }
+        }
         else {
           axtdo->fgColor.setNotNull();
         }
@@ -1511,22 +1511,22 @@ unsigned short svalue;
           if ( axtdo->curDoubleValue == axtdo->curSvalValue ) {
             axtdo->fgColor.setNull();
             axtdo->bufInvalidate();
-	  }
-	  else {
+          }
+          else {
             axtdo->fgColor.setNotNull();
             axtdo->bufInvalidate();
-	  }
-	}
-	else if ( axtdo->nullDetectMode == 1 ) {
+          }
+        }
+        else if ( axtdo->nullDetectMode == 1 ) {
           if ( axtdo->curSvalValue == 0 ) {
             axtdo->fgColor.setNull();
             axtdo->bufInvalidate();
-	  }
-	  else {
+          }
+          else {
             axtdo->fgColor.setNotNull();
             axtdo->bufInvalidate();
-	  }
-	}
+          }
+        }
         else {
           axtdo->fgColor.setNotNull();
         }
@@ -1538,8 +1538,8 @@ unsigned short svalue;
     case ProcessVariable::specificType::integer:
 
       if ( axtdo->formatType == XTDC_K_FORMAT_HEX ) {
-	uivalue = (unsigned int) pv->get_double();
-	ivalue = (int) uivalue;
+        uivalue = (unsigned int) pv->get_double();
+        ivalue = (int) uivalue;
       }
       else {
         ivalue = pv->get_int();
@@ -1553,22 +1553,22 @@ unsigned short svalue;
           if ( axtdo->curDoubleValue == axtdo->curSvalValue ) {
             axtdo->fgColor.setNull();
             axtdo->bufInvalidate();
-	  }
-	  else {
+          }
+          else {
             axtdo->fgColor.setNotNull();
             axtdo->bufInvalidate();
-	  }
-	}
-	else if ( axtdo->nullDetectMode == 1 ) {
+          }
+        }
+        else if ( axtdo->nullDetectMode == 1 ) {
           if ( axtdo->curSvalValue == 0 ) {
             axtdo->fgColor.setNull();
             axtdo->bufInvalidate();
-	  }
-	  else {
+          }
+          else {
             axtdo->fgColor.setNotNull();
             axtdo->bufInvalidate();
-	  }
-	}
+          }
+        }
         else {
           axtdo->fgColor.setNotNull();
         }
@@ -1581,7 +1581,7 @@ unsigned short svalue;
       svalue = (unsigned short) pv->get_int();
       if ( svalue < pv->get_enum_count() ) {
         strncpy( axtdo->curValue, pv->get_enum( svalue ), XTDC_K_MAX );
-	axtdo->curValue[XTDC_K_MAX] = 0;
+        axtdo->curValue[XTDC_K_MAX] = 0;
         axtdo->entryState = (int) svalue;
       }
       else {
@@ -1594,22 +1594,22 @@ unsigned short svalue;
           if ( axtdo->curDoubleValue == axtdo->curSvalValue ) {
             axtdo->fgColor.setNull();
             axtdo->bufInvalidate();
-	  }
-	  else {
+          }
+          else {
             axtdo->fgColor.setNotNull();
             axtdo->bufInvalidate();
-	  }
-	}
-	else if ( axtdo->nullDetectMode == 1 ) {
+          }
+        }
+        else if ( axtdo->nullDetectMode == 1 ) {
           if ( axtdo->curSvalValue == 0 ) {
             axtdo->fgColor.setNull();
             axtdo->bufInvalidate();
-	  }
-	  else {
+          }
+          else {
             axtdo->fgColor.setNotNull();
             axtdo->bufInvalidate();
-	  }
-	}
+          }
+        }
         else {
           axtdo->fgColor.setNotNull();
         }
@@ -3640,7 +3640,7 @@ int tmpFgColor;
         }
 
         strncpy( fontTag, tk, 63 );
-	fontTag[63] = 0;
+        fontTag[63] = 0;
 
       }
             
@@ -4133,7 +4133,7 @@ int clipStat = 0, len;
 
           actWin->executeGc.setLineWidth( 1 );
 
-	}
+        }
 
       }
 
@@ -4328,7 +4328,7 @@ int clipStat = 0;
             if ( ( ( g_showTextBorderAlways && actWin->ci->shouldShowNoAlarmState() ) ||
                    fgColor.getSeverity() ) && useAlarmBorder ) {
               XtSetArg( args[n], XmNborderWidth, (XtArgVal) 2 ); n++;
-	      color = fgColor.getColor();
+              color = fgColor.getColor();
               XtSetArg( args[n], XmNborderColor, (XtArgVal) color ); n++;
             }
             else {
@@ -4641,7 +4641,7 @@ char callbackName[63+1];
         pvExistCheck = 1;
 
         if ( pvExpStr.getExpanded() ) {
-	  //if ( strcmp( pvExpStr.getExpanded(), "" ) != 0 ) {
+          //if ( strcmp( pvExpStr.getExpanded(), "" ) != 0 ) {
           if ( !blankOrComment( pvExpStr.getExpanded() ) ) {
             pvExists = 1;
             connection.addPv(); // must do this only once per pv
@@ -4655,7 +4655,7 @@ char callbackName[63+1];
         }
 
         if ( svalPvExpStr.getExpanded() ) {
-	  //if ( strcmp( svalPvExpStr.getExpanded(), "" ) != 0 ) {
+          //if ( strcmp( svalPvExpStr.getExpanded(), "" ) != 0 ) {
           if ( !blankOrComment( svalPvExpStr.getExpanded() ) ) {
             svalPvExists = 1;
             connection.addPv(); // must do this only once per pv
@@ -4686,12 +4686,12 @@ char callbackName[63+1];
 
       if ( pvExists ) {
 
-	pvId = the_PV_Factory->create( pvExpStr.getExpanded() );
-	if ( pvId ) {
-	  pvId->add_conn_state_callback( xtdo_monitor_connect_state, this );
+        pvId = the_PV_Factory->create( pvExpStr.getExpanded() );
+        if ( pvId ) {
+          pvId->add_conn_state_callback( xtdo_monitor_connect_state, this );
           pvId->add_access_security_callback( xtdo_access_security_change, this );
-	}
-	else {
+        }
+        else {
           fprintf( stderr, activeXTextDspClass_str33 );
           return 0;
         }
@@ -4738,30 +4738,30 @@ char callbackName[63+1];
 
         if ( changeCallbackFlag ) {
           strncpy( callbackName, id, 63 );
-	  callbackName[63] = 0;
+          callbackName[63] = 0;
           Strncat( callbackName, activeXTextDspClass_str36, 63 );
           callbackName[63] = 0;
           changeCallback =
            actWin->appCtx->userLibObject.getIntFunc( callbackName );
-	}
+        }
 
         if ( activateCallbackFlag ) {
           strncpy( callbackName, id, 63 );
-	  callbackName[63] = 0;
+          callbackName[63] = 0;
           Strncat( callbackName, activeXTextDspClass_str37, 63 );
           callbackName[63] = 0;
           activateCallback =
            actWin->appCtx->userLibObject.getFunc( callbackName );
-	}
+        }
 
         if ( deactivateCallbackFlag ) {
           strncpy( callbackName, id, 63 );
-	  callbackName[63] = 0;
+          callbackName[63] = 0;
           Strncat( callbackName, activeXTextDspClass_str38, 63 );
           callbackName[63] = 0;
           deactivateCallback =
            actWin->appCtx->userLibObject.getFunc( callbackName );
-	}
+        }
 
         if ( activateCallback ) {
           (*activateCallback)( this );
@@ -5024,18 +5024,18 @@ Widget parent;
         if ( defDir.getExpanded() ) {
           strncpy( tmpDir, defDir.getExpanded(), XTDC_K_MAX );
           tmpDir[XTDC_K_MAX] = 0;
-	}
+        }
         else {
           strcpy( tmpDir, "" );
-	}
+        }
 
         if ( pattern.getExpanded() ) {
           strncpy( tmpPat, pattern.getExpanded(), XTDC_K_MAX );
           tmpPat[XTDC_K_MAX] = 0;
-	}
+        }
         else {
           strcpy( tmpPat, "" );
-	}
+        }
 
         fsel.create( actWin->top, teX, teY,
          tmpDir, tmpPat,
@@ -5322,11 +5322,11 @@ char locFieldLenInfo[7+1];
       }
 
       if ( clipToDspLimits ) {
-	upperLim = pvId->get_upper_disp_limit();
+        upperLim = pvId->get_upper_disp_limit();
         lowerLim = pvId->get_lower_disp_limit();
       }
       else {
-	upperLim = 0.0;
+        upperLim = 0.0;
         lowerLim = 0.0;
       }
 
@@ -5349,11 +5349,11 @@ char locFieldLenInfo[7+1];
       }
 
       if ( clipToDspLimits ) {
-	upperLim = (double) pvId->get_upper_disp_limit();
+        upperLim = (double) pvId->get_upper_disp_limit();
         lowerLim = (double) pvId->get_lower_disp_limit();
       }
       else {
-	upperLim = 0.0;
+        upperLim = 0.0;
         lowerLim = 0.0;
       }
 
@@ -5422,9 +5422,9 @@ char locFieldLenInfo[7+1];
 
       if ( fgPvExists ) {
 
-	if ( fgPvId ) {
-	  fgPvId->add_value_callback( XtextDspFgUpdate, this );
-	}
+        if ( fgPvId ) {
+          fgPvId->add_value_callback( XtextDspFgUpdate, this );
+        }
 
       }
 
@@ -5469,10 +5469,10 @@ char locFieldLenInfo[7+1];
           } // end switch( formatType )
   
           if ( svalPvExists ) {
-	    if ( svalPvId ) {
+            if ( svalPvId ) {
               svalPvId->add_value_callback( XtextDspSvalUpdate, this );
-	    }
-	  }
+            }
+          }
 
           break;
 
@@ -5499,10 +5499,10 @@ char locFieldLenInfo[7+1];
           } // end switch( formatType )
 
           if ( svalPvExists ) {
-	    if ( svalPvId ) {
+            if ( svalPvId ) {
               svalPvId->add_value_callback( XtextDspSvalUpdate, this );
-	    }
-	  }
+            }
+          }
 
           break;
 
@@ -5534,10 +5534,10 @@ char locFieldLenInfo[7+1];
           } // end switch( formatType )
 
           if ( svalPvExists ) {
-	    if ( svalPvId ) {
+            if ( svalPvId ) {
               svalPvId->add_value_callback( XtextDspSvalUpdate, this );
-	    }
-	  }
+            }
+          }
 
           break;
 
@@ -5569,10 +5569,10 @@ char locFieldLenInfo[7+1];
           } // end switch( formatType )
 
           if ( svalPvExists ) {
-	    if ( svalPvId ) {
+            if ( svalPvId ) {
               svalPvId->add_value_callback( XtextDspSvalUpdate, this );
-	    }
-	  }
+            }
+          }
 
           break;
 
@@ -5581,10 +5581,10 @@ char locFieldLenInfo[7+1];
           sprintf( format, "%%s" );
 
           if ( svalPvExists ) {
-	    if ( svalPvId ) {
+            if ( svalPvId ) {
               svalPvId->add_value_callback( XtextDspSvalUpdate, this );
-	    }
-	  }
+            }
+          }
 
           break;
 
@@ -5671,6 +5671,7 @@ char locFieldLenInfo[7+1];
            XmNtranslations, g_parsedTrans,
            XmNuserData, this,
            XmNcursorPositionVisible, False,
+       //  XmNalignment, alignment,     Not supported by xmTextFieldWidgetClass
            NULL );
 
         }
@@ -5693,6 +5694,7 @@ char locFieldLenInfo[7+1];
            XmNtranslations, g_parsedTrans,
            XmNuserData, this,
            XmNcursorPositionVisible, False,
+       //  XmNalignment, alignment,     Not supported by xmTextFieldWidgetClass
            NULL );
 
         }
@@ -5716,6 +5718,7 @@ char locFieldLenInfo[7+1];
          XmNtranslations, g_parsedTrans,
          XmNuserData, this,
          XmNcursorPositionVisible, False,
+     //  XmNalignment, alignment,     Not supported by xmTextFieldWidgetClass
          NULL );
 
       }
@@ -5747,32 +5750,32 @@ char locFieldLenInfo[7+1];
           XtAddCallback( tf_widget, XmNmotionVerifyCallback,
            xtdoGrabUpdate, this );
 
-	}
+        }
 
         if ( isPassword ) {
           XtAddCallback( tf_widget, XmNmodifyVerifyCallback,
            xtdoModVerify, this );
-	}
-	else {
+        }
+        else {
           XtAddCallback( tf_widget, XmNvalueChangedCallback,
            xtdoSetValueChanged, this );
-	}
+        }
 
         if ( updatePvOnDrop ) {
 
-	  // change drop behavior
+          // change drop behavior
 
-	  importList[0] = XA_STRING;
+          importList[0] = XA_STRING;
           numImportTargets = 1;
-	  n = 0;
-	  XtSetArg( args[n], XmNimportTargets, importList ); n++;
-	  XtSetArg( args[n], XmNnumImportTargets, numImportTargets ); n++;
-	  XtSetArg( args[n], XmNdropProc, handleDrop ); n++;
-	  XmDropSiteUpdate( tf_widget, args, n );
+          n = 0;
+          XtSetArg( args[n], XmNimportTargets, importList ); n++;
+          XtSetArg( args[n], XmNnumImportTargets, numImportTargets ); n++;
+          XtSetArg( args[n], XmNdropProc, handleDrop ); n++;
+          XmDropSiteUpdate( tf_widget, args, n );
 
-	}
+        }
 
-	if ( !handlerInstalled ) {
+        if ( !handlerInstalled ) {
           handlerInstalled = 1;
           if ( inputFocusUpdatesAllowed ) {
             XtAddEventHandler( tf_widget,
@@ -5783,7 +5786,7 @@ char locFieldLenInfo[7+1];
             XtAddEventHandler( tf_widget, FocusChangeMask, False,
              eventHandler, (XtPointer) this );
           }
-	}
+        }
 
         switch ( pvType ) {
 
@@ -5796,10 +5799,10 @@ char locFieldLenInfo[7+1];
             XtAddCallback( tf_widget, XmNlosingFocusCallback,
              xtdoTextFieldToStringLF, this );
           }
-	  else {
+          else {
             XtAddCallback( tf_widget, XmNlosingFocusCallback,
              xtdoRestoreValue, this );
-	  }
+          }
 
           break;
 
@@ -5812,11 +5815,11 @@ char locFieldLenInfo[7+1];
           if ( changeValOnLoseFocus ) {
             XtAddCallback( tf_widget, XmNlosingFocusCallback,
              xtdoTextFieldToIntLF, this );
-	  }
-	  else {
+          }
+          else {
             XtAddCallback( tf_widget, XmNlosingFocusCallback,
              xtdoRestoreValue, this );
-	  }
+          }
 
           break;
 
@@ -5829,11 +5832,11 @@ char locFieldLenInfo[7+1];
           if ( changeValOnLoseFocus ) {
             XtAddCallback( tf_widget, XmNlosingFocusCallback,
              xtdoTextFieldToDoubleLF, this );
-	  }
-	  else {
+          }
+          else {
             XtAddCallback( tf_widget, XmNlosingFocusCallback,
              xtdoRestoreValue, this );
-	  }
+          }
 
           break;
 

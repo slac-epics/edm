@@ -17,6 +17,7 @@ ifdef EPICS_HOST_ARCH
   endif
 
   SHARED_LIBRARIES = YES
+  STATIC_BUILD = NO
 
   # Add debugging
   #USR_CXXFLAGS_Linux += -g -O0

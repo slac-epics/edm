@@ -27,7 +27,8 @@ static void setVal (
   void *dest,
   int i,
   double src
-) {
+)
+{
 
   switch ( pvtype ) {
 
@@ -65,7 +66,8 @@ static void setVal (
 
 static double dclamp (
   double val
-) {
+)
+{
 
   if ( val < -16000 ) return -16000;
   if ( val >  16000 ) return  16000;
@@ -75,7 +77,8 @@ static double dclamp (
 
 static short sclamp (
   short val
-) {
+)
+{
 
   if ( val < -16000 ) return -16000;
   if ( val >  16000 ) return  16000;
@@ -1326,7 +1329,8 @@ static void cancelKpY1Min (
   Widget w,
   XtPointer client,
   XtPointer call
-) {
+)
+{
 
   cancelKpYMin( w, client, call, 0 );
 
@@ -1336,7 +1340,8 @@ static void cancelKpY2Min (
   Widget w,
   XtPointer client,
   XtPointer call
-) {
+)
+{
 
   cancelKpYMin( w, client, call, 1 );
 
@@ -1496,7 +1501,8 @@ static void cancelKpY1Max (
   Widget w,
   XtPointer client,
   XtPointer call
-) {
+)
+{
 
   cancelKpYMax( w, client, call, 0 );
 
@@ -1506,7 +1512,8 @@ static void cancelKpY2Max (
   Widget w,
   XtPointer client,
   XtPointer call
-) {
+)
+{
 
   cancelKpYMax( w, client, call, 1 );
 
@@ -4174,7 +4181,8 @@ xyGraphClass::~xyGraphClass ( void ) {
 int xyGraphClass::getDbXMinXMax (
   double *min,
   double *max
-) {
+)
+{
 
 int i, start, allChronological;
 int ctl;
@@ -4222,7 +4230,8 @@ void xyGraphClass::getDbYMinYMax (
   double *min,
   double *max,
   int yi
-) {
+)
+{
 
 int i, start;
 int ctl;
@@ -4300,7 +4309,8 @@ int ctl;
 void xyGraphClass::getXMinMax (
   double *min,
   double *max
-) {
+)
+{
 
 int i, ii, first;
 double dxValue;
@@ -4399,7 +4409,8 @@ void xyGraphClass::getYMinMax (
   int yi,
   double min[],
   double max[]
-) {
+)
+{
 
 int i, ii, first[NUM_Y_AXES];
 double dyValue[NUM_Y_AXES];
@@ -6203,7 +6214,8 @@ int ctl;
 void xyGraphClass::genChronoVector (
   int i, // trace
   int *rescale
-) {
+)
+{
 
 int ii, iii, yi, needRescale;
 double dxValue, dyValue;
@@ -6472,7 +6484,8 @@ int ctl;
 void xyGraphClass::genXyVector (
   int i, // trace
   int *rescale
-) {
+)
+{
 
 int ii, iii, yi, needRescale, n;
 double dxValue, dyValue;
@@ -6899,7 +6912,8 @@ void xyGraphClass::drawCircles (
   int index,
   XPoint *xp,
   int n
-) {
+)
+{
 
 XArc arc[100];
 int numFullDraws, remainder, i, ii, j, symHW, symHH;
@@ -6943,7 +6957,8 @@ void xyGraphClass::drawSquares (
   int index,
   XPoint *xp,
   int n
-) {
+)
+{
 
 XRectangle rec[100];
 int numFullDraws, remainder, i, ii, j, symHW, symHH;
@@ -6983,7 +6998,8 @@ void xyGraphClass::drawDiamonds (
   int index,
   XPoint *xp,
   int n
-) {
+)
+{
 
 XSegment seg[400];
 int numFullDraws, remainder, i, ii, j, jj, symHW, symHH;
@@ -7177,7 +7193,8 @@ int xyGraphClass::draw ( void ) {
 
 int xyGraphClass::drawActiveOne (
   int i // trace
-) {
+)
+{
 
 int npts;
 int ctl;
@@ -7620,7 +7637,8 @@ char *xyGraphClass::nextDragName ( void ) {
 
 char *xyGraphClass::dragValue (
   int i
-) {
+)
+{
 
 int ii;
 
@@ -8140,7 +8158,8 @@ XmString str;
 
 int xyGraphClass::deactivate (
   int pass
-) {
+)
+{
 
 int i;
 
@@ -11136,7 +11155,8 @@ int autoScaleX=0, autoScaleY[NUM_Y_AXES];
 
 void xyGraphClass::initPlotInfo (
   int trace
-) {
+)
+{
 
 int i;
 
@@ -11158,7 +11178,8 @@ void xyGraphClass::addPoint (
   double dScaledX,
   double dScaledY,
   int trace
-) {
+)
+{
 
 int i;
 short scaledX, scaledY;
@@ -11275,7 +11296,8 @@ short scaledX, scaledY;
 int xyGraphClass::fillPlotArray (
   int trace,
   int isVector
-) {
+)
+{
 
 int i, npts, curCount;
 short curX, curY, prevX=0, prevY=0;
@@ -11547,7 +11569,8 @@ double n;
 
 int xyGraphClass::fillScalarPlotArray (
   int trace
-) {
+)
+{
 
 int stat;
 
@@ -11558,7 +11581,8 @@ int stat;
 
 int xyGraphClass::fillVectorPlotArray (
   int trace
-) {
+)
+{
 
 int stat;
 
@@ -12175,7 +12199,8 @@ int i, ii, num;
 
 char *xyGraphClass::getSearchString (
   int i
-) {
+)
+{
 
 int num = XYGC_K_MAX_TRACES + XYGC_K_MAX_TRACES + XYGC_K_MAX_TRACES + 6;
 int ii, selector, index;
@@ -12224,7 +12249,8 @@ void xyGraphClass::replaceString (
   int i,
   int max,
   char *string
-) {
+)
+{
 
 int num = XYGC_K_MAX_TRACES + XYGC_K_MAX_TRACES + XYGC_K_MAX_TRACES + 6;
 int ii, selector, index;
