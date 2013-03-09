@@ -18,10 +18,15 @@
 
 #define __xygraph_cc 1
 
+#include <string>
+using namespace     std;
+
 #include "xygraph.h"
 
 void _edmDebug ( void );
 
+// This function is very dangerous and should be eliminated
+// Replace with PvData::SetValue( index i, double value )
 static void setVal (
   int pvtype,
   void *dest,
@@ -573,6 +578,12 @@ edmTime base( (const unsigned long) ( xyo->curSec ),
 
 	while ( n != t ) {
 
+	    // Note: BH 3/8/2013
+	    //	The block of code in this switch table appears everywhere
+	    //	in this file.
+	    //	Consider making xPvData a vector of PvData objects
+	    //	PvData would hide the type casting so we could write
+	    //	dxValue = xyo->xPvData[i].GetValue(n);
           // x
           switch ( xyo->xPvType[i] ) {
           case ProcessVariable::specificType::flt:
@@ -2177,6 +2188,9 @@ int ctl;
 
         if ( xyo->xPvCount[i] == 1 ) {
 
+	    // Note: BH 3/8/2013
+	    //	This next block of code could be written as
+	    //	xyo->xPvData[i].SetValueFromPv( ii, pv );
           // There are two views of pv types, Type and specificType; this uses
           // specificType
           switch ( xyo->xPvType[i] ) {
@@ -3901,6 +3915,10 @@ time_t t1, t2;
 
   timeOffset = t2 - t1;
 
+  // Where is name defined?
+  // Answer: lib/act_grf.h in our parent class, activeGraphicClass
+  // Next question:  Why isn't it just a string?
+  string newName( "xyGraphClass" );
   name = new char[strlen("xyGraphClass")+1];
   strcpy( name, "xyGraphClass" );
   checkBaseClassVersion( activeGraphicClass::MAJOR_VERSION, name );
@@ -8264,23 +8282,23 @@ int i;
       }
 
       if ( xPvData[i] ) {
-        delete[] (char *) xPvData[i];
+        // Crashes:	delete[] (char *) xPvData[i];
         xPvData[i] = NULL;
       }
 
       if ( yPvData[i] ) {
-        delete[] (char *) yPvData[i];
+        // Crashes:	delete[] (char *) yPvData[i];
         yPvData[i] = NULL;
       }
 
       if ( plotBuf[i] ) {
-        delete[] plotBuf[i];
+        // Crashes:	delete[] plotBuf[i];
         plotBuf[i] = NULL;
         plotBufSize[i] = 0;
       }
 
       if ( plotInfo[i] ) {
-        delete[] plotInfo[i];
+        // Crashes:	delete[] plotInfo[i];
         plotInfo[i] = NULL;
         plotInfoSize[i] = 0;
       }
@@ -9856,7 +9874,7 @@ int autoScaleX=0, autoScaleY[NUM_Y_AXES];
                     dxValue = (double) ( (long *) xPvData[i] )[ii];
                   }
                   else {
-                    dxValue = (double) ( (long *) xPvData[i] )[ii];
+                    dxValue = (double) ( (unsigned long *) xPvData[i] )[ii];
                   }
                   break;
                 case ProcessVariable::specificType::enumerated:

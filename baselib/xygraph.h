@@ -379,6 +379,8 @@ static const int NUM_Y_AXES = 2;
 
 private:
 
+// Why are we using a struct instead of a class here?
+
 typedef struct editBufTag {
 // edit buffer
   int bufX;
@@ -391,6 +393,9 @@ typedef struct editBufTag {
   char bufY2Label[127+1];
   int bufPlotMode;
   int bufResetMode;
+  // All these array's for trace parameters make the code really ugly
+  // and hard to read and write.
+  // Consider pushing all this to an xyTrace class
   int bufPlotStyle[XYGC_K_MAX_TRACES];
   int bufPlotSymbolType[XYGC_K_MAX_TRACES];
   int bufPlotUpdateMode[XYGC_K_MAX_TRACES];
@@ -731,6 +736,9 @@ expStringClass graphTitle, xLabel, yLabel, y2Label;
 int numTraces;
 int plotAreaX, plotAreaY, plotAreaW, plotAreaH;
 
+  // All these array's for trace parameters make the code really ugly
+  // and hard to read and write.
+  // Consider pushing all this to an xyTrace class
 objPlusIndexType xcArgRec[XYGC_K_MAX_TRACES];
 objPlusIndexType xvArgRec[XYGC_K_MAX_TRACES];
 objPlusIndexType ycArgRec[XYGC_K_MAX_TRACES];
