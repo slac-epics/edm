@@ -5655,6 +5655,7 @@ char locFieldLenInfo[7+1];
 
         if ( autoHeight ) {
 
+		  // No XmNalignment support in XtVaCreateManagedWidget & xmTextFieldWidgetClass
           tf_widget = XtVaCreateManagedWidget( "", xmTextFieldWidgetClass,
            actWin->executeWidget,
            XmNx, x,
