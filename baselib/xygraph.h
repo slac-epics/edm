@@ -378,7 +378,6 @@ static void         axygc_edit_cancel_delete(
 class pvData
 {
  public:
-	pvData(	const char	*	pszPvName	);
 	pvData(	ProcessVariable			*	pv,
 			int							pvType,
 			size_t						pvNumElem,
@@ -399,11 +398,6 @@ class pvData
 		m_values.resize( newSize );
 	}
 
-	const char * GetName( ) const
-	{
-		return( m_pv == NULL ? "NULL" : m_pv->get_name() );
-	}
-
 	const size_t		size( )
 	{
 		return m_values.size( );
@@ -419,171 +413,118 @@ class pvData
 #endif	//	USE_PVDATA_CLASS
 // *INDENT-OFF*
 
-// edtBufTag struct is used to pass parameters in/out of edit popups
-typedef struct editBufTag
-{
-	// edit buffer
-	int bufX;
-	int bufY;
-	int bufW;
-	int bufH;
-	char bufGraphTitle[127+1];
-	char bufXLabel[127+1];
-	char bufYLabel[127+1];
-	char bufY2Label[127+1];
-	int bufPlotMode;
-	int bufResetMode;
-	// All these array's for trace parameters make the code really ugly
-	// and hard to read and write.
-	// Consider pushing all this to an TraceClass class
-	int bufPlotStyle[XYGC_K_MAX_TRACES];
-	int bufPlotSymbolType[XYGC_K_MAX_TRACES];
-	int bufPlotUpdateMode[XYGC_K_MAX_TRACES];
-	int bufPlotColor[XYGC_K_MAX_TRACES];
-	char bufXPvName[XYGC_K_MAX_TRACES][PV_Factory::MAX_PV_NAME+1];
-	char bufYPvName[XYGC_K_MAX_TRACES][PV_Factory::MAX_PV_NAME+1];
-	char bufNPvName[XYGC_K_MAX_TRACES][PV_Factory::MAX_PV_NAME+1];
-	int bufXSigned[XYGC_K_MAX_TRACES];
-	int bufYSigned[XYGC_K_MAX_TRACES];
-	int bufLineThk[XYGC_K_MAX_TRACES];
-	int bufLineStyle[XYGC_K_MAX_TRACES];
-	char bufTrigPvName[PV_Factory::MAX_PV_NAME+1];
-	char bufResetPvName[PV_Factory::MAX_PV_NAME+1];
-	char bufTraceCtlPvName[PV_Factory::MAX_PV_NAME+1];
-	int bufOpMode[XYGC_K_MAX_TRACES];
-	int bufY2Scale[XYGC_K_MAX_TRACES];
-	int bufCount;
-	int bufXAxis;
-	int bufXAxisStyle;
-	int bufXAxisSource;
-	int bufXAxisTimeFormat;
-	efDouble bufXMin;
-	efDouble bufXMax;
-
-	efInt bufXNumLabelIntervals;
-	int bufXLabelGrid;
-	efInt bufXNumMajorPerLabel;
-	int bufXMajorGrid;
-	efInt bufXNumMinorPerMajor;
-	int bufXMinorGrid;
-	efInt bufXAnnotationPrecision;
-	int bufXAnnotationFormat;
-	int bufXGridMode;
-	int bufXAxisSmoothing;
-
-	int bufY1Axis[NUM_Y_AXES];
-	int bufY1AxisStyle[NUM_Y_AXES];
-	int bufY1AxisSource[NUM_Y_AXES];
-	efDouble bufY1Min[NUM_Y_AXES];
-	efDouble bufY1Max[NUM_Y_AXES];
-
-	efInt bufY1NumLabelIntervals[NUM_Y_AXES];
-	int bufY1LabelGrid[NUM_Y_AXES];
-	efInt bufY1NumMajorPerLabel[NUM_Y_AXES];
-	int bufY1MajorGrid[NUM_Y_AXES];
-	efInt bufY1NumMinorPerMajor[NUM_Y_AXES];
-	int bufY1MinorGrid[NUM_Y_AXES];
-	efInt bufY1AnnotationPrecision[NUM_Y_AXES];
-	int bufY1AnnotationFormat[NUM_Y_AXES];
-	int bufY1GridMode[NUM_Y_AXES];
-	int bufY1AxisSmoothing[NUM_Y_AXES];
-
-	int bufY2Axis;
-	int bufY2AxisStyle;
-	int bufY2AxisSource;
-	efDouble bufY2Min;
-	efDouble bufY2Max;
-
-	efInt bufY2NumLabelIntervals;
-	int bufY2LabelGrid;
-	efInt bufY2NumMajorPerLabel;
-	int bufY2MajorGrid;
-	efInt bufY2NumMinorPerMajor;
-	int bufY2MinorGrid;
-	efInt bufY2AnnotationPrecision;
-	int bufY2AnnotationFormat;
-
-	int bufFgColor;
-	int bufBgColor;
-	int bufGridColor;
-	int bufFormatType;
-	int bufBorder;
-	int bufPlotAreaBorder;
-	int bufAutoScaleBothDirections;
-	efInt bufAutoScaleTimerMs;
-	efDouble bufAutoScaleThreshPct;
-	int bufXFormatType;
-	efInt bufXPrecision;
-	int bufY1FormatType[NUM_Y_AXES];
-	efInt bufY1Precision[NUM_Y_AXES];
-	int bufY2FormatType;
-	efInt bufY2Precision;
-
-	int bufUpdateTimerValue;
-
-}	editBufType, *editBufPtr;
-
-
-class TraceClass
-{
- public:
-	int			GetTraceType( )
-	{
-		return m_tyTrace;
-	}
-
- private:
-	int						m_tyTrace;		// XYGC_K_TRACE_*
-
-	std::vector<XPoint>		plotPoints;
-};
-
-class xyTraceClass : public TraceClass
-{
- public:
- 	xyTraceClass(
-		const char	*	pszXPvName,
-		const char	*	pszYPvName	)
-		TraceClass( XYGC_K_TRACE_XY	),
-		m_yPvName(	pszYPvName		),
-		m_yPvData(	pszYPvName		)
-	{
-	}
-
- private:
- 	// X and Y PV Names
- 	string			m_xPvName;
- 	string			m_yPvName;
-
- 	// X and Y PV Data
-	pvData			m_xPvData;
-	pvData			m_yPvData;
-};
-
-class ChronoTraceClass : public TraceClass
-{
- public:
- 	ChronoTraceClass( const char * pszYPvName )
-		TraceClass( XYGC_K_TRACE_CHRONOLOGICAL ),
-		m_yPvName(	pszYPvName		),
-		m_yPvData(	pszYPvName		)
-	{
-	}
-
- private:
- 	// Y PV Name
- 	string			m_yPvName;
-
- 	// Y PV Data
-	pvData			m_yPvData;
-};
 
 class xyGraphClass : public activeGraphicClass
 {
+
 	public:
 	static const unsigned int NUM_Y_AXES = 2;
 
 	private:
+
+	// Why are we using a struct instead of a class here?
+	typedef struct editBufTag
+	{
+		// edit buffer
+		int bufX;
+		int bufY;
+		int bufW;
+		int bufH;
+		char bufGraphTitle[127+1];
+		char bufXLabel[127+1];
+		char bufYLabel[127+1];
+		char bufY2Label[127+1];
+		int bufPlotMode;
+		int bufResetMode;
+		// All these array's for trace parameters make the code really ugly
+		// and hard to read and write.
+		// Consider pushing all this to an xyTrace class
+		int bufPlotStyle[XYGC_K_MAX_TRACES];
+		int bufPlotSymbolType[XYGC_K_MAX_TRACES];
+		int bufPlotUpdateMode[XYGC_K_MAX_TRACES];
+		int bufPlotColor[XYGC_K_MAX_TRACES];
+		char bufXPvName[XYGC_K_MAX_TRACES][PV_Factory::MAX_PV_NAME+1];
+		char bufYPvName[XYGC_K_MAX_TRACES][PV_Factory::MAX_PV_NAME+1];
+		char bufNPvName[XYGC_K_MAX_TRACES][PV_Factory::MAX_PV_NAME+1];
+		int bufXSigned[XYGC_K_MAX_TRACES];
+		int bufYSigned[XYGC_K_MAX_TRACES];
+		int bufLineThk[XYGC_K_MAX_TRACES];
+		int bufLineStyle[XYGC_K_MAX_TRACES];
+		char bufTrigPvName[PV_Factory::MAX_PV_NAME+1];
+		char bufResetPvName[PV_Factory::MAX_PV_NAME+1];
+		char bufTraceCtlPvName[PV_Factory::MAX_PV_NAME+1];
+		int bufOpMode[XYGC_K_MAX_TRACES];
+		int bufY2Scale[XYGC_K_MAX_TRACES];
+		int bufCount;
+		int bufXAxis;
+		int bufXAxisStyle;
+		int bufXAxisSource;
+		int bufXAxisTimeFormat;
+		efDouble bufXMin;
+		efDouble bufXMax;
+
+		efInt bufXNumLabelIntervals;
+		int bufXLabelGrid;
+		efInt bufXNumMajorPerLabel;
+		int bufXMajorGrid;
+		efInt bufXNumMinorPerMajor;
+		int bufXMinorGrid;
+		efInt bufXAnnotationPrecision;
+		int bufXAnnotationFormat;
+		int bufXGridMode;
+		int bufXAxisSmoothing;
+
+		int bufY1Axis[NUM_Y_AXES];
+		int bufY1AxisStyle[NUM_Y_AXES];
+		int bufY1AxisSource[NUM_Y_AXES];
+		efDouble bufY1Min[NUM_Y_AXES];
+		efDouble bufY1Max[NUM_Y_AXES];
+
+		efInt bufY1NumLabelIntervals[NUM_Y_AXES];
+		int bufY1LabelGrid[NUM_Y_AXES];
+		efInt bufY1NumMajorPerLabel[NUM_Y_AXES];
+		int bufY1MajorGrid[NUM_Y_AXES];
+		efInt bufY1NumMinorPerMajor[NUM_Y_AXES];
+		int bufY1MinorGrid[NUM_Y_AXES];
+		efInt bufY1AnnotationPrecision[NUM_Y_AXES];
+		int bufY1AnnotationFormat[NUM_Y_AXES];
+		int bufY1GridMode[NUM_Y_AXES];
+		int bufY1AxisSmoothing[NUM_Y_AXES];
+
+		int bufY2Axis;
+		int bufY2AxisStyle;
+		int bufY2AxisSource;
+		efDouble bufY2Min;
+		efDouble bufY2Max;
+
+		efInt bufY2NumLabelIntervals;
+		int bufY2LabelGrid;
+		efInt bufY2NumMajorPerLabel;
+		int bufY2MajorGrid;
+		efInt bufY2NumMinorPerMajor;
+		int bufY2MinorGrid;
+		efInt bufY2AnnotationPrecision;
+		int bufY2AnnotationFormat;
+
+		int bufFgColor;
+		int bufBgColor;
+		int bufGridColor;
+		int bufFormatType;
+		int bufBorder;
+		int bufPlotAreaBorder;
+		int bufAutoScaleBothDirections;
+		efInt bufAutoScaleTimerMs;
+		efDouble bufAutoScaleThreshPct;
+		int bufXFormatType;
+		efInt bufXPrecision;
+		int bufY1FormatType[NUM_Y_AXES];
+		efInt bufY1Precision[NUM_Y_AXES];
+		int bufY2FormatType;
+		efInt bufY2Precision;
+
+		int bufUpdateTimerValue;
+
+	}	editBufType, *editBufPtr;
 
 	entryListBase		*	scaleInwardEntry;
 	entryListBase		*	scaleInwardTimerEntry;
@@ -840,12 +781,9 @@ class xyGraphClass : public activeGraphicClass
 	int numTraces;
 	int plotAreaX, plotAreaY, plotAreaW, plotAreaH;
 
-	// New vector of pointers to TraceClass objects
-	std::vector<TraceClass *>	m_Traces;
-
 	// All these array's for trace parameters make the code really ugly
 	// and hard to read and write.
-	// Consider pushing all this to an TraceClass class
+	// Consider pushing all this to an xyTrace class
 	objPlusIndexType	xcArgRec[XYGC_K_MAX_TRACES];
 	objPlusIndexType	xvArgRec[XYGC_K_MAX_TRACES];
 	objPlusIndexType	ycArgRec[XYGC_K_MAX_TRACES];
@@ -1263,10 +1201,6 @@ class xyGraphClass : public activeGraphicClass
 	int edit ( void );
 
 	int editCreate ( void );
-
-	void UpdateTraceType(	size_t			index,
-							const char	*	pszXPvName,
-							const char	*	pszYPvName	);
 
 	void regenBuffer ( void );
 
