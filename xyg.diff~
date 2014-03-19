@@ -1,0 +1,302 @@
+51c51
+<     ( (int *) dest )[i] = (int) src;
+---
+>     ( (long *) dest )[i] = (long) src;
+310c310
+<               dyValue = (double) ( (int *) xyo->yPvData[i] )[n];
+---
+>               dyValue = (double) ( (long *) xyo->yPvData[i] )[n];
+313c313
+<               dyValue = (double) ( (unsigned int *) xyo->yPvData[i] )[n];
+---
+>               dyValue = (double) ( (long *) xyo->yPvData[i] )[n];
+404c404
+<               dyValue = (double) ( (int *) xyo->yPvData[i] )[n];
+---
+>               dyValue = (double) ( (long *) xyo->yPvData[i] )[n];
+407c407
+<               dyValue = (double) ( (unsigned int *) xyo->yPvData[i] )[n];
+---
+>               dyValue = (double) ( (long *) xyo->yPvData[i] )[n];
+481c481
+<               dxValue = (double) ( (int *) xyo->xPvData[i] )[n];
+---
+>               dxValue = (double) ( (long *) xyo->xPvData[i] )[n];
+484c484
+<               dxValue = (double) ( (unsigned int *) xyo->xPvData[i] )[n];
+---
+>               dxValue = (double) ( (long *) xyo->xPvData[i] )[n];
+526c526
+<               dyValue = (double) ( (int *) xyo->yPvData[i] )[n];
+---
+>               dyValue = (double) ( (long *) xyo->yPvData[i] )[n];
+529c529
+<               dyValue = (double) ( (unsigned int *) xyo->yPvData[i] )[n];
+---
+>               dyValue = (double) ( (long *) xyo->yPvData[i] )[n];
+599c599
+<               dxValue = (double) ( (int *) xyo->xPvData[i] )[n];
+---
+>               dxValue = (double) ( (long *) xyo->xPvData[i] )[n];
+602c602
+<               dxValue = (double) ( (unsigned int *) xyo->xPvData[i] )[n];
+---
+>               dxValue = (double) ( (long *) xyo->xPvData[i] )[n];
+644c644
+<               dyValue = (double) ( (int *) xyo->yPvData[i] )[n];
+---
+>               dyValue = (double) ( (long *) xyo->yPvData[i] )[n];
+647c647
+<               dyValue = (double) ( (unsigned int *) xyo->yPvData[i] )[n];
+---
+>               dyValue = (double) ( (long *) xyo->yPvData[i] )[n];
+1025c1025
+<             dxValue = (double) ( (int *) xyo->xPvData[i] )[ii];
+---
+>             dxValue = (double) ( (long *) xyo->xPvData[i] )[ii];
+1028c1028
+<             dxValue = (double) ( (unsigned int *) xyo->xPvData[i] )[ii];
+---
+>             dxValue = (double) ( (long *) xyo->xPvData[i] )[ii];
+1171c1171
+<             dxValue = (double) ( (int *) xyo->xPvData[i] )[ii];
+---
+>             dxValue = (double) ( (long *) xyo->xPvData[i] )[ii];
+1174c1174
+<             dxValue = (double) ( (unsigned int *) xyo->xPvData[i] )[ii];
+---
+>             dxValue = (double) ( (long *) xyo->xPvData[i] )[ii];
+1439c1439
+<               dy1Value = (double) ( (int *) xyo->yPvData[i] )[ii];
+---
+>               dy1Value = (double) ( (long *) xyo->yPvData[i] )[ii];
+1442c1442
+<               dy1Value = (double) ( (unsigned int *) xyo->yPvData[i] )[ii];
+---
+>               dy1Value = (double) ( (long *) xyo->yPvData[i] )[ii];
+1609c1609
+<               dy1Value = (double) ( (int *) xyo->yPvData[i] )[ii];
+---
+>               dy1Value = (double) ( (long *) xyo->yPvData[i] )[ii];
+1612c1612
+<               dy1Value = (double) ( (unsigned int *) xyo->yPvData[i] )[ii];
+---
+>               dy1Value = (double) ( (long *) xyo->yPvData[i] )[ii];
+1835c1835
+<               dyValue = (double) ( (int *) xyo->yPvData[i] )[ii];
+---
+>               dyValue = (double) ( (long *) xyo->yPvData[i] )[ii];
+1838c1838
+<               dyValue = (double) ( (unsigned int *) xyo->yPvData[i] )[ii];
+---
+>               dyValue = (double) ( (long *) xyo->yPvData[i] )[ii];
+1914c1914
+<               dxValue = (double) ( (int *) xyo->xPvData[i] )[ii];
+---
+>               dxValue = (double) ( (long *) xyo->xPvData[i] )[ii];
+1917c1917
+<               dxValue = (double) ( (unsigned int *) xyo->xPvData[i] )[ii];
+---
+>               dxValue = (double) ( (long *) xyo->xPvData[i] )[ii];
+2220c2220
+<               ( (int *) xyo->xPvData[i] )[ii] = pv->get_int();
+---
+>               ( (long *) xyo->xPvData[i] )[ii] = pv->get_int();
+2223,2224c2223,2224
+<               ( (unsigned int *) xyo->xPvData[i] )[ii] =
+<                pv->get_int();
+---
+>               ( (unsigned long *) xyo->xPvData[i] )[ii] =
+>                (unsigned long) pv->get_int();
+2282c2282
+<               ( (int *) xyo->xPvData[i] )[ii] = pv->get_int_array()[ii];
+---
+>               ( (long *) xyo->xPvData[i] )[ii] = pv->get_int_array()[ii];
+2285,2286c2285,2286
+<               ( (unsigned int *) xyo->xPvData[i] )[ii] =
+<                 pv->get_int_array()[ii];
+---
+>               ( (unsigned long *) xyo->xPvData[i] )[ii] =
+>                (unsigned long) pv->get_int_array()[ii];
+2369c2369
+<           ( (int *) xyo->xPvData[i] )[ii] = pv->get_int();
+---
+>           ( (long *) xyo->xPvData[i] )[ii] = pv->get_int();
+2372,2373c2372,2373
+<           ( (unsigned int *) xyo->xPvData[i] )[ii] =
+<            pv->get_int();
+---
+>           ( (unsigned long *) xyo->xPvData[i] )[ii] =
+>            (unsigned long) pv->get_int();
+2437c2437
+<             dyValue = (double) ( (int *) xyo->yPvData[i] )[ii];
+---
+>             dyValue = (double) ( (long *) xyo->yPvData[i] )[ii];
+2440c2440
+<             dyValue = (double) ( (unsigned int *) xyo->yPvData[i] )[ii];
+---
+>             dyValue = (double) ( (long *) xyo->yPvData[i] )[ii];
+2518c2518
+<             dxValue = (double) ( (int *) xyo->xPvData[i] )[ii];
+---
+>             dxValue = (double) ( (long *) xyo->xPvData[i] )[ii];
+2521c2521
+<             dxValue = (double) ( (unsigned int *) xyo->xPvData[i] )[ii];
+---
+>             dxValue = (double) ( (long *) xyo->xPvData[i] )[ii];
+2777c2777
+<               ( (int *) xyo->yPvData[i] )[ii] = pv->get_int();
+---
+>               ( (long *) xyo->yPvData[i] )[ii] = pv->get_int();
+2780,2781c2780,2781
+<               ( (unsigned int *) xyo->yPvData[i] )[ii] =
+<                 pv->get_int();
+---
+>               ( (unsigned long *) xyo->yPvData[i] )[ii] =
+>                (unsigned long) pv->get_int();
+2839c2839
+<               ( (int *) xyo->yPvData[i] )[ii] = pv->get_int_array()[ii];
+---
+>               ( (long *) xyo->yPvData[i] )[ii] = pv->get_int_array()[ii];
+2842,2843c2842,2843
+<               ( (unsigned int *) xyo->yPvData[i] )[ii] =
+<                pv->get_int_array()[ii];
+---
+>               ( (unsigned long *) xyo->yPvData[i] )[ii] =
+>                (unsigned long) pv->get_int_array()[ii];
+2926c2926
+<           ( (int *) xyo->yPvData[i] )[ii] = pv->get_int();
+---
+>           ( (long *) xyo->yPvData[i] )[ii] = pv->get_int();
+2929,2930c2929,2930
+<           ( (unsigned int *) xyo->yPvData[i] )[ii] =
+<            pv->get_int();
+---
+>           ( (unsigned long *) xyo->yPvData[i] )[ii] =
+>            (unsigned long) pv->get_int();
+2994c2994
+<             dyValue = (double) ( (int *) xyo->yPvData[i] )[ii];
+---
+>             dyValue = (double) ( (long *) xyo->yPvData[i] )[ii];
+2997c2997
+<             dyValue = (double) ( (unsigned int *) xyo->yPvData[i] )[ii];
+---
+>             dyValue = (double) ( (long *) xyo->yPvData[i] )[ii];
+3075c3075
+<             dxValue = (double) ( (int *) xyo->xPvData[i] )[ii];
+---
+>             dxValue = (double) ( (long *) xyo->xPvData[i] )[ii];
+3078c3078
+<             dxValue = (double) ( (unsigned int *) xyo->xPvData[i] )[ii];
+---
+>             dxValue = (double) ( (long *) xyo->xPvData[i] )[ii];
+3250c3250
+<               ( (int *) xyo->yPvData[i] )[ii] = pv->get_int();
+---
+>               ( (long *) xyo->yPvData[i] )[ii] = pv->get_int();
+3253,3254c3253,3254
+<               ( (unsigned int *) xyo->yPvData[i] )[ii] =
+<                pv->get_int();
+---
+>               ( (unsigned long *) xyo->yPvData[i] )[ii] =
+>                (unsigned long) pv->get_int();
+3312c3312
+<               ( (int *) xyo->yPvData[i] )[ii] = pv->get_int_array()[ii];
+---
+>               ( (long *) xyo->yPvData[i] )[ii] = pv->get_int_array()[ii];
+3315,3316c3315,3316
+<               ( (unsigned int *) xyo->yPvData[i] )[ii] =
+<                pv->get_int_array()[ii];
+---
+>               ( (unsigned long *) xyo->yPvData[i] )[ii] =
+>                (unsigned long) pv->get_int_array()[ii];
+3409c3409
+<           ( (int *) xyo->yPvData[i] )[ii] = pv->get_int();
+---
+>           ( (long *) xyo->yPvData[i] )[ii] = pv->get_int();
+3413,3414c3413,3414
+<           ( (unsigned int *) xyo->yPvData[i] )[ii] =
+<            pv->get_int();
+---
+>           ( (unsigned long *) xyo->yPvData[i] )[ii] =
+>            (unsigned long) pv->get_int();
+4383c4383
+<               dxValue = (double) ( (int *) xPvData[i] )[ii];
+---
+>               dxValue = (double) ( (long *) xPvData[i] )[ii];
+4386c4386
+<               dxValue = (double) ( (unsigned int *) xPvData[i] )[ii];
+---
+>               dxValue = (double) ( (long *) xPvData[i] )[ii];
+4480c4480
+<             dyValue[yi] = (double) ( (int *) yPvData[i] )[ii];
+---
+>             dyValue[yi] = (double) ( (long *) yPvData[i] )[ii];
+4483c4483
+<             dyValue[yi] = (double) ( (unsigned int *) yPvData[i] )[ii];
+---
+>             dyValue[yi] = (double) ( (long *) yPvData[i] )[ii];
+6120c6120
+<             dyValue = (double) ( (int *) yPvData[i] )[ii];
+---
+>             dyValue = (double) ( (long *) yPvData[i] )[ii];
+6123c6123
+<             dyValue = (double) ( (unsigned int *) yPvData[i] )[ii];
+---
+>             dyValue = (double) ( (long *) yPvData[i] )[ii];
+6187c6187
+<             dxValue = (double) ( (int *) xPvData[i] )[ii];
+---
+>             dxValue = (double) ( (long *) xPvData[i] )[ii];
+6190c6190
+<             dxValue = (double) ( (unsigned int *) xPvData[i] )[ii];
+---
+>             dxValue = (double) ( (long *) xPvData[i] )[ii];
+6290c6290
+<         dyValue = (double) ( (int *) yPvData[i] )[ii];
+---
+>         dyValue = (double) ( (long *) yPvData[i] )[ii];
+6293c6293
+<         dyValue = (double) ( (unsigned int *) yPvData[i] )[ii];
+---
+>         dyValue = (double) ( (long *) yPvData[i] )[ii];
+6351c6351
+<         dxValue = (double) ( (int *) xPvData[i] )[ii];
+---
+>         dxValue = (double) ( (long *) xPvData[i] )[ii];
+6354c6354
+<         dxValue = (double) ( (unsigned int *) xPvData[i] )[ii];
+---
+>         dxValue = (double) ( (long *) xPvData[i] )[ii];
+6573c6573
+<         dyValue = (double) ( (int *) yPvData[i] )[ii];
+---
+>         dyValue = (double) ( (long *) yPvData[i] )[ii];
+6576c6576
+<         dyValue = (double) ( (unsigned int *) yPvData[i] )[ii];
+---
+>         dyValue = (double) ( (long *) yPvData[i] )[ii];
+6639c6639
+<         dxValue = (double) ( (int *) xPvData[i] )[ii];
+---
+>         dxValue = (double) ( (long *) xPvData[i] )[ii];
+6642c6642
+<         dxValue = (double) ( (unsigned int *) xPvData[i] )[ii];
+---
+>         dxValue = (double) ( (long *) xPvData[i] )[ii];
+9821c9821
+<                   dyValue = (double) ( (int *) yPvData[i] )[ii];
+---
+>                   dyValue = (double) ( (long *) yPvData[i] )[ii];
+9824c9824
+<                   dyValue = (double) ( (unsigned int *) yPvData[i] )[ii];
+---
+>                   dyValue = (double) ( (long *) yPvData[i] )[ii];
+9888c9888
+<                     dxValue = (double) ( (int *) xPvData[i] )[ii];
+---
+>                     dxValue = (double) ( (long *) xPvData[i] )[ii];
+9891c9891
+<                     dxValue = (double) ( (unsigned int *) xPvData[i] )[ii];
+---
+>                     dxValue = (double) ( (long *) xPvData[i] )[ii];
