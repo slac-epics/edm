@@ -2453,13 +2453,13 @@ void activeXTextClass::updateColors (
 			change = 1;
 		}
 
-		index = actWin->ci->evalRule( fgColor.pixelIndex(), alarmPvId->get_double() );
+		index = actWin->ci->evalRule( fgColor.pixelIndex(), colorValue );
 		if( curFgColorIndex != index ) {
 			curFgColorIndex = index;
 			change = 1;
 		}
 
-		index = actWin->ci->evalRule( bgColor.pixelIndex(), alarmPvId->get_double() );
+		index = actWin->ci->evalRule( bgColor.pixelIndex(), colorValue );
 		if( curBgColorIndex != index ) {
 			curBgColorIndex = index;
 			change = 1;
@@ -2484,7 +2484,7 @@ void activeXTextClass::updateColors (
     fgColor.changeIndex( curFgColorIndex, actWin->ci );
     bgColor.changeIndex( curBgColorIndex, actWin->ci );
     if ( ( prevFgVisibility != fgVisibility ) ||
-       ( prevBgVisibility != bgVisibility ) ) {
+         ( prevBgVisibility != bgVisibility ) ) {
       prevFgVisibility = fgVisibility;
       prevBgVisibility = bgVisibility;
     }

@@ -16,195 +16,135 @@
 //  along with this program; if not, write to the Free Software
 //  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-#ifndef __rampButton_h
-#define __rampButton_h 1
+#ifndef __asignal_h
+#define __asignal_h 1
 
 #include "act_grf.h"
 #include "entry_form.h"
 #include "keypad.h"
 #include "pv_factory.h"
-#include "cvtFast.h"
+#include "pv_callback.h"
 #include "sys_types.h"
 #include "thread.h"
 
-#define RBTC_MAJOR_VERSION 4
-#define RBTC_MINOR_VERSION 0
-#define RBTC_RELEASE 0
+#define SIGC_MAJOR_VERSION 4
+#define SIGC_MINOR_VERSION 0
+#define SIGC_RELEASE 0
 
-#define RBTC_IDLE 1
-#define RBTC_RAMPING 2
-#define RBTC_PAUSED 3
+#define SIGC_IDLE 1
+#define SIGC_GENERATING 2
+#define SIGC_PAUSED 3
 
-#ifdef __rampButton_cc
+#define SIGC_K_SINE 0
+#define SIGC_K_SQUARE 1
+#define SIGC_K_TRIANGLE 2
+#define SIGC_K_SAWTOOTH 3
+#define SIGC_K_IMPULSE 4
 
-#include "rampButton.str"
+#ifdef __asignal_cc
 
-static void rbtc_doBlink (
+#include "asignal.str"
+
+static void sigc_doBlink (
   void *ptr
 );
 
-static void rbtc_unconnectedTimeout (
+static void sigc_unconnectedTimeout (
   XtPointer client,
   XtIntervalId *id );
 
-static void rbtc_monitor_vis_connect_state (
+static void sigc_monitor_connect_state (
   ProcessVariable *pv,
   void *userarg );
 
-static void rbtc_visUpdate (
+static void sigc_update (
   ProcessVariable *pv,
   void *userarg );
 
-static void rbtc_monitor_color_connect_state (
-  ProcessVariable *pv,
-  void *userarg );
-
-static void rbtc_colorUpdate (
-  ProcessVariable *pv,
-  void *userarg );
-
-static void rbtc_controlUpdate (
-  ProcessVariable *pv,
-  void *userarg );
-
-static void rbtc_finalUpdate (
-  ProcessVariable *pv,
-  void *userarg );
-
-static void rbtc_decrement (
-  XtPointer client,
-  XtIntervalId *id );
-
-static void rbtc_increment (
+static void sigc_increment (
   XtPointer client,
   XtIntervalId *id );
 
 static char *dragName[] = {
-  activeRampButtonClass_str8,
-  activeRampButtonClass_str9,
-  activeRampButtonClass_str34,
-  activeRampButtonClass_str10
+  activeSignalClass_str8,
+  activeSignalClass_str34
 };
 
-static void rbtc_edit_ok (
+static void sigc_edit_ok (
   Widget w,
   XtPointer client,
   XtPointer call );
 
-static void rbtc_edit_update (
+static void sigc_edit_update (
   Widget w,
   XtPointer client,
   XtPointer call );
 
-static void rbtc_edit_apply (
+static void sigc_edit_apply (
   Widget w,
   XtPointer client,
   XtPointer call );
 
-static void rbtc_edit_cancel (
+static void sigc_edit_cancel (
   Widget w,
   XtPointer client,
   XtPointer call );
 
-static void rbtc_edit_cancel_delete (
+static void sigc_edit_cancel_delete (
   Widget w,
   XtPointer client,
   XtPointer call );
-
-static void rbtc_monitor_dest_connect_state (
-  ProcessVariable *pv,
-  void *userarg );
-
-static void rbtc_monitor_final_connect_state (
-  ProcessVariable *pv,
-  void *userarg );
-
-static void rbtc_monitor_rampState_connect_state (
-  ProcessVariable *pv,
-  void *userarg );
 
 #endif
 
-class activeRampButtonClass : public activeGraphicClass {
+class activeSignalClass : public activeGraphicClass {
 
 private:
 
-friend void rbtc_doBlink (
+friend void sigc_doBlink (
   void *ptr
 );
 
-friend void rbtc_unconnectedTimeout (
+friend void sigc_unconnectedTimeout (
   XtPointer client,
   XtIntervalId *id );
 
-friend void rbtc_monitor_vis_connect_state (
+friend void sigc_monitor_connect_state (
   ProcessVariable *pv,
   void *userarg );
 
-friend void rbtc_visUpdate (
+friend void sigc_update (
   ProcessVariable *pv,
   void *userarg );
 
-friend void rbtc_monitor_color_connect_state (
-  ProcessVariable *pv,
-  void *userarg );
-
-friend void rbtc_colorUpdate (
-  ProcessVariable *pv,
-  void *userarg );
-
-friend void rbtc_controlUpdate (
-  ProcessVariable *pv,
-  void *userarg );
-
-friend void rbtc_finalUpdate (
-  ProcessVariable *pv,
-  void *userarg );
-
-friend void rbtc_decrement (
+friend void sigc_increment (
   XtPointer client,
   XtIntervalId *id );
 
-friend void rbtc_increment (
-  XtPointer client,
-  XtIntervalId *id );
-
-friend void rbtc_edit_ok (
+friend void sigc_edit_ok (
   Widget w,
   XtPointer client,
   XtPointer call );
 
-friend void rbtc_edit_update (
+friend void sigc_edit_update (
   Widget w,
   XtPointer client,
   XtPointer call );
 
-friend void rbtc_edit_apply (
+friend void sigc_edit_apply (
   Widget w,
   XtPointer client,
   XtPointer call );
 
-friend void rbtc_edit_cancel (
+friend void sigc_edit_cancel (
   Widget w,
   XtPointer client,
   XtPointer call );
 
-friend void rbtc_edit_cancel_delete (
+friend void sigc_edit_cancel_delete (
   Widget w,
   XtPointer client,
   XtPointer call );
-
-friend void rbtc_monitor_dest_connect_state (
-  ProcessVariable *pv,
-  void *userarg );
-
-friend void rbtc_monitor_final_connect_state (
-  ProcessVariable *pv,
-  void *userarg );
-
-friend void rbtc_monitor_rampState_connect_state (
-  ProcessVariable *pv,
-  void *userarg );
 
 int opComplete;
 
@@ -223,8 +163,16 @@ typedef struct editBufTag {
   int bufBotShadowColor;
   int buf3D;
   int bufInvisible;
+  int bufSignalType;
+  char bufFreqPvName[PV_Factory::MAX_PV_NAME+1];
+  double bufSignalFrequency;
+  char bufAmplPvName[PV_Factory::MAX_PV_NAME+1];
+  double bufSignalAmplitude;
+  char bufPhasePvName[PV_Factory::MAX_PV_NAME+1];
+  double bufSignalPhase;
+  char bufOffsetPvName[PV_Factory::MAX_PV_NAME+1];
+  double bufSignalOffset;
   double bufUpdateRate;
-  double bufRampRate;
   int bufLimitsFromDb;
   efDouble bufEfScaleMin;
   efDouble bufEfScaleMax;
@@ -235,8 +183,7 @@ typedef struct editBufTag {
   colorButtonClass botShadowCb;
   char bufLabel[39+1];
   char bufDestPvName[PV_Factory::MAX_PV_NAME+1];
-  char bufFinalPvName[PV_Factory::MAX_PV_NAME+1];
-  char bufRampStatePvName[PV_Factory::MAX_PV_NAME+1];
+  char bufSignalStatePvName[PV_Factory::MAX_PV_NAME+1];
   char bufVisPvName[PV_Factory::MAX_PV_NAME+1];
   char bufMinVisString[39+1];
   char bufMaxVisString[39+1];
@@ -249,7 +196,7 @@ entryListBase *limitsFromDbEntry, *minEntry, *maxEntry;
 
 entryListBase *invisPvEntry, *visInvEntry, *minVisEntry, *maxVisEntry;
 
-int destType, finalType, rampStateType;
+int destType, signalStateType;
 
 pvColorClass fgColor, bgColor;
 int topShadowColor;
@@ -262,46 +209,45 @@ char fontTag[63+1];
 XFontStruct *fs;
 int fontAscent, fontDescent, fontHeight;
 
-static const int destPvConnection = 1;
-static const int finalPvConnection = 2;
-static const int visPvConnection = 3;
-static const int colorPvConnection = 4;
-static const int rampStatePvConnection = 5;
-
 pvConnectionClass connection;
 
-ProcessVariable *destPvId, *finalPvId, *rampStatePvId;
+ProcessVariable *destPvId, *signalStatePvId, *amplPvId, *offsetPvId,
+ *freqPvId, *phasePvId;
+PvCallbackClass *destPvCb, *signalStatePvCb, *amplPvCb, *offsetPvCb,
+ *freqPvCb, *phasePvCb;
+expStringClass destPvExpString, signalStatePvExpString, amplPvExpString,
+ offsetPvExpString, freqPvExpString, phasePvExpString;
+int destExists, signalStateExists, amplExists, offsetExists,
+ freqExists, phaseExists;
 
-expStringClass destPvExpString;
+int signalType, firstImpulse;
 
-expStringClass finalPvExpString;
+double signalFrequency, signalAmplitude, signalPhase,
+ signalPhaseRads, signalOffset, updateRate, elapsedTime,
+ halfPeriod, wfVal, wfInc;
 
-expStringClass rampStatePvExpString;
+int buttonPressed;
 
-double rampRate, updateRate, increment;
-
-int destExists, finalExists, rampStateExists, buttonPressed;
-
-int destPvConnected, finalPvConnected, rampStatePvConnected,
+int destPvConnected, signalStatePvConnected,
  active, activeMode, init;
 
 int incrementTimerActive, incrementTimerValue;
 XtIntervalId incrementTimer;
-double controlV, curControlV, curFinalV, rampFinalV;
+double controlV, curControlV;
 
-int needConnectInit, needFinalConnectInit, needRampStateConnectInit,
- needCtlInfoInit, needRefresh, needErase, needDraw, needToDrawUnconnected,
- needToEraseUnconnected;
+int needConnectInit, needSignalStateConnectInit, needAmplConnectInit,
+ needOffsetConnectInit, needFreqConnectInit, needPhaseConnectInit,
+ needCtlInfoInit, needRefresh, needErase, needDraw,
+ needToDrawUnconnected, needToEraseUnconnected;
 XtIntervalId unconnectedTimer;
-int initialConnection, initialFinalValueConnection,
- initialRampStateValueConnection, initialVisConnection,
- initialColorConnection;
+int initialSignalStateValueConnection;
 
 int limitsFromDb;
 double scaleMin, scaleMax, minDv, maxDv;
 efDouble efScaleMin, efScaleMax;
 
 ProcessVariable *visPvId;
+PvCallbackClass *visPvCb;
 expStringClass visPvExpString;
 int visExists;
 double visValue, curVisValue, minVis, maxVis;
@@ -311,6 +257,7 @@ int prevVisibility, visibility, visInverted;
 int needVisConnectInit, needVisInit, needVisUpdate;
 
 ProcessVariable *colorPvId;
+PvCallbackClass *colorPvCb;
 expStringClass colorPvExpString;
 int colorExists;
 double colorValue, curColorValue;
@@ -324,12 +271,21 @@ struct timeval baseTime;
 
 public:
 
-activeRampButtonClass ( void );
+static const int destPvConnectionId = 1;
+static const int signalStatePvConnectionId = 2;
+static const int visPvConnectionId = 3;
+static const int colorPvConnectionId = 4;
+static const int amplPvConnectionId = 5;
+static const int offsetPvConnectionId = 6;
+static const int freqPvConnectionId = 7;
+static const int phasePvConnectionId = 8;
 
-activeRampButtonClass
- ( const activeRampButtonClass *source );
+activeSignalClass ( void );
 
-~activeRampButtonClass ( void );
+activeSignalClass
+ ( const activeSignalClass *source );
+
+~activeSignalClass ( void );
 
 char *objName ( void ) {
 
@@ -479,8 +435,8 @@ char *crawlerGetNextPv ( void );
 extern "C" {
 #endif
 
-void *create_activeRampButtonClassPtr ( void );
-void *clone_activeRampButtonClassPtr ( void * );
+void *create_activeSignalClassPtr ( void );
+void *clone_activeSignalClassPtr ( void * );
 
 #ifdef __cplusplus
 }

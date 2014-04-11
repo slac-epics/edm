@@ -832,6 +832,7 @@ class xyGraphClass : public activeGraphicClass
 		short lastY;
 		short minY;
 		short maxY;
+		short yZero;
 	}	plotInfoType, *plotInfoPtr;
 
 	plotInfoPtr		plotInfo[XYGC_K_MAX_TRACES];

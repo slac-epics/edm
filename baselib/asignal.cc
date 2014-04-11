@@ -16,564 +16,428 @@
 //  along with this program; if not, write to the Free Software
 //  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-#define __rampButton_cc 1
+#define __asignal_cc 1
 
-#include "rampButton.h"
+#include "asignal.h"
 #include "app_pkg.h"
 #include "act_win.h"
 
-static void rbtc_doBlink (
+static void sigc_doBlink (
   void *ptr
 ) {
 
-activeRampButtonClass *rbto = (activeRampButtonClass *) ptr;
+activeSignalClass *sigo = (activeSignalClass *) ptr;
 
-  if ( !rbto->activeMode ) {
-    if ( rbto->isSelected() ) rbto->drawSelectBoxCorners(); //erase via xor
-    rbto->smartDrawAll();
-    if ( rbto->isSelected() ) rbto->drawSelectBoxCorners();
+  if ( !sigo->activeMode ) {
+    if ( sigo->isSelected() ) sigo->drawSelectBoxCorners(); //erase via xor
+    sigo->smartDrawAll();
+    if ( sigo->isSelected() ) sigo->drawSelectBoxCorners();
   }
   else {
-    rbto->bufInvalidate();
-    rbto->needDraw = 1;
-    rbto->actWin->addDefExeNode( rbto->aglPtr );
+    sigo->bufInvalidate();
+    sigo->needDraw = 1;
+    sigo->actWin->addDefExeNode( sigo->aglPtr );
   }
 
 }
 
-static void rbtc_unconnectedTimeout (
+static void sigc_unconnectedTimeout (
   XtPointer client,
   XtIntervalId *id )
 {
 
-activeRampButtonClass *rbto = (activeRampButtonClass *) client;
+activeSignalClass *sigo = (activeSignalClass *) client;
 
-  if ( !rbto->init ) {
-    rbto->needToDrawUnconnected = 1;
-    rbto->needDraw = 1;
-    rbto->actWin->addDefExeNode( rbto->aglPtr );
+  if ( !sigo->init ) {
+    sigo->needToDrawUnconnected = 1;
+    sigo->needDraw = 1;
+    sigo->actWin->addDefExeNode( sigo->aglPtr );
   }
 
-  rbto->unconnectedTimer = 0;
+  sigo->unconnectedTimer = 0;
 
 }
 
-static void rbtc_edit_update (
+static void sigc_edit_update (
   Widget w,
   XtPointer client,
   XtPointer call )
 {
 
-activeRampButtonClass *rbto = (activeRampButtonClass *) client;
+activeSignalClass *sigo = (activeSignalClass *) client;
 
-  rbto->actWin->setChanged();
+  sigo->actWin->setChanged();
 
-  rbto->eraseSelectBoxCorners();
-  rbto->erase();
+  sigo->eraseSelectBoxCorners();
+  sigo->erase();
 
-  rbto->fgColor.setColorIndex( rbto->eBuf->bufFgColor, rbto->actWin->ci );
+  sigo->fgColor.setColorIndex( sigo->eBuf->bufFgColor, sigo->actWin->ci );
 
-  rbto->bgColor.setColorIndex( rbto->eBuf->bufBgColor, rbto->actWin->ci );
+  sigo->bgColor.setColorIndex( sigo->eBuf->bufBgColor, sigo->actWin->ci );
 
-  rbto->topShadowColor = rbto->eBuf->bufTopShadowColor;
-  rbto->botShadowColor = rbto->eBuf->bufBotShadowColor;
+  sigo->topShadowColor = sigo->eBuf->bufTopShadowColor;
+  sigo->botShadowColor = sigo->eBuf->bufBotShadowColor;
 
-  rbto->destPvExpString.setRaw( rbto->eBuf->bufDestPvName );
+  sigo->destPvExpString.setRaw( sigo->eBuf->bufDestPvName );
 
-  rbto->finalPvExpString.setRaw( rbto->eBuf->bufFinalPvName );
+  sigo->signalStatePvExpString.setRaw( sigo->eBuf->bufSignalStatePvName );
 
-  rbto->rampStatePvExpString.setRaw( rbto->eBuf->bufRampStatePvName );
+  sigo->label.setRaw( sigo->eBuf->bufLabel );
 
-  rbto->label.setRaw( rbto->eBuf->bufLabel );
+  strncpy( sigo->fontTag, sigo->fm.currentFontTag(), 63 );
+  sigo->actWin->fi->loadFontTag( sigo->fontTag );
+  sigo->fs = sigo->actWin->fi->getXFontStruct( sigo->fontTag );
 
-  strncpy( rbto->fontTag, rbto->fm.currentFontTag(), 63 );
-  rbto->actWin->fi->loadFontTag( rbto->fontTag );
-  rbto->fs = rbto->actWin->fi->getXFontStruct( rbto->fontTag );
+  sigo->_3D = sigo->eBuf->buf3D;
 
-  rbto->_3D = rbto->eBuf->buf3D;
+  sigo->invisible = sigo->eBuf->bufInvisible;
 
-  rbto->invisible = rbto->eBuf->bufInvisible;
+  sigo->updateRate = sigo->eBuf->bufUpdateRate;
+  if ( sigo->updateRate < 0.1 ) sigo->updateRate = 0.1;
+  if ( sigo->updateRate > 10.0 ) sigo->updateRate = 10.0;
 
-  rbto->updateRate = rbto->eBuf->bufUpdateRate;
-  if ( rbto->updateRate < 0.1 ) rbto->updateRate = 0.1;
-  if ( rbto->updateRate > 10.0 ) rbto->updateRate = 10.0;
+  sigo->amplPvExpString.setRaw( sigo->eBuf->bufAmplPvName );
 
-  rbto->rampRate = rbto->eBuf->bufRampRate;
+  sigo->signalAmplitude = sigo->eBuf->bufSignalAmplitude;
 
-  rbto->limitsFromDb = rbto->eBuf->bufLimitsFromDb;
+  sigo->freqPvExpString.setRaw( sigo->eBuf->bufFreqPvName );
 
-  rbto->efScaleMin = rbto->eBuf->bufEfScaleMin;
-  rbto->efScaleMax = rbto->eBuf->bufEfScaleMax;
+  sigo->signalFrequency = sigo->eBuf->bufSignalFrequency;
 
-  rbto->minDv = rbto->scaleMin = rbto->efScaleMin.value();
-  rbto->maxDv = rbto->scaleMax = rbto->efScaleMax.value();
+  sigo->phasePvExpString.setRaw( sigo->eBuf->bufPhasePvName );
 
-  rbto->visPvExpString.setRaw( rbto->eBuf->bufVisPvName );
-  strncpy( rbto->minVisString, rbto->eBuf->bufMinVisString, 39 );
-  strncpy( rbto->maxVisString, rbto->eBuf->bufMaxVisString, 39 );
+  sigo->signalPhase = sigo->eBuf->bufSignalPhase;
 
-  if ( rbto->eBuf->bufVisInverted )
-    rbto->visInverted = 0;
+  sigo->offsetPvExpString.setRaw( sigo->eBuf->bufOffsetPvName );
+
+  sigo->signalOffset = sigo->eBuf->bufSignalOffset;
+
+  sigo->signalType = sigo->eBuf->bufSignalType;
+
+  sigo->limitsFromDb = sigo->eBuf->bufLimitsFromDb;
+
+  sigo->efScaleMin = sigo->eBuf->bufEfScaleMin;
+  sigo->efScaleMax = sigo->eBuf->bufEfScaleMax;
+
+  sigo->minDv = sigo->scaleMin = sigo->efScaleMin.value();
+  sigo->maxDv = sigo->scaleMax = sigo->efScaleMax.value();
+
+  sigo->visPvExpString.setRaw( sigo->eBuf->bufVisPvName );
+  strncpy( sigo->minVisString, sigo->eBuf->bufMinVisString, 39 );
+  strncpy( sigo->maxVisString, sigo->eBuf->bufMaxVisString, 39 );
+
+  if ( sigo->eBuf->bufVisInverted )
+    sigo->visInverted = 0;
   else
-    rbto->visInverted = 1;
+    sigo->visInverted = 1;
 
-  rbto->colorPvExpString.setRaw( rbto->eBuf->bufColorPvName );
+  sigo->colorPvExpString.setRaw( sigo->eBuf->bufColorPvName );
 
-  rbto->x = rbto->eBuf->bufX;
-  rbto->sboxX = rbto->eBuf->bufX;
+  sigo->x = sigo->eBuf->bufX;
+  sigo->sboxX = sigo->eBuf->bufX;
 
-  rbto->y = rbto->eBuf->bufY;
-  rbto->sboxY = rbto->eBuf->bufY;
+  sigo->y = sigo->eBuf->bufY;
+  sigo->sboxY = sigo->eBuf->bufY;
 
-  rbto->w = rbto->eBuf->bufW;
-  rbto->sboxW = rbto->eBuf->bufW;
+  sigo->w = sigo->eBuf->bufW;
+  sigo->sboxW = sigo->eBuf->bufW;
 
-  rbto->h = rbto->eBuf->bufH;
-  rbto->sboxH = rbto->eBuf->bufH;
+  sigo->h = sigo->eBuf->bufH;
+  sigo->sboxH = sigo->eBuf->bufH;
 
-  rbto->updateDimensions();
+  sigo->updateDimensions();
 
 }
 
-static void rbtc_edit_apply (
+static void sigc_edit_apply (
   Widget w,
   XtPointer client,
   XtPointer call )
 {
 
-activeRampButtonClass *rbto = (activeRampButtonClass *) client;
+activeSignalClass *sigo = (activeSignalClass *) client;
 
-  rbtc_edit_update ( w, client, call );
-  rbto->refresh( rbto );
+  sigc_edit_update ( w, client, call );
+  sigo->refresh( sigo );
 
 }
 
-static void rbtc_edit_ok (
+static void sigc_edit_ok (
   Widget w,
   XtPointer client,
   XtPointer call )
 {
 
-activeRampButtonClass *rbto = (activeRampButtonClass *) client;
+activeSignalClass *sigo = (activeSignalClass *) client;
 
-  rbtc_edit_update ( w, client, call );
-  rbto->ef.popdown();
-  rbto->operationComplete();
+  sigc_edit_update ( w, client, call );
+  sigo->ef.popdown();
+  sigo->operationComplete();
 
 }
 
-static void rbtc_edit_cancel (
+static void sigc_edit_cancel (
   Widget w,
   XtPointer client,
   XtPointer call )
 {
 
-activeRampButtonClass *rbto = (activeRampButtonClass *) client;
+activeSignalClass *sigo = (activeSignalClass *) client;
 
-  rbto->ef.popdown();
-  rbto->operationCancel();
+  sigo->ef.popdown();
+  sigo->operationCancel();
 
 }
 
-static void rbtc_edit_cancel_delete (
+static void sigc_edit_cancel_delete (
   Widget w,
   XtPointer client,
   XtPointer call )
 {
 
-activeRampButtonClass *rbto = (activeRampButtonClass *) client;
+activeSignalClass *sigo = (activeSignalClass *) client;
 
-  rbto->ef.popdown();
-  rbto->operationCancel();
-  rbto->erase();
-  rbto->deleteRequest = 1;
-  rbto->drawAll();
+  sigo->ef.popdown();
+  sigo->operationCancel();
+  sigo->erase();
+  sigo->deleteRequest = 1;
+  sigo->drawAll();
 
 }
 
-static void rbtc_monitor_dest_connect_state (
+static void sigc_monitor_connect_state (
   ProcessVariable *pv,
   void *userarg )
 {
 
-activeRampButtonClass *rbto = (activeRampButtonClass *) userarg;
+PvCallbackClass *pco = (PvCallbackClass *) userarg;
+activeSignalClass *sigo = (activeSignalClass *) pco->getUserArg();
 
-  if ( pv->is_valid() ) {
+  sigo->actWin->appCtx->proc->lock();
 
-    rbto->needConnectInit = 1;
-
-  }
-  else {
-
-    rbto->connection.setPvDisconnected( (void *) rbto->destPvConnection );
-    rbto->active = 0;
-    rbto->bgColor.setDisconnected();
-    rbto->needDraw = 1;
-
+  if ( !pv->is_valid() ) {
+    sigo->active = 0;
+    sigo->bgColor.setDisconnected();
+    sigo->needDraw = 1;
   }
 
-  rbto->actWin->appCtx->proc->lock();
-  rbto->actWin->addDefExeNode( rbto->aglPtr );
-  rbto->actWin->appCtx->proc->unlock();
+  if ( pco->getId() == activeSignalClass::destPvConnectionId ) {
+    if ( pv->is_valid() ) {
+      sigo->needConnectInit = 1;
+    }
+  }
+  else if ( pco->getId() == activeSignalClass::signalStatePvConnectionId ) {
+    if ( pv->is_valid() ) {
+      sigo->needSignalStateConnectInit = 1;
+    }
+  }
+  else if ( pco->getId() == activeSignalClass::visPvConnectionId ) {
+    if ( pv->is_valid() ) {
+      sigo->needVisConnectInit = 1;
+    }
+  }
+  else if ( pco->getId() == activeSignalClass::colorPvConnectionId ) {
+    if ( pv->is_valid() ) {
+      sigo->needColorConnectInit = 1;
+    }
+  }
+  else if ( pco->getId() == activeSignalClass::amplPvConnectionId ) {
+    if ( pv->is_valid() ) {
+      sigo->needAmplConnectInit = 1;
+    }
+  }
+  else if ( pco->getId() == activeSignalClass::offsetPvConnectionId ) {
+    if ( pv->is_valid() ) {
+      sigo->needOffsetConnectInit = 1;
+    }
+  }
+  else if ( pco->getId() == activeSignalClass::freqPvConnectionId ) {
+    if ( pv->is_valid() ) {
+      sigo->needFreqConnectInit = 1;
+    }
+  }
+  else if ( pco->getId() == activeSignalClass::phasePvConnectionId ) {
+    if ( pv->is_valid() ) {
+      sigo->needPhaseConnectInit = 1;
+    }
+  }
+
+  sigo->actWin->addDefExeNode( sigo->aglPtr );
+
+  sigo->actWin->appCtx->proc->unlock();
 
 }
 
-static void rbtc_monitor_final_connect_state (
+static void sigc_update (
   ProcessVariable *pv,
-  void *userarg )
-{
+  void *userarg ) {
 
-activeRampButtonClass *rbto = (activeRampButtonClass *) userarg;
+PvCallbackClass *pco = (PvCallbackClass *) userarg;
+activeSignalClass *sigo = (activeSignalClass *) pco->getUserArg();
 
-  if ( pv->is_valid() ) {
+  sigo->actWin->appCtx->proc->lock();
 
-    rbto->needFinalConnectInit = 1;
-    rbto->actWin->appCtx->proc->lock();
-    rbto->actWin->addDefExeNode( rbto->aglPtr );
-    rbto->actWin->appCtx->proc->unlock();
-
+  if ( pco->getId() == activeSignalClass::destPvConnectionId ) {
+    sigo->curControlV = pv->get_double();
   }
-  else {
-
-    rbto->connection.setPvDisconnected( (void *) rbto->finalPvConnection );
-    rbto->active = 0;
-    rbto->bgColor.setDisconnected();
-    rbto->needDraw = 1;
-
+  else if ( pco->getId() == activeSignalClass::visPvConnectionId ) {
+    sigo->curVisValue = pv->get_double();
+    sigo->needVisUpdate = 1;
+  }
+  else if ( pco->getId() == activeSignalClass::colorPvConnectionId ) {
+    sigo->curColorValue = pv->get_double();
+    sigo->needColorUpdate = 1;
+  }
+  else if ( pco->getId() == activeSignalClass::amplPvConnectionId ) {
+    sigo->signalAmplitude = pv->get_double();
+  }
+  else if ( pco->getId() == activeSignalClass::offsetPvConnectionId ) {
+    sigo->signalOffset = pv->get_double();
+  }
+  else if ( pco->getId() == activeSignalClass::freqPvConnectionId ) {
+    sigo->signalFrequency = pv->get_double();
+  }
+  else if ( pco->getId() == activeSignalClass::phasePvConnectionId ) {
+    sigo->signalPhase = pv->get_double();
+    sigo->signalPhaseRads = sigo->signalPhase * 0.017453;
   }
 
-  rbto->actWin->appCtx->proc->lock();
-  rbto->actWin->addDefExeNode( rbto->aglPtr );
-  rbto->actWin->appCtx->proc->unlock();
+  sigo->actWin->addDefExeNode( sigo->aglPtr );
+
+  sigo->actWin->appCtx->proc->unlock();
 
 }
 
-static void rbtc_monitor_rampState_connect_state (
-  ProcessVariable *pv,
-  void *userarg )
-{
-
-activeRampButtonClass *rbto = (activeRampButtonClass *) userarg;
-
-  if ( pv->is_valid() ) {
-
-    rbto->needRampStateConnectInit = 1;
-    rbto->actWin->appCtx->proc->lock();
-    rbto->actWin->addDefExeNode( rbto->aglPtr );
-    rbto->actWin->appCtx->proc->unlock();
-
-  }
-  else {
-
-    rbto->connection.setPvDisconnected( (void *) rbto->rampStatePvConnection );
-    rbto->active = 0;
-    rbto->bgColor.setDisconnected();
-    rbto->needDraw = 1;
-
-  }
-
-  rbto->actWin->appCtx->proc->lock();
-  rbto->actWin->addDefExeNode( rbto->aglPtr );
-  rbto->actWin->appCtx->proc->unlock();
-
-}
-
-static void rbtc_controlUpdate (
-  ProcessVariable *pv,
-  void *userarg )
-{
-
-activeRampButtonClass *rbto = (activeRampButtonClass *) userarg;
-
-  rbto->actWin->appCtx->proc->lock();
-
-  rbto->curControlV = pv->get_double();
-
-  rbto->actWin->appCtx->proc->unlock();
-
-}
-
-static void rbtc_finalUpdate (
-  ProcessVariable *pv,
-  void *userarg )
-{
-
-activeRampButtonClass *rbto = (activeRampButtonClass *) userarg;
-
-  rbto->actWin->appCtx->proc->lock();
-
-  rbto->curFinalV = pv->get_double();
-
-  rbto->actWin->appCtx->proc->unlock();
-
-}
-
-static void rbtc_monitor_vis_connect_state (
-  ProcessVariable *pv,
-  void *userarg )
-{
-
-activeRampButtonClass *rbto = (activeRampButtonClass *) userarg;
-
-  if ( pv->is_valid() ) {
-
-    rbto->needVisConnectInit = 1;
-
-  }
-  else {
-
-    rbto->connection.setPvDisconnected( (void *) rbto->visPvConnection );
-    rbto->active = 0;
-    rbto->bgColor.setDisconnected();
-    rbto->needDraw = 1;
-
-  }
-
-  rbto->actWin->appCtx->proc->lock();
-  rbto->actWin->addDefExeNode( rbto->aglPtr );
-  rbto->actWin->appCtx->proc->unlock();
-
-}
-
-static void rbtc_visUpdate (
-  ProcessVariable *pv,
-  void *userarg )
-{
-
-activeRampButtonClass *rbto = (activeRampButtonClass *) userarg;
-
-  rbto->curVisValue = pv->get_double();
-
-  rbto->actWin->appCtx->proc->lock();
-  rbto->needVisUpdate = 1;
-  rbto->actWin->addDefExeNode( rbto->aglPtr );
-  rbto->actWin->appCtx->proc->unlock();
-
-}
-
-static void rbtc_monitor_color_connect_state (
-  ProcessVariable *pv,
-  void *userarg )
-{
-
-activeRampButtonClass *rbto = (activeRampButtonClass *) userarg;
-
-  if ( pv->is_valid() ) {
-
-    rbto->needColorConnectInit = 1;
-
-  }
-  else {
-
-    rbto->connection.setPvDisconnected( (void *) rbto->colorPvConnection );
-    rbto->active = 0;
-    rbto->bgColor.setDisconnected();
-    rbto->needDraw = 1;
-
-  }
-
-  rbto->actWin->appCtx->proc->lock();
-  rbto->actWin->addDefExeNode( rbto->aglPtr );
-  rbto->actWin->appCtx->proc->unlock();
-
-}
-
-static void rbtc_colorUpdate (
-  ProcessVariable *pv,
-  void *userarg )
-{
-
-activeRampButtonClass *rbto = (activeRampButtonClass *) userarg;
-
-  rbto->curColorValue = pv->get_double();
-
-  rbto->actWin->appCtx->proc->lock();
-  rbto->needColorUpdate = 1;
-  rbto->actWin->addDefExeNode( rbto->aglPtr );
-  rbto->actWin->appCtx->proc->unlock();
-
-}
-
-static void rbtc_decrement (
+static void sigc_increment (
   XtPointer client,
   XtIntervalId *id )
 {
 
-activeRampButtonClass *rbto = (activeRampButtonClass *) client;
-double dval, seconds, adjust;
+activeSignalClass *sigo = (activeSignalClass *) client;
+double dval, div1, div2, remainder1, remainder2, seconds;
 struct timeval curTime;
 
   gettimeofday( &curTime, NULL );
-  seconds = curTime.tv_sec - rbto->baseTime.tv_sec +
-    ( curTime.tv_usec - rbto->baseTime.tv_usec ) * 0.000001;
-  rbto->baseTime = curTime;
+  seconds = curTime.tv_sec - sigo->baseTime.tv_sec +
+    ( curTime.tv_usec - sigo->baseTime.tv_usec ) * 0.000001;
+  sigo->baseTime = curTime;
 
-  adjust = seconds / rbto->updateRate;
-  if ( adjust > 1.1 ) adjust = 1.1;
-  if ( adjust < 0.9 ) adjust = 0.9;
-
-  if ( !rbto->incrementTimerActive ) {
-    rbto->incrementTimer = 0;
+  if ( !sigo->incrementTimerActive ) {
+    sigo->incrementTimer = 0;
     return;
   }
 
-  rbto->incrementTimer = appAddTimeOut(
-   rbto->actWin->appCtx->appContext(),
-   rbto->incrementTimerValue, rbtc_decrement, client );
+  sigo->incrementTimer = appAddTimeOut(
+   sigo->actWin->appCtx->appContext(),
+   sigo->incrementTimerValue, sigc_increment, client );
 
-  rbto->actWin->appCtx->proc->lock();
-  dval = rbto->curControlV;
-  rbto->actWin->appCtx->proc->unlock();
+  sigo->actWin->appCtx->proc->lock();
+  dval = sigo->curControlV;
+  sigo->actWin->appCtx->proc->unlock();
 
-  dval -= rbto->increment * adjust;
+  sigo->elapsedTime += seconds;
 
-  if ( dval <= rbto->rampFinalV ) {
-    dval = rbto->rampFinalV;
-    rbto->incrementTimerActive = 0;
-    rbto->buttonPressed = 0;
-    if ( rbto->rampStateExists ) {
-      rbto->rampStatePvId->put(
-       XDisplayName(rbto->actWin->appCtx->displayName),
-       rbto->buttonPressed );
-    }
-    rbto->actWin->appCtx->proc->lock();
-    rbto->needRefresh = 1;
-    rbto->actWin->addDefExeNode( rbto->aglPtr );
-    rbto->actWin->appCtx->proc->unlock();
+
+  if ( sigo->signalType == SIGC_K_SINE ) {
+    dval = 0.5 * sigo->signalAmplitude *
+     sin( 6.283185 * sigo->signalFrequency * sigo->elapsedTime - sigo->signalPhaseRads );
   }
-  if ( dval <= rbto->minDv ) {
-    dval = rbto->minDv;
-    rbto->incrementTimerActive = 0;
-    rbto->buttonPressed = 0;
-    if ( rbto->rampStateExists ) {
-      rbto->rampStatePvId->put(
-       XDisplayName(rbto->actWin->appCtx->displayName),
-       rbto->buttonPressed );
+  else if ( sigo->signalType == SIGC_K_SQUARE ) {
+    if ( sigo->halfPeriod == 0.0 ) {
+      dval = 0.0;
     }
-    rbto->actWin->appCtx->proc->lock();
-    rbto->needRefresh = 1;
-    rbto->actWin->addDefExeNode( rbto->aglPtr );
-    rbto->actWin->appCtx->proc->unlock();
+    else {
+      dval = sin( 6.283185 * sigo->signalFrequency * sigo->elapsedTime - sigo->signalPhaseRads );
+      if ( dval >=0 ) {
+        dval = sigo->signalAmplitude * 0.5;
+      }
+      else {
+        dval = sigo->signalAmplitude * -0.5;
+      }
+    }
   }
-  else if ( dval >= rbto->maxDv ) {
-    dval = rbto->maxDv;
-    rbto->incrementTimerActive = 0;
-    rbto->buttonPressed = 0;
-    if ( rbto->rampStateExists ) {
-      rbto->rampStatePvId->put(
-       XDisplayName(rbto->actWin->appCtx->displayName),
-       rbto->buttonPressed );
+  else if ( sigo->signalType == SIGC_K_TRIANGLE ) {
+    if ( sigo->halfPeriod == 0.0 ) {
+      dval = 0.0;
     }
-    rbto->actWin->appCtx->proc->lock();
-    rbto->needRefresh = 1;
-    rbto->actWin->addDefExeNode( rbto->aglPtr );
-    rbto->actWin->appCtx->proc->unlock();
+    else {
+      div1 = ( sigo->elapsedTime - sigo->signalPhaseRads / 6.28 * sigo->halfPeriod ) / sigo->halfPeriod;
+      remainder1 = div1 - floor( div1 );
+      if ( remainder1 <= 0.25 ) {
+        dval = remainder1 * 2 * sigo->signalAmplitude;
+      }
+      else if ( remainder1 <= 0.75 ) {
+        dval = sigo->signalAmplitude  * 0.5 - ( remainder1 - 0.25 ) * 2 * sigo->signalAmplitude;
+      }
+      else {
+        dval = ( remainder1 - 0.75 ) * 2 * sigo->signalAmplitude - sigo->signalAmplitude * 0.5;
+      }
+    }
+  }
+  else if ( sigo->signalType == SIGC_K_SAWTOOTH ) {
+    if ( sigo->halfPeriod == 0.0 ) {
+      dval = 0.0;
+    }
+    else {
+      div1 = ( sigo->elapsedTime - sigo->signalPhaseRads / 6.28 * sigo->halfPeriod ) / sigo->halfPeriod;
+      remainder1 = div1 - floor( div1 );
+      dval = remainder1 * sigo->signalAmplitude - sigo->signalAmplitude * 0.5;
+    }
+  }
+  else { // SIGC_K_IMPULSE
+    if ( sigo->halfPeriod == 0.0 ) {
+      dval = 0.0;
+    }
+    else {
+      dval = sin( 6.283185 * sigo->signalFrequency * sigo->elapsedTime - sigo->signalPhaseRads );
+      if ( dval >=0 ) {
+        if ( sigo->firstImpulse ) {
+          sigo->firstImpulse = 0;
+          dval = sigo->signalAmplitude * 0.5;
+        }
+        else {
+          dval = sigo->signalAmplitude * -0.5;
+        }
+      }
+      else {
+        dval = sigo->signalAmplitude * -0.5;
+        sigo->firstImpulse = 1;
+      }
+    }
   }
 
-  if ( rbto->destExists ) {
-    rbto->destPvId->put(
-     XDisplayName(rbto->actWin->appCtx->displayName),
+  dval += sigo->signalOffset;
+
+  if ( dval <= sigo->minDv ) {
+    dval = sigo->minDv;
+  }
+  else if ( dval >= sigo->maxDv ) {
+    dval = sigo->maxDv;
+  }
+
+  if ( sigo->destExists ) {
+    sigo->destPvId->put(
+     XDisplayName(sigo->actWin->appCtx->displayName),
      dval );
   }
 
 }
 
-static void rbtc_increment (
-  XtPointer client,
-  XtIntervalId *id )
-{
+activeSignalClass::activeSignalClass ( void ) {
 
-activeRampButtonClass *rbto = (activeRampButtonClass *) client;
-double dval, seconds, adjust;
-struct timeval curTime;
-
-  gettimeofday( &curTime, NULL );
-  seconds = curTime.tv_sec - rbto->baseTime.tv_sec +
-    ( curTime.tv_usec - rbto->baseTime.tv_usec ) * 0.000001;
-  rbto->baseTime = curTime;
-
-  adjust = seconds / rbto->updateRate;
-  if ( adjust > 1.1 ) adjust = 1.1;
-  if ( adjust < 0.9 ) adjust = 0.9;
-
-  if ( !rbto->incrementTimerActive ) {
-    rbto->incrementTimer = 0;
-    return;
-  }
-
-  rbto->incrementTimer = appAddTimeOut(
-   rbto->actWin->appCtx->appContext(),
-   rbto->incrementTimerValue, rbtc_increment, client );
-
-  rbto->actWin->appCtx->proc->lock();
-  dval = rbto->curControlV;
-  rbto->actWin->appCtx->proc->unlock();
-
-  dval += rbto->increment * adjust;
-
-  if ( dval >= rbto->rampFinalV ) {
-    dval = rbto->rampFinalV;
-    rbto->incrementTimerActive = 0;
-    rbto->buttonPressed = 0;
-    if ( rbto->rampStateExists ) {
-      rbto->rampStatePvId->put(
-       XDisplayName(rbto->actWin->appCtx->displayName),
-       rbto->buttonPressed );
-    }
-    rbto->actWin->appCtx->proc->lock();
-    rbto->needRefresh = 1;
-    rbto->actWin->addDefExeNode( rbto->aglPtr );
-    rbto->actWin->appCtx->proc->unlock();
-  }
-  if ( dval <= rbto->minDv ) {
-    dval = rbto->minDv;
-    rbto->incrementTimerActive = 0;
-    rbto->buttonPressed = 0;
-    if ( rbto->rampStateExists ) {
-      rbto->rampStatePvId->put(
-       XDisplayName(rbto->actWin->appCtx->displayName),
-       rbto->buttonPressed );
-    }
-    rbto->actWin->appCtx->proc->lock();
-    rbto->needRefresh = 1;
-    rbto->actWin->addDefExeNode( rbto->aglPtr );
-    rbto->actWin->appCtx->proc->unlock();
-  }
-  else if ( dval >= rbto->maxDv ) {
-    dval = rbto->maxDv;
-    rbto->incrementTimerActive = 0;
-    rbto->buttonPressed = 0;
-    if ( rbto->rampStateExists ) {
-      rbto->rampStatePvId->put(
-       XDisplayName(rbto->actWin->appCtx->displayName),
-       rbto->buttonPressed );
-    }
-    rbto->actWin->appCtx->proc->lock();
-    rbto->needRefresh = 1;
-    rbto->actWin->addDefExeNode( rbto->aglPtr );
-    rbto->actWin->appCtx->proc->unlock();
-  }
-
-  if ( rbto->destExists ) {
-    rbto->destPvId->put(
-     XDisplayName(rbto->actWin->appCtx->displayName),
-     dval );
-  }
-
-}
-
-activeRampButtonClass::activeRampButtonClass ( void ) {
-
-  name = new char[strlen("activeRampButtonClass")+1];
-  strcpy( name, "activeRampButtonClass" );
+  name = new char[strlen("activeSignalClass")+1];
+  strcpy( name, "activeSignalClass" );
   checkBaseClassVersion( activeGraphicClass::MAJOR_VERSION, name );
   buttonPressed = 0;
-  state = RBTC_IDLE;
+  state = SIGC_IDLE;
   _3D = 1;
   invisible = 0;
   updateRate = 0.5;
-  rampRate = 0.0;
-  curFinalV = 0.0;
+  signalAmplitude = 1.0;
+  signalFrequency = 1.0;
+  signalPhase = 0.0;
+  signalOffset = 0.0;
+  signalType = SIGC_K_SINE;
   scaleMin = 0;
   scaleMax = 10;
   limitsFromDb = 1;
@@ -585,24 +449,26 @@ activeRampButtonClass::activeRampButtonClass ( void ) {
   visInverted = 0;
   strcpy( minVisString, "" );
   strcpy( maxVisString, "" );
-  connection.setMaxPvs( 5 );
+  connection.setMaxPvs( 8 );
   activeMode = 0;
   eBuf = NULL;
+  destPvCb = signalStatePvCb = visPvCb = colorPvCb = amplPvCb =
+   offsetPvCb = freqPvCb = phasePvCb = NULL;
 
-  setBlinkFunction( (void *) rbtc_doBlink );
+  setBlinkFunction( (void *) sigc_doBlink );
 
 }
 
 // copy constructor
-activeRampButtonClass::activeRampButtonClass
- ( const activeRampButtonClass *source ) {
+activeSignalClass::activeSignalClass
+ ( const activeSignalClass *source ) {
 
-activeGraphicClass *rbto = (activeGraphicClass *) this;
+activeGraphicClass *sigo = (activeGraphicClass *) this;
 
-  rbto->clone( (activeGraphicClass *) source );
+  sigo->clone( (activeGraphicClass *) source );
 
-  name = new char[strlen("activeRampButtonClass")+1];
-  strcpy( name, "activeRampButtonClass" );
+  name = new char[strlen("activeSignalClass")+1];
+  strcpy( name, "activeSignalClass" );
 
   buttonPressed = 0;
 
@@ -617,19 +483,25 @@ activeGraphicClass *rbto = (activeGraphicClass *) this;
   botShadowColor = source->botShadowColor;
 
   destPvExpString.copy( source->destPvExpString );
-  finalPvExpString.copy( source->finalPvExpString );
-  rampStatePvExpString.copy( source->rampStatePvExpString );
+  signalStatePvExpString.copy( source->signalStatePvExpString );
   visPvExpString.copy( source->visPvExpString );
   colorPvExpString.copy( source->colorPvExpString );
+  amplPvExpString.copy( source->amplPvExpString );
+  offsetPvExpString.copy( source->offsetPvExpString );
+  freqPvExpString.copy( source->freqPvExpString );
+  phasePvExpString.copy( source->phasePvExpString );
 
   label.copy( source->label );
 
-  state = RBTC_IDLE;
+  state = SIGC_IDLE;
   _3D = source->_3D;
   invisible = source->invisible;
   updateRate = source->updateRate;
-  rampRate = source->rampRate;
-  curFinalV = 0.0;
+  signalAmplitude = source->signalAmplitude;
+  signalFrequency = source->signalFrequency;
+  signalPhase = source->signalPhase;
+  signalOffset = source->signalOffset;
+  signalType = source->signalType;
   limitsFromDb = source->limitsFromDb;
   scaleMin = source->scaleMin;
   scaleMax = source->scaleMax;
@@ -644,17 +516,22 @@ activeGraphicClass *rbto = (activeGraphicClass *) this;
   strncpy( maxVisString, source->maxVisString, 39 );
   activeMode = 0;
   eBuf = NULL;
+  destPvCb = signalStatePvCb = visPvCb = colorPvCb = amplPvCb =
+   offsetPvCb = freqPvCb = phasePvCb = NULL;
 
-  connection.setMaxPvs( 5 );
+  connection.setMaxPvs( 8 );
 
-  setBlinkFunction( (void *) rbtc_doBlink );
+  setBlinkFunction( (void *) sigc_doBlink );
 
   doAccSubs( destPvExpString );
-  doAccSubs( finalPvExpString );
-  doAccSubs( rampStatePvExpString );
+  doAccSubs( signalStatePvExpString );
   doAccSubs( label );
   doAccSubs( colorPvExpString );
   doAccSubs( visPvExpString );
+  doAccSubs( amplPvExpString );
+  doAccSubs( offsetPvExpString );
+  doAccSubs( freqPvExpString );
+  doAccSubs( phasePvExpString );
   doAccSubs( minVisString, 39 );
   doAccSubs( maxVisString, 39 );
 
@@ -662,7 +539,7 @@ activeGraphicClass *rbto = (activeGraphicClass *) this;
 
 }
 
-activeRampButtonClass::~activeRampButtonClass ( void ) {
+activeSignalClass::~activeSignalClass ( void ) {
 
   if ( name ) delete[] name;
 
@@ -677,7 +554,7 @@ activeRampButtonClass::~activeRampButtonClass ( void ) {
 
 }
 
-int activeRampButtonClass::createInteractive (
+int activeSignalClass::createInteractive (
   activeWindowClass *aw_obj,
   int _x,
   int _y,
@@ -710,7 +587,7 @@ int activeRampButtonClass::createInteractive (
 
 }
 
-int activeRampButtonClass::save (
+int activeSignalClass::save (
   FILE *f )
 {
 
@@ -722,9 +599,25 @@ int zero = 0;
 double dzero = 0;
 char *emptyStr = "";
 
-  major = RBTC_MAJOR_VERSION;
-  minor = RBTC_MINOR_VERSION;
-  release = RBTC_RELEASE;
+int sigTypeSine = SIGC_K_SINE;
+static char *sigTypeEnumStr[5] = {
+  "sine",
+  "square",
+  "triangle",
+  "sawtooth",
+  "impulse"
+};
+static int sigTypeEnum[5] = {
+  SIGC_K_SINE,
+  SIGC_K_SQUARE,
+  SIGC_K_TRIANGLE,
+  SIGC_K_SAWTOOTH,
+  SIGC_K_IMPULSE
+};
+
+  major = SIGC_MAJOR_VERSION;
+  minor = SIGC_MINOR_VERSION;
+  release = SIGC_RELEASE;
 
   tag.init();
   tag.loadW( "beginObjectProperties" );
@@ -741,10 +634,18 @@ char *emptyStr = "";
   tag.loadW( "topShadowColor", actWin->ci, &topShadowColor );
   tag.loadW( "botShadowColor", actWin->ci, &botShadowColor );
   tag.loadW( "controlPv", &destPvExpString, emptyStr );
-  tag.loadW( "finalValuePv", &finalPvExpString, emptyStr );
-  tag.loadW( "rampStateValuePv", &rampStatePvExpString, emptyStr );
+  tag.loadW( "signalStateValuePv", &signalStatePvExpString, emptyStr );
   tag.loadW( "updateRate", &updateRate, &dzero );
-  tag.loadW( "rampRate", &rampRate, &dzero );
+  tag.loadW( "amplitudePv", &amplPvExpString, emptyStr );
+  //tag.loadW( "signalAmplitude", &signalAmplitude, &dzero );
+  tag.loadW( "frequencyPv", &freqPvExpString, emptyStr );
+  //tag.loadW( "signalFrequency", &signalFrequency, &dzero );
+  tag.loadW( "phasePv", &phasePvExpString, emptyStr );
+  //tag.loadW( "signalPhase", &signalPhase, &dzero );
+  tag.loadW( "offsetPv", &offsetPvExpString, emptyStr );
+  // tag.loadW( "signalOffset", &signalOffset, &dzero );
+  tag.loadW( "signalType", 5, sigTypeEnumStr, sigTypeEnum, &signalType,
+   &sigTypeSine );
   tag.loadW( "label", &label, emptyStr );
   tag.loadBoolW( "3d", &_3D, &zero );
   tag.loadBoolW( "invisible", &invisible, &zero );
@@ -767,7 +668,7 @@ char *emptyStr = "";
 
 }
 
-int activeRampButtonClass::createFromFile (
+int activeSignalClass::createFromFile (
   FILE *f,
   char *name,
   activeWindowClass *_actWin )
@@ -780,6 +681,22 @@ tagClass tag;
 int zero = 0;
 double dzero = 0;
 char *emptyStr = "";
+
+int sigTypeSine = SIGC_K_SINE;
+static char *sigTypeEnumStr[5] = {
+  "sine",
+  "square",
+  "triangle",
+  "sawtooth",
+  "impulse"
+};
+static int sigTypeEnum[5] = {
+  SIGC_K_SINE,
+  SIGC_K_SQUARE,
+  SIGC_K_TRIANGLE,
+  SIGC_K_SAWTOOTH,
+  SIGC_K_IMPULSE
+};
 
   this->actWin = _actWin;
 
@@ -798,10 +715,18 @@ char *emptyStr = "";
   tag.loadR( "topShadowColor", actWin->ci, &topShadowColor );
   tag.loadR( "botShadowColor", actWin->ci, &botShadowColor );
   tag.loadR( "controlPv", &destPvExpString, emptyStr );
-  tag.loadR( "finalValuePv", &finalPvExpString, emptyStr );
-  tag.loadR( "rampStateValuePv", &rampStatePvExpString, emptyStr );
+  tag.loadR( "signalStateValuePv", &signalStatePvExpString, emptyStr );
   tag.loadR( "updateRate", &updateRate, &dzero );
-  tag.loadR( "rampRate", &rampRate, &dzero );
+  tag.loadR( "amplitudePv", &amplPvExpString, emptyStr );
+  //tag.loadR( "signalAmplitude", &signalAmplitude, &dzero );
+  tag.loadR( "frequencyPv", &freqPvExpString, emptyStr );
+  //tag.loadR( "signalFrequency", &signalFrequency, &dzero );
+  tag.loadR( "phasePv", &phasePvExpString, emptyStr );
+  //tag.loadR( "signalPhase", &signalPhase, &dzero );
+  tag.loadR( "offsetPv", &offsetPvExpString, emptyStr );
+  //tag.loadR( "signalOffset", &signalOffset, &dzero );
+  tag.loadR( "signalType", 4, sigTypeEnumStr, sigTypeEnum, &signalType,
+   &sigTypeSine );
   tag.loadR( "label", &label, emptyStr );
   tag.loadR( "3d", &_3D, &zero );
   tag.loadR( "invisible", &invisible, &zero );
@@ -825,7 +750,7 @@ char *emptyStr = "";
     actWin->appCtx->postMessage( tag.errMsg() );
   }
 
-  if ( major > RBTC_MAJOR_VERSION ) {
+  if ( major > SIGC_MAJOR_VERSION ) {
     postIncompatable();
     return 0;
   }
@@ -856,7 +781,7 @@ char *emptyStr = "";
 
 }
 
-int activeRampButtonClass::genericEdit ( void ) {
+int activeSignalClass::genericEdit ( void ) {
 
 char title[32], *ptr;
 
@@ -864,13 +789,13 @@ char title[32], *ptr;
     eBuf = new editBufType;
   }
 
-  ptr = actWin->obj.getNameFromClass( "activeRampButtonClass" );
+  ptr = actWin->obj.getNameFromClass( "activeSignalClass" );
   if ( ptr )
     strncpy( title, ptr, 31 );
   else
-    strncpy( title, activeRampButtonClass_str2, 31 );
+    strncpy( title, activeSignalClass_str2, 31 );
 
-  Strncat( title, activeRampButtonClass_str3, 31 );
+  Strncat( title, activeSignalClass_str3, 31 );
 
   eBuf->bufX = x;
   eBuf->bufY = y;
@@ -890,21 +815,47 @@ char title[32], *ptr;
   else
     strcpy( eBuf->bufDestPvName, "" );
 
-  if ( finalPvExpString.getRaw() )
-    strncpy( eBuf->bufFinalPvName, finalPvExpString.getRaw(),
+  if ( signalStatePvExpString.getRaw() )
+    strncpy( eBuf->bufSignalStatePvName, signalStatePvExpString.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
-    strcpy( eBuf->bufFinalPvName, "" );
+    strcpy( eBuf->bufSignalStatePvName, "" );
 
-  if ( rampStatePvExpString.getRaw() )
-    strncpy( eBuf->bufRampStatePvName, rampStatePvExpString.getRaw(),
+  if ( amplPvExpString.getRaw() )
+    strncpy( eBuf->bufAmplPvName, amplPvExpString.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
-    strcpy( eBuf->bufRampStatePvName, "" );
+    strcpy( eBuf->bufAmplPvName, "" );
+
+  if ( offsetPvExpString.getRaw() )
+    strncpy( eBuf->bufOffsetPvName, offsetPvExpString.getRaw(),
+     PV_Factory::MAX_PV_NAME );
+  else
+    strcpy( eBuf->bufOffsetPvName, "" );
+
+  if ( freqPvExpString.getRaw() )
+    strncpy( eBuf->bufFreqPvName, freqPvExpString.getRaw(),
+     PV_Factory::MAX_PV_NAME );
+  else
+    strcpy( eBuf->bufFreqPvName, "" );
+
+  if ( phasePvExpString.getRaw() )
+    strncpy( eBuf->bufPhasePvName, phasePvExpString.getRaw(),
+     PV_Factory::MAX_PV_NAME );
+  else
+    strcpy( eBuf->bufPhasePvName, "" );
 
   eBuf->bufUpdateRate = updateRate;
 
-  eBuf->bufRampRate = rampRate;
+  eBuf->bufSignalAmplitude = signalAmplitude;
+
+  eBuf->bufSignalFrequency = signalFrequency;
+
+  eBuf->bufSignalPhase = signalPhase;
+
+  eBuf->bufSignalOffset = signalOffset;
+
+  eBuf->bufSignalType = signalType;
 
   if ( label.getRaw() )
     strncpy( eBuf->bufLabel, label.getRaw(), 39 );
@@ -944,54 +895,63 @@ char title[32], *ptr;
    &actWin->appCtx->entryFormH, &actWin->appCtx->largestH,
    title, NULL, NULL, NULL );
 
-  ef.addTextField( activeRampButtonClass_str4, 35, &eBuf->bufX );
-  ef.addTextField( activeRampButtonClass_str5, 35, &eBuf->bufY );
-  ef.addTextField( activeRampButtonClass_str6, 35, &eBuf->bufW );
-  ef.addTextField( activeRampButtonClass_str7, 35, &eBuf->bufH );
-  ef.addTextField( activeRampButtonClass_str8, 35, eBuf->bufDestPvName,
+  ef.addTextField( activeSignalClass_str4, 35, &eBuf->bufX );
+  ef.addTextField( activeSignalClass_str5, 35, &eBuf->bufY );
+  ef.addTextField( activeSignalClass_str6, 35, &eBuf->bufW );
+  ef.addTextField( activeSignalClass_str7, 35, &eBuf->bufH );
+  ef.addTextField( activeSignalClass_str8, 35, eBuf->bufDestPvName,
    PV_Factory::MAX_PV_NAME );
-  ef.addTextField( activeRampButtonClass_str9, 35, eBuf->bufFinalPvName,
-   PV_Factory::MAX_PV_NAME );
-  ef.addTextField( activeRampButtonClass_str34, 35, eBuf->bufRampStatePvName,
+  ef.addTextField( activeSignalClass_str34, 35, eBuf->bufSignalStatePvName,
    PV_Factory::MAX_PV_NAME );
 
-  ef.addToggle( activeRampButtonClass_str26, &eBuf->bufLimitsFromDb );
+  ef.addToggle( activeSignalClass_str26, &eBuf->bufLimitsFromDb );
   limitsFromDbEntry = ef.getCurItem();
-  ef.addTextField( activeRampButtonClass_str27, 35, &eBuf->bufEfScaleMin );
+  ef.addTextField( activeSignalClass_str27, 35, &eBuf->bufEfScaleMin );
   minEntry = ef.getCurItem();
   limitsFromDbEntry->addInvDependency( minEntry );
-  ef.addTextField( activeRampButtonClass_str28, 35, &eBuf->bufEfScaleMax );
+  ef.addTextField( activeSignalClass_str28, 35, &eBuf->bufEfScaleMax );
   maxEntry = ef.getCurItem();
   limitsFromDbEntry->addInvDependency( maxEntry );
   limitsFromDbEntry->addDependencyCallbacks();
+  ef.addOption( activeSignalClass_str36, activeSignalClass_str41, &eBuf->bufSignalType );
+  ef.addTextField( activeSignalClass_str37, 35, eBuf->bufAmplPvName,
+   PV_Factory::MAX_PV_NAME );
+  //ef.addTextField( activeSignalClass_str37, 35, &eBuf->bufSignalAmplitude );
+  ef.addTextField( activeSignalClass_str38, 35, eBuf->bufFreqPvName,
+   PV_Factory::MAX_PV_NAME );
+  //ef.addTextField( activeSignalClass_str38, 35, &eBuf->bufSignalFrequency );
+  ef.addTextField( activeSignalClass_str39, 35, eBuf->bufPhasePvName,
+   PV_Factory::MAX_PV_NAME );
+  //ef.addTextField( activeSignalClass_str39, 35, &eBuf->bufSignalPhase );
+  ef.addTextField( activeSignalClass_str40, 35, eBuf->bufOffsetPvName,
+   PV_Factory::MAX_PV_NAME );
+  //ef.addTextField( activeSignalClass_str40, 35, &eBuf->bufSignalOffset );
+  ef.addTextField( activeSignalClass_str11, 35, &eBuf->bufUpdateRate );
+  ef.addToggle( activeSignalClass_str12, &eBuf->buf3D );
+  ef.addToggle( activeSignalClass_str13, &eBuf->bufInvisible );
+  ef.addTextField( activeSignalClass_str14, 35, eBuf->bufLabel, 39 );
+  ef.addColorButton( activeSignalClass_str16, actWin->ci, &eBuf->fgCb, &eBuf->bufFgColor );
+  ef.addColorButton( activeSignalClass_str17, actWin->ci, &eBuf->bgCb, &eBuf->bufBgColor );
+  ef.addColorButton( activeSignalClass_str18, actWin->ci, &eBuf->topShadowCb, &eBuf->bufTopShadowColor );
+  ef.addColorButton( activeSignalClass_str19, actWin->ci, &eBuf->botShadowCb, &eBuf->bufBotShadowColor );
 
-  ef.addTextField( activeRampButtonClass_str10, 35, &eBuf->bufRampRate );
-  ef.addTextField( activeRampButtonClass_str11, 35, &eBuf->bufUpdateRate );
-  ef.addToggle( activeRampButtonClass_str12, &eBuf->buf3D );
-  ef.addToggle( activeRampButtonClass_str13, &eBuf->bufInvisible );
-  ef.addTextField( activeRampButtonClass_str14, 35, eBuf->bufLabel, 39 );
-  ef.addColorButton( activeRampButtonClass_str16, actWin->ci, &eBuf->fgCb, &eBuf->bufFgColor );
-  ef.addColorButton( activeRampButtonClass_str17, actWin->ci, &eBuf->bgCb, &eBuf->bufBgColor );
-  ef.addColorButton( activeRampButtonClass_str18, actWin->ci, &eBuf->topShadowCb, &eBuf->bufTopShadowColor );
-  ef.addColorButton( activeRampButtonClass_str19, actWin->ci, &eBuf->botShadowCb, &eBuf->bufBotShadowColor );
-
-  ef.addFontMenu( activeRampButtonClass_str15, actWin->fi, &fm, fontTag );
+  ef.addFontMenu( activeSignalClass_str15, actWin->fi, &fm, fontTag );
 
   XtUnmanageChild( fm.alignWidget() ); // no alignment info
 
-  ef.addTextField( activeRampButtonClass_str33, 30, eBuf->bufColorPvName,
+  ef.addTextField( activeSignalClass_str33, 30, eBuf->bufColorPvName,
    PV_Factory::MAX_PV_NAME );
 
-  ef.addTextField( activeRampButtonClass_str29, 30, eBuf->bufVisPvName,
+  ef.addTextField( activeSignalClass_str29, 30, eBuf->bufVisPvName,
    PV_Factory::MAX_PV_NAME );
   invisPvEntry = ef.getCurItem();
-  ef.addOption( " ", activeRampButtonClass_str30, &eBuf->bufVisInverted );
+  ef.addOption( " ", activeSignalClass_str30, &eBuf->bufVisInverted );
   visInvEntry = ef.getCurItem();
   invisPvEntry->addDependency( visInvEntry );
-  ef.addTextField( activeRampButtonClass_str31, 30, eBuf->bufMinVisString, 39 );
+  ef.addTextField( activeSignalClass_str31, 30, eBuf->bufMinVisString, 39 );
   minVisEntry = ef.getCurItem();
   invisPvEntry->addDependency( minVisEntry );
-  ef.addTextField( activeRampButtonClass_str32, 30, eBuf->bufMaxVisString, 39 );
+  ef.addTextField( activeSignalClass_str32, 30, eBuf->bufMaxVisString, 39 );
   maxVisEntry = ef.getCurItem();
   invisPvEntry->addDependency( maxVisEntry );
   invisPvEntry->addDependencyCallbacks();
@@ -1000,10 +960,10 @@ char title[32], *ptr;
 
 }
 
-int activeRampButtonClass::editCreate ( void ) {
+int activeSignalClass::editCreate ( void ) {
 
   this->genericEdit();
-  ef.finished( rbtc_edit_ok, rbtc_edit_apply, rbtc_edit_cancel_delete, this );
+  ef.finished( sigc_edit_ok, sigc_edit_apply, sigc_edit_cancel_delete, this );
   actWin->currentEf = NULL;
   ef.popup();
 
@@ -1011,10 +971,10 @@ int activeRampButtonClass::editCreate ( void ) {
 
 }
 
-int activeRampButtonClass::edit ( void ) {
+int activeSignalClass::edit ( void ) {
 
   this->genericEdit();
-  ef.finished( rbtc_edit_ok, rbtc_edit_apply, rbtc_edit_cancel, this );
+  ef.finished( sigc_edit_ok, sigc_edit_apply, sigc_edit_cancel, this );
   actWin->currentEf = &ef;
   ef.popup();
 
@@ -1022,7 +982,7 @@ int activeRampButtonClass::edit ( void ) {
 
 }
 
-int activeRampButtonClass::erase ( void ) {
+int activeSignalClass::erase ( void ) {
 
   if ( deleteRequest ) return 1;
 
@@ -1036,7 +996,7 @@ int activeRampButtonClass::erase ( void ) {
 
 }
 
-int activeRampButtonClass::eraseActive ( void ) {
+int activeSignalClass::eraseActive ( void ) {
 
   if ( !enabled || !init || !activeMode || invisible ) return 1;
 
@@ -1057,7 +1017,7 @@ int activeRampButtonClass::eraseActive ( void ) {
 
 }
 
-int activeRampButtonClass::draw ( void ) {
+int activeSignalClass::draw ( void ) {
 
 int tX, tY;
 XRectangle xR = { x, y, w, h };
@@ -1165,7 +1125,7 @@ int blink = 0;
 
 }
 
-int activeRampButtonClass::drawActive ( void ) {
+int activeSignalClass::drawActive ( void ) {
 
 int tX, tY;
 char string[63+1];
@@ -1343,7 +1303,7 @@ int blink = 0;
 
 }
 
-int activeRampButtonClass::activate (
+int activeSignalClass::activate (
   int pass,
   void *ptr )
 {
@@ -1366,7 +1326,8 @@ int opStat;
 
       initEnable();
 
-      needConnectInit = needFinalConnectInit = needRampStateConnectInit =
+      needConnectInit = needSignalStateConnectInit = needAmplConnectInit =
+       needOffsetConnectInit = needFreqConnectInit = needPhaseConnectInit =
        needCtlInfoInit = 
        needRefresh = needErase = needDraw = needVisConnectInit =
        needVisInit = needVisUpdate = needColorConnectInit =
@@ -1378,14 +1339,23 @@ int opStat;
       aglPtr = ptr;
       incrementTimer = 0;
       incrementTimerActive = 0;
-      rampFinalV = 0;
-      destPvId = visPvId = colorPvId = finalPvId = rampStatePvId = NULL;
-      initialConnection = initialFinalValueConnection =
-       initialRampStateValueConnection = initialVisConnection =
-       initialColorConnection = -1;
+      destPvId = visPvId = colorPvId = signalStatePvId = amplPvId =
+       offsetPvId = freqPvId = phasePvId = NULL;
+      initialSignalStateValueConnection = -1;
 
       active = buttonPressed = 0;
       activeMode = 1;
+      elapsedTime = 0.0;
+      wfVal = 0.0;
+      if ( signalFrequency != 0.0 ) {
+        halfPeriod = 1.0 / signalFrequency;
+        wfInc = 0.25 * signalAmplitude * signalFrequency;
+      }
+      else {
+        halfPeriod = 0.0;
+      }
+      signalPhaseRads = signalPhase * 0.017453;
+      firstImpulse = 1;
 
       if ( updateRate < 0.1 ) updateRate = 0.1;
       if ( updateRate > 10.0 ) updateRate = 10.0;
@@ -1393,136 +1363,115 @@ int opStat;
       incrementTimerValue = (int) ( 1000.0 * updateRate );
       if ( incrementTimerValue < 100 ) incrementTimerValue = 100;
 
-      if ( !destPvExpString.getExpanded() ||
-         blankOrComment( destPvExpString.getExpanded() ) ) {
-        destExists = 0;
+      // dest pv
+      if ( !destPvCb ) {
+        destPvCb = new PvCallbackClass(
+         destPvExpString, &connection, destPvConnectionId, this,
+         sigc_monitor_connect_state, sigc_update );
       }
-      else {
-        destExists = 1;
-        connection.addPv();
-      }
-
-      if ( !visPvExpString.getExpanded() ||
-         blankOrComment( visPvExpString.getExpanded() ) ) {
-        visExists = 0;
-        visibility = 1;
-      }
-      else {
-        visExists = 1;
-        connection.addPv();
+      destExists = destPvCb->getPvExists();
+      destPvId = destPvCb->getPv();
+      if ( destExists && !destPvId ) {
+        fprintf( stderr, activeSignalClass_str20 );
       }
 
-      if ( !colorPvExpString.getExpanded() ||
-         blankOrComment( colorPvExpString.getExpanded() ) ) {
-        colorExists = 0;
+      // signal state pv
+      if ( !signalStatePvCb ) {
+        signalStatePvCb = new PvCallbackClass(
+         signalStatePvExpString, &connection, signalStatePvConnectionId, this,
+         sigc_monitor_connect_state, sigc_update );
       }
-      else {
-        colorExists = 1;
-        connection.addPv();
-      }
-
-      if ( !finalPvExpString.getExpanded() ||
-         blankOrComment( finalPvExpString.getExpanded() ) ) {
-        finalExists = 0;
-      }
-      else {
-        finalExists = 1;
-        connection.addPv();
+      signalStateExists = signalStatePvCb->getPvExists();
+      signalStatePvId = signalStatePvCb->getPv();
+      if ( signalStateExists && !signalStatePvId ) {
+        fprintf( stderr, activeSignalClass_str20 );
       }
 
-      if ( !rampStatePvExpString.getExpanded() ||
-         blankOrComment( rampStatePvExpString.getExpanded() ) ) {
-        rampStateExists = 0;
+      // amplitude pv
+      if ( !amplPvCb ) {
+        amplPvCb = new PvCallbackClass(
+         amplPvExpString, &connection, amplPvConnectionId, this,
+         sigc_monitor_connect_state, sigc_update );
       }
-      else {
-        rampStateExists = 1;
-        connection.addPv();
+      amplExists = amplPvCb->getPvExists();
+      amplPvId = amplPvCb->getPv();
+      if ( amplExists && !amplPvId ) {
+        fprintf( stderr, activeSignalClass_str20 );
+      }
+
+      // offset pv
+      if ( !offsetPvCb ) {
+        offsetPvCb = new PvCallbackClass(
+         offsetPvExpString, &connection, offsetPvConnectionId, this,
+         sigc_monitor_connect_state, sigc_update );
+      }
+      offsetExists = offsetPvCb->getPvExists();
+      offsetPvId = offsetPvCb->getPv();
+      if ( offsetExists && !offsetPvId ) {
+        fprintf( stderr, activeSignalClass_str20 );
+      }
+
+      // frequency pv
+      if ( !freqPvCb ) {
+        freqPvCb = new PvCallbackClass(
+         freqPvExpString, &connection, freqPvConnectionId, this,
+         sigc_monitor_connect_state, sigc_update );
+      }
+      freqExists = freqPvCb->getPvExists();
+      freqPvId = freqPvCb->getPv();
+      if ( freqExists && !freqPvId ) {
+        fprintf( stderr, activeSignalClass_str20 );
+      }
+
+      // phase pv
+      if ( !phasePvCb ) {
+        phasePvCb = new PvCallbackClass(
+         phasePvExpString, &connection, phasePvConnectionId, this,
+         sigc_monitor_connect_state, sigc_update );
+      }
+      phaseExists = phasePvCb->getPvExists();
+      phasePvId = phasePvCb->getPv();
+      if ( phaseExists && !phasePvId ) {
+        fprintf( stderr, activeSignalClass_str20 );
+      }
+
+      // vis pv
+      if ( !visPvCb ) {
+        visPvCb = new PvCallbackClass(
+         visPvExpString, &connection, visPvConnectionId, this,
+         sigc_monitor_connect_state, sigc_update );
+      }
+      visExists = visPvCb->getPvExists();
+      if ( !visExists ) visibility = 1;
+      visPvId = visPvCb->getPv();
+      if ( visExists && !visPvId ) {
+        fprintf( stderr, activeSignalClass_str20 );
+      }
+
+      // color pv
+      if ( !colorPvCb ) {
+        colorPvCb = new PvCallbackClass(
+         colorPvExpString, &connection, colorPvConnectionId, this,
+         sigc_monitor_connect_state, sigc_update );
+      }
+      colorExists = colorPvCb->getPvExists();
+      colorPvId = colorPvCb->getPv();
+      if ( colorExists && !colorPvId ) {
+        fprintf( stderr, activeSignalClass_str20 );
       }
 
       if ( !unconnectedTimer ) {
         unconnectedTimer = appAddTimeOut( actWin->appCtx->appContext(),
-         2000, rbtc_unconnectedTimeout, this );
+         2000, sigc_unconnectedTimeout, this );
+      }
+
+      if ( !destExists ) {
+        init = 1;
+        smartDrawAllActive();
       }
 
       opStat = 1;
-
-      if ( destExists ) {
-
-	destPvId = the_PV_Factory->create( destPvExpString.getExpanded() );
-	if ( destPvId ) {
-	  destPvId->add_conn_state_callback( rbtc_monitor_dest_connect_state,
-           this );
-	}
-	else {
-          fprintf( stderr, activeRampButtonClass_str20 );
-          opStat = 0;
-        }
-
-      }
-      else {
-
-        init = 1;
-        smartDrawAllActive();
-
-      }
-
-      if ( visExists ) {
-
-	visPvId = the_PV_Factory->create( visPvExpString.getExpanded() );
-	if ( visPvId ) {
-	  visPvId->add_conn_state_callback( rbtc_monitor_vis_connect_state,
-           this );
-	}
-	else {
-          fprintf( stderr, activeRampButtonClass_str20 );
-          opStat = 0;
-        }
-
-      }
-
-      if ( colorExists ) {
-
-	colorPvId = the_PV_Factory->create( colorPvExpString.getExpanded() );
-	if ( colorPvId ) {
-	  colorPvId->add_conn_state_callback(
-           rbtc_monitor_color_connect_state, this );
-	}
-	else {
-          fprintf( stderr, activeRampButtonClass_str20 );
-          opStat = 0;
-        }
-
-      }
-
-      if ( finalExists ) {
-
-	finalPvId = the_PV_Factory->create( finalPvExpString.getExpanded() );
-	if ( finalPvId ) {
-	  finalPvId->add_conn_state_callback( rbtc_monitor_final_connect_state,
-           this );
-	}
-	else {
-          fprintf( stderr, activeRampButtonClass_str20 );
-          opStat = 0;
-        }
-
-      }
-
-      if ( rampStateExists ) {
-
-	rampStatePvId = the_PV_Factory->create( rampStatePvExpString.getExpanded() );
-	if ( rampStatePvId ) {
-	  rampStatePvId->add_conn_state_callback( rbtc_monitor_rampState_connect_state,
-           this );
-	}
-	else {
-          fprintf( stderr, activeRampButtonClass_str20 );
-          opStat = 0;
-        }
-
-      }
-
-      if ( opStat & 1 ) opComplete = 1;
+      opComplete = 1;
 
       return opStat;
 
@@ -1543,82 +1492,83 @@ int opStat;
 
 }
 
-int activeRampButtonClass::deactivate (
+int activeSignalClass::deactivate (
   int pass
 ) {
 
   if ( pass == 1 ) {
 
-  active = 0;
-  activeMode = 0;
+    active = 0;
+    activeMode = 0;
 
-  if ( unconnectedTimer ) {
-    XtRemoveTimeOut( unconnectedTimer );
-    unconnectedTimer = 0;
-  }
-
-  if ( incrementTimerActive ) {
-    if ( incrementTimer ) {
-      actWin->appCtx->postMessage( activeRampButtonClass_str35 );
-      XtRemoveTimeOut( incrementTimer );
-      incrementTimer = 0;
+    if ( unconnectedTimer ) {
+      XtRemoveTimeOut( unconnectedTimer );
+      unconnectedTimer = 0;
     }
-    incrementTimerActive = 0;
-  }
 
-  if ( destExists ) {
-    if ( destPvId ) {
-      destPvId->remove_conn_state_callback( rbtc_monitor_dest_connect_state,
-       this );
-      destPvId->remove_value_callback( rbtc_controlUpdate, this );
-      destPvId->release();
+    if ( incrementTimerActive ) {
+      if ( incrementTimer ) {
+        actWin->appCtx->postMessage( activeSignalClass_str35 );
+        XtRemoveTimeOut( incrementTimer );
+        incrementTimer = 0;
+      }
+      incrementTimerActive = 0;
+    }
+
+    if ( destPvCb ) {
+      delete destPvCb;
+      destPvCb = NULL;
       destPvId = NULL;
     }
-  }
 
-  if ( visExists ) {
-    if ( visPvId ) {
-      visPvId->remove_conn_state_callback( rbtc_monitor_vis_connect_state,
-       this );
-      visPvId->remove_value_callback( rbtc_visUpdate, this );
-      visPvId->release();
+    if ( signalStatePvCb ) {
+      if ( signalStatePvCb->getPvExists() ) {
+        if ( signalStatePvId ) {
+          signalStatePvId->put(
+           XDisplayName(actWin->appCtx->displayName),
+           0 );
+        }
+      }
+      delete signalStatePvCb;
+      signalStatePvCb = NULL;
+      signalStatePvId = NULL;
+    }
+
+    if ( amplPvCb ) {
+      delete amplPvCb;
+      amplPvCb = NULL;
+      amplPvId = NULL;
+    }
+
+    if ( offsetPvCb ) {
+      delete offsetPvCb;
+      offsetPvCb = NULL;
+      offsetPvId = NULL;
+    }
+
+    if ( freqPvCb ) {
+      delete freqPvCb;
+      freqPvCb = NULL;
+      freqPvId = NULL;
+    }
+
+    if ( phasePvCb ) {
+      delete phasePvCb;
+      phasePvCb = NULL;
+      phasePvId = NULL;
+    }
+
+    if ( visPvCb ) {
+      delete visPvCb;
+      visPvCb = NULL;
       visPvId = NULL;
     }
-  }
 
-  if ( colorExists ) {
-    if ( colorPvId ) {
-      colorPvId->remove_conn_state_callback( rbtc_monitor_color_connect_state,
-       this );
-      colorPvId->remove_value_callback( rbtc_colorUpdate, this );
-      colorPvId->release();
+    if ( colorPvCb ) {
+      delete colorPvCb;
+      colorPvCb = NULL;
       colorPvId = NULL;
     }
-  }
-
-  if ( finalExists ) {
-    if ( finalPvId ) {
-      finalPvId->remove_conn_state_callback( rbtc_monitor_final_connect_state,
-       this );
-      finalPvId->remove_value_callback( rbtc_finalUpdate, this );
-      finalPvId->release();
-      finalPvId = NULL;
-    }
-  }
-
-  if ( rampStateExists ) {
-    if ( rampStatePvId ) {
-      if ( rampStateExists ) {
-        rampStatePvId->put(
-         XDisplayName(actWin->appCtx->displayName),
-         0 );
-      }
-      rampStatePvId->remove_conn_state_callback( rbtc_monitor_rampState_connect_state,
-       this );
-      rampStatePvId->release();
-      rampStatePvId = NULL;
-    }
-  }
 
   }
 
@@ -1626,7 +1576,7 @@ int activeRampButtonClass::deactivate (
 
 }
 
-void activeRampButtonClass::updateDimensions ( void )
+void activeSignalClass::updateDimensions ( void )
 {
 
   if ( fs ) {
@@ -1642,7 +1592,7 @@ void activeRampButtonClass::updateDimensions ( void )
 
 }
 
-void activeRampButtonClass::btnUp (
+void activeSignalClass::btnUp (
   XButtonEvent *be,
   int _x,
   int _y,
@@ -1657,7 +1607,7 @@ void activeRampButtonClass::btnUp (
 
 }
 
-void activeRampButtonClass::btnDown (
+void activeSignalClass::btnDown (
   XButtonEvent *be,
   int _x,
   int _y,
@@ -1688,8 +1638,8 @@ double dval;
 
     buttonPressed = 0;
 
-    if ( rampStateExists ) {
-      rampStatePvId->put(
+    if ( signalStateExists ) {
+      signalStatePvId->put(
        XDisplayName(actWin->appCtx->displayName),
        buttonPressed );
     }
@@ -1705,21 +1655,20 @@ double dval;
 
   buttonPressed = 1;
 
-  if ( rampStateExists ) {
-    rampStatePvId->put(
+  if ( signalStateExists ) {
+    signalStatePvId->put(
      XDisplayName(actWin->appCtx->displayName),
      buttonPressed );
   }
 
   actWin->appCtx->proc->lock();
   dval = curControlV;
-  rampFinalV = curFinalV;
   needRefresh = 1;
   actWin->addDefExeNode( aglPtr );
   actWin->appCtx->proc->unlock();
 
   //fprintf( stderr, "btn down, x=%-d, y=%-d, bn=%-d\n", _x-x, _y-y , buttonNumber );
-  //fprintf( stderr, "cv=%g, fv=%g\n", dval, rampFinalV );
+  //fprintf( stderr, "cv=%g\n", dval );
 
   if ( dval < minDv ) {
     dval = minDv;
@@ -1730,39 +1679,17 @@ double dval;
 
   if ( updateRate < 0.1 ) updateRate = 0.1;
   if ( updateRate > 10.0 ) updateRate = 10.0;
-  increment = fabs( rampRate / 60 * updateRate );
 
-  //fprintf( stderr, "rampRate=%g\n", rampRate );
   //fprintf( stderr, "updateRate=%g\n", updateRate );
   //fprintf( stderr, "increment=%g\n", increment );
 
-  if ( rampFinalV > dval ) {
-    incrementTimer = appAddTimeOut( actWin->appCtx->appContext(),
-     incrementTimerValue, rbtc_increment, this );
-    incrementTimerActive = 1;
-  }
-  else if ( rampFinalV < dval ) {
-    incrementTimer = appAddTimeOut( actWin->appCtx->appContext(),
-     incrementTimerValue, rbtc_decrement, this );
-    incrementTimerActive = 1;
-  }
-  else {
-    incrementTimerActive = 0;
-    buttonPressed = 0;
-    if ( rampStateExists ) {
-      rampStatePvId->put(
-       XDisplayName(actWin->appCtx->displayName),
-       buttonPressed );
-    }
-    actWin->appCtx->proc->lock();
-    needRefresh = 1;
-    actWin->addDefExeNode( aglPtr );
-    actWin->appCtx->proc->unlock();
-  }
+  incrementTimer = appAddTimeOut( actWin->appCtx->appContext(),
+   incrementTimerValue, sigc_increment, this );
+  incrementTimerActive = 1;
 
 }
 
-void activeRampButtonClass::pointerIn (
+void activeSignalClass::pointerIn (
   int _x,
   int _y,
   int buttonState )
@@ -1781,7 +1708,7 @@ void activeRampButtonClass::pointerIn (
 
 }
 
-int activeRampButtonClass::getButtonActionRequest (
+int activeSignalClass::getButtonActionRequest (
   int *up,
   int *down,
   int *drag,
@@ -1790,12 +1717,12 @@ int activeRampButtonClass::getButtonActionRequest (
 
   *drag = 0;
 
-  if ( destExists && finalExists )
+  if ( destExists )
     *focus = 1;
   else
     *focus = 0;
 
-  if ( !destExists || !finalExists ) {
+  if ( !destExists ) {
     *up = 0;
     *down = 0;
     return 1;
@@ -1808,7 +1735,7 @@ int activeRampButtonClass::getButtonActionRequest (
 
 }
 
-int activeRampButtonClass::expandTemplate (
+int activeSignalClass::expandTemplate (
   int numMacros,
   char *macros[],
   char *expansions[] )
@@ -1820,13 +1747,25 @@ expStringClass tmpStr;
   tmpStr.expand1st( numMacros, macros, expansions );
   destPvExpString.setRaw( tmpStr.getExpanded() );
 
-  tmpStr.setRaw( finalPvExpString.getRaw() );
+  tmpStr.setRaw( signalStatePvExpString.getRaw() );
   tmpStr.expand1st( numMacros, macros, expansions );
-  finalPvExpString.setRaw( tmpStr.getExpanded() );
+  signalStatePvExpString.setRaw( tmpStr.getExpanded() );
 
-  tmpStr.setRaw( rampStatePvExpString.getRaw() );
+  tmpStr.setRaw( amplPvExpString.getRaw() );
   tmpStr.expand1st( numMacros, macros, expansions );
-  rampStatePvExpString.setRaw( tmpStr.getExpanded() );
+  amplPvExpString.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( offsetPvExpString.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  offsetPvExpString.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( freqPvExpString.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  freqPvExpString.setRaw( tmpStr.getExpanded() );
+
+  tmpStr.setRaw( phasePvExpString.getRaw() );
+  tmpStr.expand1st( numMacros, macros, expansions );
+  phasePvExpString.setRaw( tmpStr.getExpanded() );
 
   tmpStr.setRaw( label.getRaw() );
   tmpStr.expand1st( numMacros, macros, expansions );
@@ -1844,7 +1783,7 @@ expStringClass tmpStr;
 
 }
 
-int activeRampButtonClass::expand1st (
+int activeSignalClass::expand1st (
   int numMacros,
   char *macros[],
   char *expansions[] )
@@ -1854,9 +1793,15 @@ int stat, retStat = 1;
 
   stat = destPvExpString.expand1st( numMacros, macros, expansions );
   if ( !( stat & 1 ) ) retStat = stat;
-  stat = finalPvExpString.expand1st( numMacros, macros, expansions );
+  stat = signalStatePvExpString.expand1st( numMacros, macros, expansions );
   if ( !( stat & 1 ) ) retStat = stat;
-  stat = rampStatePvExpString.expand1st( numMacros, macros, expansions );
+  stat = amplPvExpString.expand1st( numMacros, macros, expansions );
+  if ( !( stat & 1 ) ) retStat = stat;
+  stat = offsetPvExpString.expand1st( numMacros, macros, expansions );
+  if ( !( stat & 1 ) ) retStat = stat;
+  stat = freqPvExpString.expand1st( numMacros, macros, expansions );
+  if ( !( stat & 1 ) ) retStat = stat;
+  stat = phasePvExpString.expand1st( numMacros, macros, expansions );
   if ( !( stat & 1 ) ) retStat = stat;
   stat = label.expand1st( numMacros, macros, expansions );
   if ( !( stat & 1 ) ) retStat = stat;
@@ -1869,7 +1814,7 @@ int stat, retStat = 1;
 
 }
 
-int activeRampButtonClass::expand2nd (
+int activeSignalClass::expand2nd (
   int numMacros,
   char *macros[],
   char *expansions[] )
@@ -1879,9 +1824,15 @@ int stat, retStat = 1;
 
   stat = destPvExpString.expand2nd( numMacros, macros, expansions );
   if ( !( stat & 1 ) ) retStat = stat;
-  stat = finalPvExpString.expand2nd( numMacros, macros, expansions );
+  stat = signalStatePvExpString.expand2nd( numMacros, macros, expansions );
   if ( !( stat & 1 ) ) retStat = stat;
-  stat = rampStatePvExpString.expand2nd( numMacros, macros, expansions );
+  stat = amplPvExpString.expand2nd( numMacros, macros, expansions );
+  if ( !( stat & 1 ) ) retStat = stat;
+  stat = offsetPvExpString.expand2nd( numMacros, macros, expansions );
+  if ( !( stat & 1 ) ) retStat = stat;
+  stat = freqPvExpString.expand2nd( numMacros, macros, expansions );
+  if ( !( stat & 1 ) ) retStat = stat;
+  stat = phasePvExpString.expand2nd( numMacros, macros, expansions );
   if ( !( stat & 1 ) ) retStat = stat;
   stat = label.expand2nd( numMacros, macros, expansions );
   if ( !( stat & 1 ) ) retStat = stat;
@@ -1894,13 +1845,19 @@ int stat, retStat = 1;
 
 }
 
-int activeRampButtonClass::containsMacros ( void ) {
+int activeSignalClass::containsMacros ( void ) {
 
   if ( destPvExpString.containsPrimaryMacros() ) return 1;
 
-  if ( finalPvExpString.containsPrimaryMacros() ) return 1;
+  if ( signalStatePvExpString.containsPrimaryMacros() ) return 1;
 
-  if ( rampStatePvExpString.containsPrimaryMacros() ) return 1;
+  if ( amplPvExpString.containsPrimaryMacros() ) return 1;
+
+  if ( offsetPvExpString.containsPrimaryMacros() ) return 1;
+
+  if ( freqPvExpString.containsPrimaryMacros() ) return 1;
+
+  if ( phasePvExpString.containsPrimaryMacros() ) return 1;
 
   if ( label.containsPrimaryMacros() ) return 1;
 
@@ -1912,18 +1869,21 @@ int activeRampButtonClass::containsMacros ( void ) {
 
 }
 
-void activeRampButtonClass::executeDeferred ( void ) {
+void activeSignalClass::executeDeferred ( void ) {
 
-int nc, nsc, nci, nd, ne, nr, nvc, nvi, nvu, ncolc, ncoli, ncolu, nrsc;
+  int nc, nsc, nci, naci, noci, nfci, npci, nd, ne, nr, nvc, nvi, nvu, ncolc, ncoli, ncolu, nrsc;
 int stat, index, invisColor;
 
   if ( actWin->isIconified ) return;
 
   actWin->appCtx->proc->lock();
   nc = needConnectInit; needConnectInit = 0;
-  nsc = needFinalConnectInit; needFinalConnectInit = 0;
-  nrsc = needRampStateConnectInit; needRampStateConnectInit = 0;
+  nrsc = needSignalStateConnectInit; needSignalStateConnectInit = 0;
   nci = needCtlInfoInit; needCtlInfoInit = 0;
+  naci = needAmplConnectInit; needAmplConnectInit = 0;
+  noci = needOffsetConnectInit; needOffsetConnectInit = 0;
+  nfci = needFreqConnectInit; needFreqConnectInit = 0;
+  npci = needPhaseConnectInit; needPhaseConnectInit = 0;
   nd = needDraw; needDraw = 0;
   ne = needErase; needErase = 0;
   nr = needRefresh; needRefresh = 0;
@@ -1944,7 +1904,6 @@ int stat, index, invisColor;
 
   if ( nc ) {
 
-    connection.setPvConnected( (void *) destPvConnection );
     destType = (int) destPvId->get_type().type;
 
     if ( limitsFromDb || efScaleMin.isNull() ) {
@@ -1967,13 +1926,15 @@ int stat, index, invisColor;
 
   if ( nci ) {
 
-    if ( initialConnection ) {
-
-      initialConnection = 0;
-
-      destPvId->add_value_callback( rbtc_controlUpdate, this );
-
+    if ( connection.pvsConnected() ) {
+      bgColor.setConnected();
+      init = 1;
+      smartDrawAllActive();
     }
+
+  }
+
+  if ( naci ) {
 
     if ( connection.pvsConnected() ) {
       bgColor.setConnected();
@@ -1983,18 +1944,7 @@ int stat, index, invisColor;
 
   }
 
-  if ( nsc ) {
-
-    connection.setPvConnected( (void *) finalPvConnection );
-    finalType = (int) finalPvId->get_type().type;
-
-    if ( initialFinalValueConnection ) {
-
-      initialFinalValueConnection = 0;
-
-      finalPvId->add_value_callback( rbtc_finalUpdate, this );
-
-    }
+  if ( noci ) {
 
     if ( connection.pvsConnected() ) {
       bgColor.setConnected();
@@ -2006,15 +1956,14 @@ int stat, index, invisColor;
 
   if ( nrsc ) {
 
-    connection.setPvConnected( (void *) rampStatePvConnection );
-    rampStateType = (int) rampStatePvId->get_type().type;
+    signalStateType = (int) signalStatePvId->get_type().type;
 
-    if ( initialRampStateValueConnection ) {
+    if ( initialSignalStateValueConnection ) {
 
-      initialRampStateValueConnection = 0;
+      initialSignalStateValueConnection = 0;
 
-      if ( rampStateExists ) {
-        rampStatePvId->put(
+      if ( signalStateExists ) {
+        signalStatePvId->put(
          XDisplayName(actWin->appCtx->displayName),
          0 );
       }
@@ -2034,8 +1983,6 @@ int stat, index, invisColor;
     minVis = atof( minVisString );
     maxVis = atof( maxVisString );
 
-    connection.setPvConnected( (void *) visPvConnection );
-
     visValue = curVisValue = visPvId->get_double();
 
     nvi = 1;
@@ -2043,14 +1990,6 @@ int stat, index, invisColor;
   }
 
   if ( nvi ) {
-
-    if ( initialVisConnection ) {
-
-      initialVisConnection = 0;
-
-      visPvId->add_value_callback( rbtc_visUpdate, this );
-
-    }
 
     if ( ( visValue >= minVis ) &&
          ( visValue < maxVis ) )
@@ -2080,14 +2019,6 @@ int stat, index, invisColor;
 
   if ( ncoli ) {
 
-    if ( initialColorConnection ) {
-
-      initialColorConnection = 0;
-
-      colorPvId->add_value_callback( rbtc_colorUpdate, this );
-
-    }
-
     invisColor = 0;
 
     index = actWin->ci->evalRule( bgColor.pixelIndex(), colorValue );
@@ -2112,8 +2043,6 @@ int stat, index, invisColor;
       }
 
     }
-
-    connection.setPvConnected( (void *) colorPvConnection );
 
     if ( connection.pvsConnected() ) {
       bgColor.setConnected();
@@ -2200,7 +2129,7 @@ int stat, index, invisColor;
 
 }
 
-char *activeRampButtonClass::firstDragName ( void ) {
+char *activeSignalClass::firstDragName ( void ) {
 
   if ( !enabled ) return NULL;
 
@@ -2209,7 +2138,7 @@ char *activeRampButtonClass::firstDragName ( void ) {
 
 }
 
-char *activeRampButtonClass::nextDragName ( void ) {
+char *activeSignalClass::nextDragName ( void ) {
 
   if ( !enabled ) return NULL;
 
@@ -2223,7 +2152,7 @@ char *activeRampButtonClass::nextDragName ( void ) {
 
 }
 
-char *activeRampButtonClass::dragValue (
+char *activeSignalClass::dragValue (
   int i ) {
 
   if ( !enabled ) return NULL;
@@ -2234,12 +2163,21 @@ char *activeRampButtonClass::dragValue (
       return destPvExpString.getExpanded();
     }
     else if ( i == 1 ) {
-      return finalPvExpString.getExpanded();
+      return signalStatePvExpString.getExpanded();
     }
     else if ( i == 2 ) {
-      return rampStatePvExpString.getExpanded();
+      return amplPvExpString.getExpanded();
     }
     else if ( i == 3 ) {
+      return offsetPvExpString.getExpanded();
+    }
+    else if ( i == 4 ) {
+      return freqPvExpString.getExpanded();
+    }
+    else if ( i == 5 ) {
+      return phasePvExpString.getExpanded();
+    }
+    else if ( i == 6 ) {
       return colorPvExpString.getExpanded();
     }
     else {
@@ -2253,13 +2191,22 @@ char *activeRampButtonClass::dragValue (
       return destPvExpString.getRaw();
     }
     else if ( i == 1 ) {
-      return finalPvExpString.getRaw();
-    }
-    else if ( i == 2 ) {
-      return rampStatePvExpString.getRaw();
+      return signalStatePvExpString.getRaw();
 
     }
+    else if ( i == 2 ) {
+      return amplPvExpString.getRaw();
+    }
     else if ( i == 3 ) {
+      return offsetPvExpString.getRaw();
+    }
+    else if ( i == 4 ) {
+      return freqPvExpString.getRaw();
+    }
+    else if ( i == 5 ) {
+      return phasePvExpString.getRaw();
+    }
+    else if ( i == 6 ) {
       return colorPvExpString.getRaw();
     }
     else {
@@ -2270,7 +2217,7 @@ char *activeRampButtonClass::dragValue (
 
 }
 
-void activeRampButtonClass::changeDisplayParams (
+void activeSignalClass::changeDisplayParams (
   unsigned int _flag,
   char *_fontTag,
   int _alignment,
@@ -2309,7 +2256,7 @@ void activeRampButtonClass::changeDisplayParams (
 
 }
 
-void activeRampButtonClass::changePvNames (
+void activeSignalClass::changePvNames (
   int flag,
   int numCtlPvs,
   char *ctlPvs[],
@@ -2335,25 +2282,30 @@ void activeRampButtonClass::changePvNames (
     }
   }
 
+  if ( flag & ACTGRF_ALARMPVS_MASK ) {
+    if ( numAlarmPvs ) {
+      colorPvExpString.setRaw( ctlPvs[0] );
+    }
+  }
+
 }
 
-void activeRampButtonClass::getPvs (
+void activeSignalClass::getPvs (
   int max,
   ProcessVariable *pvs[],
   int *n ) {
 
-  if ( max < 2 ) {
+  if ( max < 1 ) {
     *n = 0;
     return;
   }
 
-  *n = 2;
+  *n = 1;
   pvs[0] = destPvId;
-  pvs[1] = finalPvId;
 
 }
 
-char *activeRampButtonClass::getSearchString (
+char *activeSignalClass::getSearchString (
   int i
 ) {
 
@@ -2361,24 +2313,33 @@ char *activeRampButtonClass::getSearchString (
     return destPvExpString.getRaw();
   }
   else if ( i == 1 ) {
-    return finalPvExpString.getRaw();
+    return signalStatePvExpString.getRaw();
   }
   else if ( i == 2 ) {
-    return rampStatePvExpString.getRaw();
+    return amplPvExpString.getRaw();
   }
   else if ( i == 3 ) {
-    return colorPvExpString.getRaw();
+    return offsetPvExpString.getRaw();
   }
   else if ( i == 4 ) {
-    return visPvExpString.getRaw();
+    return freqPvExpString.getRaw();
   }
   else if ( i == 5 ) {
-    return label.getRaw();
+    return phasePvExpString.getRaw();
   }
   else if ( i == 6 ) {
-    return minVisString;
+    return colorPvExpString.getRaw();
   }
   else if ( i == 7 ) {
+    return visPvExpString.getRaw();
+  }
+  else if ( i == 8 ) {
+    return label.getRaw();
+  }
+  else if ( i == 9 ) {
+    return minVisString;
+  }
+  else if ( i == 10 ) {
     return maxVisString;
   }
 
@@ -2386,7 +2347,7 @@ char *activeRampButtonClass::getSearchString (
 
 }
 
-void activeRampButtonClass::replaceString (
+void activeSignalClass::replaceString (
   int i,
   int max,
   char *string
@@ -2396,27 +2357,36 @@ void activeRampButtonClass::replaceString (
     destPvExpString.setRaw( string );
   }
   else if ( i == 1 ) {
-    finalPvExpString.setRaw( string );
+    signalStatePvExpString.setRaw( string );
   }
   else if ( i == 2 ) {
-    rampStatePvExpString.setRaw( string );
+    amplPvExpString.setRaw( string );
   }
   else if ( i == 3 ) {
-    colorPvExpString.setRaw( string );
+    offsetPvExpString.setRaw( string );
   }
   else if ( i == 4 ) {
-    visPvExpString.setRaw( string );
+    freqPvExpString.setRaw( string );
   }
   else if ( i == 5 ) {
-    label.setRaw( string );
+    phasePvExpString.setRaw( string );
   }
   else if ( i == 6 ) {
+    colorPvExpString.setRaw( string );
+  }
+  else if ( i == 7 ) {
+    visPvExpString.setRaw( string );
+  }
+  else if ( i == 8 ) {
+    label.setRaw( string );
+  }
+  else if ( i == 9 ) {
     int l = max;
     if ( 39 < max ) l = 39;
     strncpy( minVisString, string, l );
     minVisString[l] = 0;
   }
-  else if ( i == 7 ) {
+  else if ( i == 10 ) {
     int l = max;
     if ( 39 < max ) l = 39;
     strncpy( maxVisString, string, l );
@@ -2426,29 +2396,38 @@ void activeRampButtonClass::replaceString (
 }
 
 // crawler functions may return blank pv names
-char *activeRampButtonClass::crawlerGetFirstPv ( void ) {
+char *activeSignalClass::crawlerGetFirstPv ( void ) {
 
   crawlerPvIndex = 0;
   return destPvExpString.getExpanded();
 
 }
 
-char *activeRampButtonClass::crawlerGetNextPv ( void ) {
+char *activeSignalClass::crawlerGetNextPv ( void ) {
 
   if ( crawlerPvIndex >=5 ) return NULL;
 
   crawlerPvIndex++;
 
   if ( crawlerPvIndex == 1 ) {
-    return finalPvExpString.getExpanded();
+    return signalStatePvExpString.getExpanded();
   }
-  if ( crawlerPvIndex == 2 ) {
-    return rampStatePvExpString.getExpanded();
+  else if ( crawlerPvIndex == 2 ) {
+    return amplPvExpString.getExpanded();
   }
   else if ( crawlerPvIndex == 3 ) {
-    return visPvExpString.getExpanded();
+    return offsetPvExpString.getExpanded();
   }
   else if ( crawlerPvIndex == 4 ) {
+    return freqPvExpString.getExpanded();
+  }
+  else if ( crawlerPvIndex == 5 ) {
+    return phasePvExpString.getExpanded();
+  }
+  else if ( crawlerPvIndex == 6 ) {
+    return visPvExpString.getExpanded();
+  }
+  else if ( crawlerPvIndex == 7 ) {
     return colorPvExpString.getExpanded();
   }
 
@@ -2460,24 +2439,24 @@ char *activeRampButtonClass::crawlerGetNextPv ( void ) {
 extern "C" {
 #endif
 
-void *create_activeRampButtonClassPtr ( void ) {
+void *create_activeSignalClassPtr ( void ) {
 
-activeRampButtonClass *ptr;
+activeSignalClass *ptr;
 
-  ptr = new activeRampButtonClass;
+  ptr = new activeSignalClass;
   return (void *) ptr;
 
 }
 
-void *clone_activeRampButtonClassPtr (
+void *clone_activeSignalClassPtr (
   void *_srcPtr )
 {
 
-activeRampButtonClass *ptr, *srcPtr;
+activeSignalClass *ptr, *srcPtr;
 
-  srcPtr = (activeRampButtonClass *) _srcPtr;
+  srcPtr = (activeSignalClass *) _srcPtr;
 
-  ptr = new activeRampButtonClass( srcPtr );
+  ptr = new activeSignalClass( srcPtr );
 
   return (void *) ptr;
 

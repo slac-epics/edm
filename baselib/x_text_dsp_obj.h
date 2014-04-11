@@ -38,10 +38,11 @@
 
 #define XTDC_K_FORMAT_NATURAL 0
 #define XTDC_K_FORMAT_FLOAT 1
-#define XTDC_K_FORMAT_EXPONENTIAL 2
-#define XTDC_K_FORMAT_DECIMAL 3
-#define XTDC_K_FORMAT_HEX 4
-#define XTDC_K_FORMAT_STRING 5
+#define XTDC_K_FORMAT_GFLOAT 2
+#define XTDC_K_FORMAT_EXPONENTIAL 3
+#define XTDC_K_FORMAT_DECIMAL 4
+#define XTDC_K_FORMAT_HEX 5
+#define XTDC_K_FORMAT_STRING 6
 
 #define XTDC_K_COLORMODE_STATIC 0
 #define XTDC_K_COLORMODE_ALARM 1
@@ -51,7 +52,7 @@
 #define XTDC_K_FILE_NAME 2
 
 #define XTDC_MAJOR_VERSION 4
-#define XTDC_MINOR_VERSION 5
+#define XTDC_MINOR_VERSION 7
 #define XTDC_RELEASE 0
 
 #ifdef __x_text_dsp_obj_cc
@@ -71,7 +72,7 @@ static void dropTransferProc (
   Atom *type,
   XtPointer value,
   unsigned long *length,
-  int format );
+  XtPointer format );
 
 static void handleDrop (
   Widget w,
@@ -184,6 +185,10 @@ static void XtextDspFgUpdate (
   ProcessVariable *pv,
   void *userarg );
 
+static void XtextDspBgUpdate (
+  ProcessVariable *pv,
+  void *userarg );
+
 static void axtdc_value_edit_ok (
   Widget w,
   XtPointer client,
@@ -293,7 +298,7 @@ friend void dropTransferProc (
   Atom *type,
   XtPointer value,
   unsigned long *length,
-  int format );
+  XtPointer format );
 
 friend void handleDrop (
   Widget w,
@@ -401,6 +406,10 @@ friend void XtextDspFgUpdate (
   ProcessVariable *pv,
   void *userarg );
 
+friend void XtextDspBgUpdate (
+  ProcessVariable *pv,
+  void *userarg );
+
 friend void axtdc_value_edit_ok (
   Widget w,
   XtPointer client,
@@ -505,6 +514,7 @@ typedef struct editBufTag {
   int bufNumDecimals;
   int bufFormatType;
   int bufColorMode;
+  int bufBgColorMode;
   int bufSmartRefresh;
   char bufFontTag[63+1];
   int bufUseDisplayBg;
@@ -565,9 +575,9 @@ entryListBase *fileEntry, *returnEntry, *defDirEntry, *patEntry;
 
 entryListBase *chgCbEntry;
 
-entryListBase *useDspBgEntry, *bgColorEntry;
+ entryListBase *useDspBgEntry, *bgColorEntry, *bgColorModeEntry;
 
-int numDecimals, formatType, colorMode,
+int numDecimals, formatType, colorMode, bgColorMode,
  pvType, pvCount, svalPvType, noSval, svalPvCount;
 char format[15+1];
 int opComplete, pvExistCheck, activeMode, init, noSvalYet;
@@ -588,7 +598,7 @@ efInt efPrecision;
 char fieldLenInfo[7+1];
 int clipToDspLimits;
 double upperLim, lowerLim;
-int bgColor;
+pvColorClass bgColor;
 pvColorClass fgColor;
 colorButtonClass fgCb, bgCb, svalCb;
 XFontStruct *fs;
@@ -654,6 +664,7 @@ int needInitialValue;
 int showUnits;
 char units[MAX_UNITS_SIZE+1];
 
+// only used for alarm border
 short prevAlarmSeverity;
 
 int useAlarmBorder;

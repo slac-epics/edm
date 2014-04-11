@@ -22,6 +22,14 @@
 using namespace     std;
 
 #include "xygraph.h"
+#include "math.h"
+
+static double loc_log10 ( double d )
+{
+	if ( d == 0 )
+		return 0;
+	return log10( fabs( d ) );
+}
 
 void                _edmDebug( void );
 
@@ -126,33 +134,63 @@ void pvData::SetValuesFromPv( ProcessVariable *	pv, size_t pvCount	)
 		{
 		default:
 		case ProcessVariable::specificType::real:
-			newValue = pv->get_double_array()[index];
-			break;
 		case ProcessVariable::specificType::flt:
-			newValue = static_cast<float>( pv->get_double_array()[index] );
+			{
+			const double	*	pValues	= pv->get_double_array();
+			if ( pValues == NULL )
+			{
+				printf( "pvData::SetValuesFromPv: NULL array ptr!: pv %s, type %s, nElem %zu\n",
+						pv->get_name(), pv->get_type().description, pv->get_dimension() );
+						break;
+			}
+			newValue = pValues[index];
+			}
 			break;
 		case ProcessVariable::specificType::shrt:
+			{
+			const short	*	pValues	= pv->get_short_array();
+			if ( pValues == NULL )
+			{
+				printf( "pvData::SetValuesFromPv: NULL array ptr!: pv %s, type %s, nElem %zu\n",
+						pv->get_name(), pv->get_type().description, pv->get_dimension() );
+						break;
+			}
 			if ( m_pvIsSigned )
-				newValue = static_cast<short>( pv->get_short_array()[index] );
+				newValue = pValues[index];
 			else
-				newValue = static_cast<unsigned short>( pv->get_short_array()[index] );
+				newValue = static_cast<unsigned short>( pValues[index] );
+			}
+			break;
 		case ProcessVariable::specificType::chr:
+			{
+			const char	*	pValues	= pv->get_char_array();
+			if ( pValues == NULL )
+			{
+				printf( "pvData::SetValuesFromPv: NULL array ptr!: pv %s, type %s, nElem %zu\n",
+						pv->get_name(), pv->get_type().description, pv->get_dimension() );
+						break;
+			}
 			if ( m_pvIsSigned )
-				newValue = static_cast<char>( pv->get_char_array()[index] );
+				newValue = pValues[index];
 			else
-				newValue = static_cast<unsigned char>( pv->get_char_array()[index] );
+				newValue = static_cast<unsigned char>( pValues[index] );
+			}
 			break;
 		case ProcessVariable::specificType::integer:
-			if ( m_pvIsSigned )
-				newValue = pv->get_int_array()[index];
-			else
-				newValue = static_cast<unsigned long>( pv->get_int_array()[index] );
-			break;
 		case ProcessVariable::specificType::enumerated:
+			{
+			const int	*	pValues	= pv->get_int_array();
+			if ( pValues == NULL )
+			{
+				printf( "pvData::SetValuesFromPv: NULL array ptr!: pv %s, type %s, nElem %zu\n",
+						pv->get_name(), pv->get_type().description, pv->get_dimension() );
+				break;
+			}
 			if ( m_pvIsSigned )
-				newValue = static_cast<short>( pv->get_int_array()[index] );
+				newValue = pValues[index];
 			else
-				newValue = static_cast<unsigned short>( pv->get_int_array()[index] );
+				newValue = static_cast<unsigned int>( pValues[index] );
+			}
 			break;
 		}
 
@@ -653,10 +691,7 @@ setKpXMinDoubleValue(
 	if ( ( xyo->xAxisStyle == XYGC_K_AXIS_STYLE_LOG10 ) ||
 		 ( xyo->xAxisStyle == XYGC_K_AXIS_STYLE_TIME_LOG10 ) )
 	{
-		if( newValue > 0 )
-			newValue = log10( xyo->kpXMin );
-		else
-			newValue = 0;
+		newValue = loc_log10( xyo->kpXMin );
 	}
 	else
 	{
@@ -684,10 +719,7 @@ setKpXMaxDoubleValue(
 	if ( ( xyo->xAxisStyle == XYGC_K_AXIS_STYLE_LOG10 ) ||
 		 ( xyo->xAxisStyle == XYGC_K_AXIS_STYLE_TIME_LOG10 ) )
 	{
-		if ( newValue > 0 )
-			newValue = log10( newValue );
-		else
-			newValue = 0;
+		newValue = loc_log10( newValue );
 	}
 	else
 	{
@@ -726,13 +758,13 @@ cancelKpXMin(
 		{
 			if( minValue <= 0 )
 				minValue = 1;
-			minValue = log10( minValue );
+			minValue = loc_log10( minValue );
 		}
 		else if ( xyo->xAxisStyle == XYGC_K_AXIS_STYLE_TIME_LOG10 )
 		{
 			if( minValue <= 0 )
 				minValue = 1;
-			minValue = log10( minValue );
+			minValue = loc_log10( minValue );
 		}
 	}
 	else if ( xyo->xAxisSource == XYGC_K_FROM_PV )
@@ -748,13 +780,13 @@ cancelKpXMin(
 		{
 			if( minValue <= 0 )
 				minValue = 1;
-			minValue = log10( minValue );
+			minValue = loc_log10( minValue );
 		}
 		else if ( xyo->xAxisStyle == XYGC_K_AXIS_STYLE_TIME_LOG10 )
 		{
 			if( minValue <= 0 )
 				minValue = 1;
-			minValue = log10( minValue );
+			minValue = loc_log10( minValue );
 		}
 	}
 	else
@@ -792,13 +824,13 @@ cancelKpXMin(
 		{
 			if( minValue <= 0 )
 				minValue = 1;
-			minValue = log10( minValue );
+			minValue = loc_log10( minValue );
 		}
 		else if ( xyo->xAxisStyle == XYGC_K_AXIS_STYLE_TIME_LOG10 )
 		{
 			if( minValue <= 0 )
 				minValue = 1;
-			minValue = log10( minValue );
+			minValue = loc_log10( minValue );
 		}
 	}
 
@@ -831,13 +863,13 @@ cancelKpXMax(
 		{
 			if( maxValue <= 0 )
 				maxValue = 1;
-			maxValue = log10( maxValue );
+			maxValue = loc_log10( maxValue );
 		}
 		else if ( xyo->xAxisStyle == XYGC_K_AXIS_STYLE_TIME_LOG10 )
 		{
 			if( maxValue <= 0 )
 				maxValue = 1;
-			maxValue = log10( maxValue );
+			maxValue = loc_log10( maxValue );
 		}
 	}
 	else if ( xyo->xAxisSource == XYGC_K_FROM_PV )
@@ -853,13 +885,13 @@ cancelKpXMax(
 		{
 			if( maxValue <= 0 )
 				maxValue = 1;
-			maxValue = log10( maxValue );
+			maxValue = loc_log10( maxValue );
 		}
 		else if ( xyo->xAxisStyle == XYGC_K_AXIS_STYLE_TIME_LOG10 )
 		{
 			if( maxValue <= 0 )
 				maxValue = 1;
-			maxValue = log10( maxValue );
+			maxValue = loc_log10( maxValue );
 		}
 	}
 	else
@@ -893,13 +925,13 @@ cancelKpXMax(
 		{
 			if( maxValue <= 0 )
 				maxValue = 1;
-			maxValue = log10( maxValue );
+			maxValue = loc_log10( maxValue );
 		}
 		else if ( xyo->xAxisStyle == XYGC_K_AXIS_STYLE_TIME_LOG10 )
 		{
 			if( maxValue <= 0 )
 				maxValue = 1;
-			maxValue = log10( maxValue );
+			maxValue = loc_log10( maxValue );
 		}
 	}
 
@@ -947,10 +979,7 @@ setKpYMinDoubleValue(
 	double			newYValue	= xyo->kpY1Min[yi];
 	if ( xyo->y1AxisStyle[yi] == XYGC_K_AXIS_STYLE_LOG10 )
 	{
-		if( newYValue > 0 )
-			newYValue = log10( newYValue );
-		else
-			newYValue = 0;
+		newYValue = loc_log10( newYValue );
 	}
 	xyo->setYRescale( newYValue, yi );
 	xyo->actWin->appCtx->proc->unlock(  );
@@ -991,7 +1020,7 @@ setKpYMaxDoubleValue(
 	if ( xyo->y1AxisStyle[yi] == XYGC_K_AXIS_STYLE_LOG10 )
 	{
 		if( newYValue > 0 )
-			newYValue = log10( newYValue );
+			newYValue = loc_log10( newYValue );
 		else
 			newYValue = 0;
 	}
@@ -1044,7 +1073,7 @@ cancelKpYMin(
 		{
 			if( minValue <= 0 )
 				minValue = 1;
-			minValue = log10( minValue );
+			minValue = loc_log10( minValue );
 		}
 	}
 	else if ( xyo->y1AxisSource[yi] == XYGC_K_FROM_PV )
@@ -1067,7 +1096,7 @@ cancelKpYMin(
 		{
 			if( minValue <= 0 )
 				minValue = 1;
-			minValue = log10( minValue );
+			minValue = loc_log10( minValue );
 		}
 	}
 	else
@@ -1113,7 +1142,7 @@ cancelKpYMin(
 		{
 			if( minValue <= 0 )
 				minValue = 1;
-			minValue = log10( minValue );
+			minValue = loc_log10( minValue );
 		}
 	}
 
@@ -1168,7 +1197,7 @@ cancelKpYMax(
 		{
 			if( maxValue <= 0 )
 				maxValue = 1;
-			maxValue = log10( maxValue );
+			maxValue = loc_log10( maxValue );
 		}
 	}
 	else if ( xyo->y1AxisSource[yi] == XYGC_K_FROM_PV )
@@ -1191,7 +1220,7 @@ cancelKpYMax(
 		{
 			if( maxValue <= 0 )
 				maxValue = 1;
-			maxValue = log10( maxValue );
+			maxValue = loc_log10( maxValue );
 		}
 	}
 	else
@@ -1237,7 +1266,7 @@ cancelKpYMax(
 		{
 			if( maxValue <= 0 )
 				maxValue = 1;
-			maxValue = log10( maxValue );
+			maxValue = loc_log10( maxValue );
 		}
 	}
 
@@ -1378,8 +1407,7 @@ trigValueUpdate(
 
 				if ( xyo->y1AxisStyle[yi] == XYGC_K_AXIS_STYLE_LOG10 )
 				{
-					if( dyValue > 0 )
-						dyValue = log10( dyValue );
+					dyValue = loc_log10( dyValue );
 				}
 
 				if ( !xyo->traceIsDisabled( i ) )
@@ -1402,13 +1430,11 @@ trigValueUpdate(
 				dxValue = xyo->xPvData[i]->GetValue( ii );
 				if ( xyo->xAxisStyle == XYGC_K_AXIS_STYLE_LOG10 )
 				{
-					if( dxValue > 0 )
-						dxValue = log10( dxValue );
+					dxValue = loc_log10( dxValue );
 				}
 				else if ( xyo->xAxisStyle == XYGC_K_AXIS_STYLE_TIME_LOG10 )
 				{
-					if( dxValue > 0 )
-						dxValue = log10( dxValue );
+					dxValue = loc_log10( dxValue );
 				}
 
 				if ( xyo->traceIsDisabled( i ) )
@@ -1472,8 +1498,7 @@ trigValueUpdate(
 
 				if ( xyo->y1AxisStyle[yi] == XYGC_K_AXIS_STYLE_LOG10 )
 				{
-					if( dyValue > 0 )
-						dyValue = log10( dyValue );
+					dyValue = loc_log10( dyValue );
 				}
 
 				if ( !xyo->traceIsDisabled( i ) )
@@ -1663,8 +1688,7 @@ xValueUpdate(
 
 				if ( xyo->y1AxisStyle[yi] == XYGC_K_AXIS_STYLE_LOG10 )
 				{
-					if( dyValue > 0 )
-						dyValue = log10( dyValue );
+					dyValue = loc_log10( dyValue );
 				}
 
 				if ( !xyo->traceIsDisabled( i ) )
@@ -1688,13 +1712,11 @@ xValueUpdate(
 
 				if ( xyo->xAxisStyle == XYGC_K_AXIS_STYLE_LOG10 )
 				{
-					if( dxValue > 0 )
-						dxValue = log10( dxValue );
+					dxValue = loc_log10( dxValue );
 				}
 				else if ( xyo->xAxisStyle == XYGC_K_AXIS_STYLE_TIME_LOG10 )
 				{
-					if( dxValue > 0 )
-						dxValue = log10( dxValue );
+					dxValue = loc_log10( dxValue );
 				}
 
 				if ( !xyo->traceIsDisabled( i ) )
@@ -1812,34 +1834,26 @@ yMonitorConnection(
 	ProcessVariable * pv,
 	void *userarg )
 {
-
 	objPlusIndexPtr     ptr = ( objPlusIndexPtr ) userarg;
 	xyGraphClass       *xyo = ( xyGraphClass * ) ptr->objPtr;
 
 	if ( pv->is_valid(  ) )
 	{
-
 		if ( !xyo->connection.pvsConnected(  ) )
 		{
-
-			xyo->connection.setPvConnected( ( void * ) ( ptr->index + XYGC_K_MAX_TRACES ) );
+			xyo->connection.setPvConnected( ( void * ) ( ptr->index ) );
 
 			if ( xyo->connection.pvsConnected(  ) )
 			{
-
 				xyo->actWin->appCtx->proc->lock(  );
 				xyo->needConnect = 1;
 				xyo->actWin->addDefExeNode( xyo->aglPtr );
 				xyo->actWin->appCtx->proc->unlock(  );
-
 			}
-
 		}
-
 	}
 	else
 	{
-
 		xyo->connection.setPvDisconnected( ( void * ) ptr->index );
 		xyo->actWin->appCtx->proc->lock(  );
 		xyo->active = 0;
@@ -1848,9 +1862,7 @@ yMonitorConnection(
 		xyo->needDraw = 1;
 		xyo->actWin->addDefExeNode( xyo->aglPtr );
 		xyo->actWin->appCtx->proc->unlock(  );
-
 	}
-
 }
 
 static void
@@ -1929,8 +1941,7 @@ yValueUpdate(
 
 				if ( xyo->y1AxisStyle[yi] == XYGC_K_AXIS_STYLE_LOG10 )
 				{
-					if( dyValue > 0 )
-						dyValue = log10( dyValue );
+					dyValue = loc_log10( dyValue );
 				}
 
 				if ( !xyo->traceIsDisabled( i ) )
@@ -1953,13 +1964,11 @@ yValueUpdate(
 				dxValue = xyo->xPvData[i]->GetValue( ii );
 				if ( xyo->xAxisStyle == XYGC_K_AXIS_STYLE_LOG10 )
 				{
-					if( dxValue > 0 )
-						dxValue = log10( dxValue );
+					dxValue = loc_log10( dxValue );
 				}
 				else if ( xyo->xAxisStyle == XYGC_K_AXIS_STYLE_TIME_LOG10 )
 				{
-					if( dxValue > 0 )
-						dxValue = log10( dxValue );
+					dxValue = loc_log10( dxValue );
 				}
 
 				if ( !xyo->traceIsDisabled( i ) )
@@ -2130,8 +2139,7 @@ yValueWithTimeUpdate(
 				xyo->xPvData[i]->SetValue( ii, dxValue );
 
 				// Should this go before the SetValue?
-				if( dxValue > 0 )
-					dxValue = log10( dxValue );
+				dxValue = loc_log10( dxValue );
 			}
 			else if ( xyo->xAxisStyle == XYGC_K_AXIS_STYLE_LINEAR )
 			{
@@ -2157,8 +2165,7 @@ yValueWithTimeUpdate(
 				xyo->xPvData[i]->SetValue( ii, dxValue );
 
 				// Should this go before the SetValue?
-				if( dxValue > 0 )
-					dxValue = log10( dxValue );
+				dxValue = loc_log10( dxValue );
 
 				if ( !xyo->firstTimeSample )
 					xyo->totalCount[i]++;
@@ -2169,8 +2176,7 @@ yValueWithTimeUpdate(
 			{
 				if ( xyo->y1AxisStyle[yi] == XYGC_K_AXIS_STYLE_LOG10 )
 				{
-					if( dyValue > 0 )
-						dyValue = log10( dyValue );
+					dyValue = loc_log10( dyValue );
 				}
 
 				if ( !xyo->traceIsDisabled( i ) )
@@ -4787,21 +4793,18 @@ xyGraphClass::regenBuffer( void )
 
 			if ( y1AxisStyle[yi] == XYGC_K_AXIS_STYLE_LOG10 )
 			{
-				if( dyValue > 0 )
-					dyValue = log10( dyValue );
+				dyValue = loc_log10( dyValue );
 			}
 
 			dxValue = xPvData[i]->GetValue( ii );
 
 			if ( xAxisStyle == XYGC_K_AXIS_STYLE_LOG10 )
 			{
-				if( dxValue > 0 )
-					dxValue = log10( dxValue );
+				dxValue = loc_log10( dxValue );
 			}
 			else if ( xAxisStyle == XYGC_K_AXIS_STYLE_TIME_LOG10 )
 			{
-				if( dxValue > 0 )
-					dxValue = log10( dxValue );
+				dxValue = loc_log10( dxValue );
 			}
 
 			addPoint( dxValue, dxValue, dyValue, i, yi );
@@ -4843,19 +4846,16 @@ xyGraphClass::genChronoVector(
 
 		if ( y1AxisStyle[yi] == XYGC_K_AXIS_STYLE_LOG10 )
 		{
-			if( dyValue > 0 )
-				dyValue = log10( dyValue );
+			dyValue = loc_log10( dyValue );
 		}
 
 		if ( xAxisStyle == XYGC_K_AXIS_STYLE_LOG10 )
 		{
-			if( dxValue > 0 )
-				dxValue = log10( dxValue );
+			dxValue = loc_log10( dxValue );
 		}
 		else if ( xAxisStyle == XYGC_K_AXIS_STYLE_TIME_LOG10 )
 		{
-			if( dxValue > 0 )
-				dxValue = log10( dxValue );
+			dxValue = loc_log10( dxValue );
 		}
 
 		addPoint( dxValue, dxValue, dyValue, i, yi );
@@ -5038,8 +5038,7 @@ xyGraphClass::genXyVector(
 
 		if ( y1AxisStyle[yi] == XYGC_K_AXIS_STYLE_LOG10 )
 		{
-			if( dyValue > 0 )
-				dyValue = log10( dyValue );
+			dyValue = loc_log10( dyValue );
 		}
 // Ron Chestnut changes 3/2/2007
 		if ( ii == 0 )
@@ -5055,13 +5054,11 @@ xyGraphClass::genXyVector(
 
 		if ( xAxisStyle == XYGC_K_AXIS_STYLE_LOG10 )
 		{
-			if( dxValue > 0 )
-				dxValue = log10( dxValue );
+			dxValue = loc_log10( dxValue );
 		}
 		else if ( xAxisStyle == XYGC_K_AXIS_STYLE_TIME_LOG10 )
 		{
-			if( dxValue > 0 )
-				dxValue = log10( dxValue );
+			dxValue = loc_log10( dxValue );
 		}
 
 		addPoint( dxValue, dxValue, dyValue, i, yi );
@@ -6223,13 +6220,13 @@ xyGraphClass::activate(
 			curXMax = xMax.value(  );
 			if ( xAxisStyle == XYGC_K_AXIS_STYLE_LOG10 )
 			{
-				curXMin = log10( curXMin );
-				curXMax = log10( curXMax );
+				curXMin = loc_log10( curXMin );
+				curXMax = loc_log10( curXMax );
 			}
 			else if ( xAxisStyle == XYGC_K_AXIS_STYLE_TIME_LOG10 )
 			{
-				curXMin = log10( curXMin );
-				curXMax = log10( curXMax );
+				curXMin = loc_log10( curXMin );
+				curXMax = loc_log10( curXMax );
 			}
 
 			adjCurXMin = curXMin;
@@ -6241,8 +6238,8 @@ xyGraphClass::activate(
 				curY1Max[yi] = y1Max[yi].value(  );
 				if ( y1AxisStyle[yi] == XYGC_K_AXIS_STYLE_LOG10 )
 				{
-					curY1Min[yi] = log10( curY1Min[yi] );
-					curY1Max[yi] = log10( curY1Max[yi] );
+					curY1Min[yi] = loc_log10( curY1Min[yi] );
+					curY1Max[yi] = loc_log10( curY1Max[yi] );
 				}
 				adjCurY1Min[yi] = curY1Min[yi];
 				adjCurY1Max[yi] = curY1Max[yi];
@@ -7503,8 +7500,8 @@ xyGraphClass::executeDeferred( void )
 									curY1Min[yi] = 1e-2;
 								if( curY1Max[yi] <= 0 )
 									curY1Max[yi] = 1e-1;
-								curY1Min[yi] = log10( curY1Min[yi] );
-								curY1Max[yi] = log10( curY1Max[yi] );
+								curY1Min[yi] = loc_log10( curY1Min[yi] );
+								curY1Max[yi] = loc_log10( curY1Max[yi] );
 							}
 						}
 					}
@@ -7597,8 +7594,8 @@ xyGraphClass::executeDeferred( void )
 										curXMin = 1e-2;
 									if( curXMax <= 0 )
 										curXMax = 1e-1;
-									curXMin = log10( curXMin );
-									curXMax = log10( curXMax );
+									curXMin = loc_log10( curXMin );
+									curXMax = loc_log10( curXMax );
 								}
 								else if ( xAxisStyle == XYGC_K_AXIS_STYLE_TIME_LOG10 )
 								{
@@ -7606,8 +7603,8 @@ xyGraphClass::executeDeferred( void )
 										curXMin = 1e-2;
 									if( curXMax <= 0 )
 										curXMax = 1e-1;
-									curXMin = log10( curXMin );
-									curXMax = log10( curXMax );
+									curXMin = loc_log10( curXMin );
+									curXMax = loc_log10( curXMax );
 								}
 							}
 						}
@@ -8044,20 +8041,17 @@ xyGraphClass::executeDeferred( void )
 				dyValue = yPvData[i]->GetValue( ii );
 				if ( y1AxisStyle[yi] == XYGC_K_AXIS_STYLE_LOG10 )
 				{
-					if( dyValue > 0 )
-						dyValue = log10( dyValue );
+					dyValue = loc_log10( dyValue );
 				}
 				dxValue = xPvData[i]->GetValue( ii );
 
 				if ( xAxisStyle == XYGC_K_AXIS_STYLE_LOG10 )
 				{
-					if( dxValue > 0 )
-						dxValue = log10( dxValue );
+					dxValue = loc_log10( dxValue );
 				}
 				else if ( xAxisStyle == XYGC_K_AXIS_STYLE_TIME_LOG10 )
 				{
-					if( dxValue > 0 )
-						dxValue = log10( dxValue );
+					dxValue = loc_log10( dxValue );
 				}
 
 				addPoint( dxValue, dxValue, dyValue, i, yi );
@@ -8110,7 +8104,7 @@ xyGraphClass::executeDeferred( void )
 			{
 				if( curXMin <= 0 )
 					curXMin = 1e-2;
-				curXMin = log10( curXMin );
+				curXMin = loc_log10( curXMin );
 			}
 		}
 
@@ -8124,7 +8118,7 @@ xyGraphClass::executeDeferred( void )
 			{
 				if( curXMax <= 0 )
 					curXMax = 1e-1;
-				curXMax = log10( curXMax );
+				curXMax = loc_log10( curXMax );
 			}
 		}
 
@@ -8138,13 +8132,13 @@ xyGraphClass::executeDeferred( void )
 				{
 					if( curXMin <= 0 )
 						curXMin = 1e-2;
-					curXMin = log10( curXMin );
+					curXMin = loc_log10( curXMin );
 				}
 				else if ( xAxisStyle == XYGC_K_AXIS_STYLE_TIME_LOG10 )
 				{
 					if( curXMin <= 0 )
 						curXMin = 1e-2;
-					curXMin = log10( curXMin );
+					curXMin = loc_log10( curXMin );
 				}
 			}
 			else
@@ -8162,13 +8156,13 @@ xyGraphClass::executeDeferred( void )
 				{
 					if( curXMax <= 0 )
 						curXMax = 1e-1;
-					curXMax = log10( curXMax );
+					curXMax = loc_log10( curXMax );
 				}
 				else if ( xAxisStyle == XYGC_K_AXIS_STYLE_TIME_LOG10 )
 				{
 					if( curXMax <= 0 )
 						curXMax = 1e-1;
-					curXMax = log10( curXMax );
+					curXMax = loc_log10( curXMax );
 				}
 			}
 			else
@@ -8270,7 +8264,7 @@ xyGraphClass::executeDeferred( void )
 			{
 				if ( curY1Min[yi] <= 0 )
 					curY1Min[yi] = 1e-2;
-				curY1Min[yi] = log10( curY1Min[yi] );
+				curY1Min[yi] = loc_log10( curY1Min[yi] );
 			}
 		}
 
@@ -8281,7 +8275,7 @@ xyGraphClass::executeDeferred( void )
 			{
 				if( curY1Max[yi] <= 0 )
 					curY1Max[yi] = 1e-1;
-				curY1Max[yi] = log10( curY1Max[yi] );
+				curY1Max[yi] = loc_log10( curY1Max[yi] );
 			}
 		}
 
@@ -8295,7 +8289,7 @@ xyGraphClass::executeDeferred( void )
 				{
 					if ( curY1Min[yi] <= 0 )
 						curY1Min[yi] = 1e-2;
-					curY1Min[yi] = log10( curY1Min[yi] );
+					curY1Min[yi] = loc_log10( curY1Min[yi] );
 				}
 			}
 			else
@@ -8312,7 +8306,7 @@ xyGraphClass::executeDeferred( void )
 				{
 					if( curY1Max[yi] <= 0 )
 						curY1Max[yi] = 1e-1;
-					curY1Max[yi] = log10( curY1Max[yi] );
+					curY1Max[yi] = loc_log10( curY1Max[yi] );
 				}
 			}
 			else
@@ -8460,8 +8454,8 @@ xyGraphClass::executeDeferred( void )
 					curXMin = 1e-2;
 				if( curXMax <= 0 )
 					curXMax = 1e-1;
-				curXMin = log10( curXMin );
-				curXMax = log10( curXMax );
+				curXMin = loc_log10( curXMin );
+				curXMax = loc_log10( curXMax );
 			}
 			else if ( xAxisStyle == XYGC_K_AXIS_STYLE_TIME_LOG10 )
 			{
@@ -8469,8 +8463,8 @@ xyGraphClass::executeDeferred( void )
 					curXMin = 1e-2;
 				if( curXMax <= 0 )
 					curXMax = 1e-1;
-				curXMin = log10( curXMin );
-				curXMax = log10( curXMax );
+				curXMin = loc_log10( curXMin );
+				curXMax = loc_log10( curXMax );
 			}
 
 			if ( allChronological )
@@ -8577,8 +8571,8 @@ xyGraphClass::executeDeferred( void )
 						curY1Min[yi] = 1e-2;
 					if ( curY1Max[yi] <= 0 )
 						curY1Max[yi] = 1e-1;
-					curY1Min[yi] = log10( curY1Min[yi] );
-					curY1Max[yi] = log10( curY1Max[yi] );
+					curY1Min[yi] = loc_log10( curY1Min[yi] );
+					curY1Max[yi] = loc_log10( curY1Max[yi] );
 				}
 				if ( y1AxisStyle[yi] == XYGC_K_AXIS_STYLE_LOG10 )
 				{
@@ -8694,8 +8688,8 @@ xyGraphClass::executeDeferred( void )
 						checkY1Min[yi] = 1e-2;
 					if( checkY1Max[yi] <= 0 )
 						checkY1Max[yi] = 1e-1;
-					checkY1Min[yi] = log10( checkY1Min[yi] );
-					checkY1Max[yi] = log10( checkY1Max[yi] );
+					checkY1Min[yi] = loc_log10( checkY1Min[yi] );
+					checkY1Max[yi] = loc_log10( checkY1Max[yi] );
 				}
 
 				if ( checkY1Min[yi] != checkY1Max[yi] )
@@ -8737,8 +8731,8 @@ xyGraphClass::executeDeferred( void )
 						curXMin = 1e-2;
 					if( curXMax <= 0 )
 						curXMax = 1e-1;
-					curXMin = log10( curXMin );
-					curXMax = log10( curXMax );
+					curXMin = loc_log10( curXMin );
+					curXMax = loc_log10( curXMax );
 					get_log10_scale_params1( curXMin, curXMax, &adjCurXMin, &adjCurXMax,
 											 &curXNumLabelTicks, &curXMajorsPerLabel,
 											 &curXMinorsPerMajor, format );
@@ -8753,8 +8747,8 @@ xyGraphClass::executeDeferred( void )
 						curXMin = 1e-2;
 					if( curXMax <= 0 )
 						curXMax = 1e-1;
-					curXMin = log10( curXMin );
-					curXMax = log10( curXMax );
+					curXMin = loc_log10( curXMin );
+					curXMax = loc_log10( curXMax );
 					get_log10_scale_params1( curXMin, curXMax, &adjCurXMin, &adjCurXMax,
 											 &curXNumLabelTicks, &curXMajorsPerLabel,
 											 &curXMinorsPerMajor, format );
@@ -8816,8 +8810,8 @@ xyGraphClass::executeDeferred( void )
 							curY1Min[yi] = 1e-2;
 						if ( curY1Max[yi] <= 0 )
 							curY1Max[yi] = 1e-1;
-						curY1Min[yi] = log10( curY1Min[yi] );
-						curY1Max[yi] = log10( curY1Max[yi] );
+						curY1Min[yi] = loc_log10( curY1Min[yi] );
+						curY1Max[yi] = loc_log10( curY1Max[yi] );
 						get_log10_scale_params1( curY1Min[yi], curY1Max[yi], &adjCurY1Min[yi],
 												 &adjCurY1Max[yi], &curY1NumLabelTicks[yi],
 												 &curY1MajorsPerLabel[yi], &curY1MinorsPerMajor[yi],
@@ -8900,8 +8894,8 @@ xyGraphClass::executeDeferred( void )
 					curXMin = 1e-2;
 				if( curXMax <= 0 )
 					curXMax = 1e-1;
-				curXMin = log10( curXMin );
-				curXMax = log10( curXMax );
+				curXMin = loc_log10( curXMin );
+				curXMax = loc_log10( curXMax );
 				get_log10_scale_params1( curXMin, curXMax, &adjCurXMin, &adjCurXMax,
 										 &curXNumLabelTicks, &curXMajorsPerLabel,
 										 &curXMinorsPerMajor, format );
@@ -8916,8 +8910,8 @@ xyGraphClass::executeDeferred( void )
 					curXMin = 1e-2;
 				if( curXMax <= 0 )
 					curXMax = 1e-1;
-				curXMin = log10( curXMin );
-				curXMax = log10( curXMax );
+				curXMin = loc_log10( curXMin );
+				curXMax = loc_log10( curXMax );
 				get_log10_scale_params1( curXMin, curXMax, &adjCurXMin, &adjCurXMax,
 										 &curXNumLabelTicks, &curXMajorsPerLabel,
 										 &curXMinorsPerMajor, format );
@@ -8985,8 +8979,8 @@ xyGraphClass::executeDeferred( void )
 						curY1Min[yi] = 1e-2;
 					if( curY1Max[yi] <= 0 )
 						curY1Max[yi] = 1e-1;
-					curY1Min[yi] = log10( curY1Min[yi] );
-					curY1Max[yi] = log10( curY1Max[yi] );
+					curY1Min[yi] = loc_log10( curY1Min[yi] );
+					curY1Max[yi] = loc_log10( curY1Max[yi] );
 					get_log10_scale_params1( curY1Min[yi], curY1Max[yi], &adjCurY1Min[yi],
 											 &adjCurY1Max[yi], &curY1NumLabelTicks[yi],
 											 &curY1MajorsPerLabel[yi], &curY1MinorsPerMajor[yi],
@@ -9158,8 +9152,8 @@ xyGraphClass::executeDeferred( void )
 					curXMin = 1e-2;
 				if( curXMax <= 0 )
 					curXMax = 1e-1;
-				curXMin = log10( curXMin );
-				curXMax = log10( curXMax );
+				curXMin = loc_log10( curXMin );
+				curXMax = loc_log10( curXMax );
 			}
 			else if ( xAxisStyle == XYGC_K_AXIS_STYLE_TIME_LOG10 )
 			{
@@ -9167,8 +9161,8 @@ xyGraphClass::executeDeferred( void )
 					curXMin = 1e-2;
 				if( curXMax <= 0 )
 					curXMax = 1e-1;
-				curXMin = log10( curXMin );
-				curXMax = log10( curXMax );
+				curXMin = loc_log10( curXMin );
+				curXMax = loc_log10( curXMax );
 			}
 
 			if ( allChronological )
@@ -9270,8 +9264,8 @@ xyGraphClass::executeDeferred( void )
 						curY1Min[yi] = 1e-2;
 					if( curY1Max[yi] <= 0 )
 						curY1Max[yi] = 1e-1;
-					curY1Min[yi] = log10( curY1Min[yi] );
-					curY1Max[yi] = log10( curY1Max[yi] );
+					curY1Min[yi] = loc_log10( curY1Min[yi] );
+					curY1Max[yi] = loc_log10( curY1Max[yi] );
 				}
 				if ( y1AxisStyle[yi] == XYGC_K_AXIS_STYLE_LOG10 )
 				{
@@ -9412,24 +9406,37 @@ xyGraphClass::addPoint(
 		return;
 	}
 
-	double dscaledX = nearbyint( ( dxValue - curXMin ) * xFactor[trace] + xOffset[trace] );
+	double	dscaledX	=	nearbyint( ( dxValue - curXMin ) * xFactor[trace] + xOffset[trace] );
 
-	double dscaledY	=	plotAreaH
-				-	nearbyint(	( dyValue - curY1Min[yAxisSelect] )
-						*	y1Factor[yAxisSelect][trace]
-						-	y1Offset[yAxisSelect][trace]	);
+	double	dscaledY	=	plotAreaH
+						-	nearbyint(	( dyValue - curY1Min[yAxisSelect] )
+								*	y1Factor[yAxisSelect][trace]
+								-	y1Offset[yAxisSelect][trace]	);
+	double	yZero;
+	if ( y1AxisStyle[yAxisSelect] == XYGC_K_AXIS_STYLE_LOG10 )
+	{
+		yZero	=	plotAreaH + y1Offset[yAxisSelect][trace];
+	}
+	else
+	{
+		yZero	=	plotAreaH
+				-	rint( ( 0.0							 - curY1Min[yAxisSelect]		)
+						* ( y1Factor[yAxisSelect][trace] - y1Offset[yAxisSelect][trace]	) );
+	}
 
-	short	scaledX = static_cast<short>( dclamp( dscaledX ) );
-	short	scaledY = static_cast<short>( dclamp( dscaledY ) );
+	short	scaledX		= static_cast<short>( dclamp( dscaledX ) );
+	short	scaledY		= static_cast<short>( dclamp( dscaledY ) );
+	short	scaledYZero	= static_cast<short>( dclamp( yZero ) );
 	if ( debugMode(  ) )
-		printf( "addPoint: %f at (%d,%d)\n", oneX, scaledX, scaledY );
+		printf( "addPoint: %f at (%d,%d), yZero=%d\n", oneX, scaledX, scaledY, scaledYZero );
 
 	if ( opMode[trace] == XYGC_K_SCOPE_MODE )
 	{
 		unsigned int	i = plotInfoTail[trace];
 
-		plotInfo[trace][i].firstX = scaledX;
-		plotInfo[trace][i].firstY = scaledY;
+		plotInfo[trace][i].firstX	= scaledX;
+		plotInfo[trace][i].firstY	= scaledY;
+		plotInfo[trace][i].yZero	= scaledYZero;
 
 		i++;
 		if ( i >= plotBufSize[trace] )
@@ -9453,6 +9460,7 @@ xyGraphClass::addPoint(
 		if ( ( scaledX < plotAreaX ) || ( scaledX > ( int ) plotInfoSize[trace] ) )
 			return;
 
+		plotInfo[trace][scaledX].yZero = scaledYZero;
 		if ( plotInfo[trace][scaledX].n == 0 )
 		{
 			plotInfo[trace][scaledX].firstDX = oneX;
@@ -9547,7 +9555,8 @@ xyGraphClass::fillPlotArray(
 				prevY = plotInfo[trace][i].firstY;
 
 				plotBuf[trace][npts].x = prevX;
-				plotBuf[trace][npts].y = plotAreaY + plotAreaH + 11;
+				plotBuf[trace][npts].y = plotInfo[trace][i].yZero;
+				// plotBuf[trace][npts].y = plotAreaY + plotAreaH + 11;
 				npts++;
 
 				plotBuf[trace][npts].x = prevX;
@@ -9555,7 +9564,8 @@ xyGraphClass::fillPlotArray(
 				npts++;
 
 				plotBuf[trace][npts].x = prevX;
-				plotBuf[trace][npts].y = plotAreaY + plotAreaH + 11;
+				plotBuf[trace][npts].y = plotInfo[trace][i].yZero;
+				// plotBuf[trace][npts].y = plotAreaY + plotAreaH + 11;
 				npts++;
 			}
 
@@ -9583,7 +9593,8 @@ xyGraphClass::fillPlotArray(
 					prevY = curY;
 
 					plotBuf[trace][npts].x = curX;
-					plotBuf[trace][npts].y = plotAreaY + plotAreaH + 11;
+					plotBuf[trace][npts].y = plotInfo[trace][i].yZero;
+					// plotBuf[trace][npts].y = plotAreaY + plotAreaH + 11;
 					npts++;
 
 					plotBuf[trace][npts].x = curX;
@@ -9591,7 +9602,8 @@ xyGraphClass::fillPlotArray(
 					npts++;
 
 					plotBuf[trace][npts].x = curX;
-					plotBuf[trace][npts].y = plotAreaY + plotAreaH + 11;
+					plotBuf[trace][npts].y = plotInfo[trace][i].yZero;
+					// plotBuf[trace][npts].y = plotAreaY + plotAreaH + 11;
 					npts++;
 				}
 
@@ -9620,8 +9632,7 @@ xyGraphClass::fillPlotArray(
 					if ( ( xAxisStyle == XYGC_K_AXIS_STYLE_LOG10 ) ||
 						 ( xAxisStyle == XYGC_K_AXIS_STYLE_TIME_LOG10 ) )
 					{
-						if ( n > 0 )
-							n = log10( n );
+						n = loc_log10( n );
 					}
 					prevX = static_cast<short>( nearbyint( ( n - curXMin ) * xFactor[trace] + xOffset[trace] ) );
 					prevX = sclamp( prevX );
@@ -9657,8 +9668,7 @@ xyGraphClass::fillPlotArray(
 					if ( ( xAxisStyle == XYGC_K_AXIS_STYLE_LOG10 ) ||
 						 ( xAxisStyle == XYGC_K_AXIS_STYLE_TIME_LOG10 ) )
 					{
-						if( n > 0 )
-							n = log10( n );
+						n = loc_log10( n );
 					}
 					curX = static_cast<short>( nearbyint( ( n - curXMin ) * xFactor[trace] + xOffset[trace] ) );
 					curX = sclamp( curX );
@@ -9703,7 +9713,8 @@ xyGraphClass::fillPlotArray(
 				if ( plotInfo[trace][i].n == 1 )
 				{
 					plotBuf[trace][npts].x = plotInfo[trace][i].firstX;
-					plotBuf[trace][npts].y = plotAreaY + plotAreaH + 11;
+					plotBuf[trace][npts].y = plotInfo[trace][i].yZero;
+					// plotBuf[trace][npts].y = plotAreaY + plotAreaH + 11;
 					npts++;
 
 					plotBuf[trace][npts].x = plotInfo[trace][i].firstX;
@@ -9711,13 +9722,15 @@ xyGraphClass::fillPlotArray(
 					npts++;
 
 					plotBuf[trace][npts].x = plotInfo[trace][i].firstX;
-					plotBuf[trace][npts].y = plotAreaY + plotAreaH + 11;
+					plotBuf[trace][npts].y = plotInfo[trace][i].yZero;
+					// plotBuf[trace][npts].y = plotAreaY + plotAreaH + 11;
 					npts++;
 				}
 				else if ( plotInfo[trace][i].n == 2 )
 				{
 					plotBuf[trace][npts].x = plotInfo[trace][i].firstX;
-					plotBuf[trace][npts].y = plotAreaY + plotAreaH + 11;
+					plotBuf[trace][npts].y = plotInfo[trace][i].yZero;
+					// plotBuf[trace][npts].y = plotAreaY + plotAreaH + 11;
 					npts++;
 
 					plotBuf[trace][npts].x = plotInfo[trace][i].firstX;
@@ -9729,13 +9742,15 @@ xyGraphClass::fillPlotArray(
 					npts++;
 
 					plotBuf[trace][npts].x = plotInfo[trace][i].firstX;
-					plotBuf[trace][npts].y = plotAreaY + plotAreaH + 11;
+					plotBuf[trace][npts].y = plotInfo[trace][i].yZero;
+					// plotBuf[trace][npts].y = plotAreaY + plotAreaH + 11;
 					npts++;
 				}
 				else if ( plotInfo[trace][i].n > 2 )
 				{
 					plotBuf[trace][npts].x = plotInfo[trace][i].firstX;
-					plotBuf[trace][npts].y = plotAreaY + plotAreaH + 11;
+					plotBuf[trace][npts].y = plotInfo[trace][i].yZero;
+					// plotBuf[trace][npts].y = plotAreaY + plotAreaH + 11;
 					npts++;
 
 					plotBuf[trace][npts].x = plotInfo[trace][i].firstX;
@@ -9743,7 +9758,8 @@ xyGraphClass::fillPlotArray(
 					npts++;
 
 					plotBuf[trace][npts].x = plotInfo[trace][i].firstX;
-					plotBuf[trace][npts].y = plotAreaY + plotAreaH + 11;
+					plotBuf[trace][npts].y = plotInfo[trace][i].yZero;
+					// plotBuf[trace][npts].y = plotAreaY + plotAreaH + 11;
 					npts++;
 				}
 			}
