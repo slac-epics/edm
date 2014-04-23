@@ -5033,7 +5033,7 @@ xyGraphClass::genXyVector(
 
 	for ( unsigned int ii = 0; ii < n; ii++ )
 	{
-		double	dxValue = xPvData[i]->GetValue( n );
+		double	dxValue = xPvData[i]->GetValue( ii );
 		double	dyValue = yPvData[i]->GetValue( ii );
 
 		if ( y1AxisStyle[yi] == XYGC_K_AXIS_STYLE_LOG10 )
@@ -7636,6 +7636,9 @@ xyGraphClass::executeDeferred( void )
 					xvArgRec[i].objPtr = ( void * ) this;
 					xvArgRec[i].index = i;
 
+#if 1
+					assert( xPvData[i] != NULL );
+#else
 					if ( xPvData[i] != NULL )
 					{
 						printf( "deleting xPvData %p\n", xPvData[i] );
@@ -7655,6 +7658,7 @@ xyGraphClass::executeDeferred( void )
 						numElem = tmpC + 10;
 					}
 					xPvData[i] = new pvData( NULL, xPvType[i], numElem, xSigned[i] );	// ??
+#endif
 				}
 			}
 
