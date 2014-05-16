@@ -123,7 +123,9 @@ void pvData::SetValueFromPv( size_t index, ProcessVariable *	pv )
 void pvData::SetValuesFromPv( ProcessVariable *	pv, size_t pvCount	)
 {
 	if ( pv != m_pv )
-		printf( "pvData::SetValuesFromPv: pv %p != m_pv %p\n", pv, m_pv );
+	{
+		printf( "pvData::SetValuesFromPv: pv %s != m_pv %s\n", (pv?pv->get_name():"NULL"), (m_pv?m_pv->get_name():"NULL") );
+	}
 	if ( debugMode( ) ) printf( "pvData::SetValuesFromPv: pv %s, type %s, nElem %zu\n", pv->get_name(), pv->get_type().description, pv->get_dimension() );
 	for ( unsigned int index = 0; index < pvCount; index++ )
 	{
@@ -156,7 +158,7 @@ void pvData::SetValuesFromPv( ProcessVariable *	pv, size_t pvCount	)
 						break;
 			}
 			if ( m_pvIsSigned )
-				newValue = pValues[index];
+				newValue = static_cast<short>( pValues[index] );
 			else
 				newValue = static_cast<unsigned short>( pValues[index] );
 			}
@@ -171,7 +173,7 @@ void pvData::SetValuesFromPv( ProcessVariable *	pv, size_t pvCount	)
 						break;
 			}
 			if ( m_pvIsSigned )
-				newValue = pValues[index];
+				newValue = static_cast<char>( pValues[index] );
 			else
 				newValue = static_cast<unsigned char>( pValues[index] );
 			}
@@ -187,7 +189,7 @@ void pvData::SetValuesFromPv( ProcessVariable *	pv, size_t pvCount	)
 				break;
 			}
 			if ( m_pvIsSigned )
-				newValue = pValues[index];
+				newValue = static_cast<short>( pValues[index] );
 			else
 				newValue = static_cast<unsigned int>( pValues[index] );
 			}
@@ -407,7 +409,7 @@ dump_edit_apply(
 
 	fprintf( tmp, "number of traces = %-d\n", xyo->numTraces );
 
-	for ( i = 0; i < xyo->numTraces; i++ )
+	for ( i = 0; i < (size_t)xyo->numTraces; i++ )
 	{
 		if ( xyo->traceType[i] == XYGC_K_TRACE_CHRONOLOGICAL )
 		{
@@ -770,7 +772,7 @@ cancelKpXMin(
 	else if ( xyo->xAxisSource == XYGC_K_FROM_PV )
 	{
 		minValue = xyo->dbXMin[0];
-		for ( i = 1; i < xyo->numTraces; i++ )
+		for ( i = 1; i < (size_t)xyo->numTraces; i++ )
 		{
 			if ( xyo->dbXMin[i] < minValue )
 				minValue = xyo->dbXMin[i];
@@ -796,7 +798,7 @@ cancelKpXMin(
 		if( minValue > xyo->curXMax )
 			minValue = 1.1 * xyo->curXMax;
 		first = 1;
-		for ( i = 0; i < xyo->numTraces; i++ )
+		for ( i = 0; i < (size_t)xyo->numTraces; i++ )
 		{
 			if ( xyo->traceIsDisabled( i ) )
 				continue;
@@ -875,7 +877,7 @@ cancelKpXMax(
 	else if ( xyo->xAxisSource == XYGC_K_FROM_PV )
 	{
 		maxValue = xyo->dbXMax[0];
-		for ( i = 1; i < xyo->numTraces; i++ )
+		for ( i = 1; i < (size_t)xyo->numTraces; i++ )
 		{
 			if ( xyo->dbXMax[i] > maxValue )
 				maxValue = xyo->dbXMax[i];
@@ -901,7 +903,7 @@ cancelKpXMax(
 		//	if( maxValue < xyo->curXMin )
 		//		maxValue = 0.9 * xyo->curXMin;
 		first = 1;
-		for ( i = 0; i < xyo->numTraces; i++ )
+		for ( i = 0; i < (size_t)xyo->numTraces; i++ )
 		{
 			if ( xyo->traceIsDisabled( i ) )
 				continue;
@@ -1079,7 +1081,7 @@ cancelKpYMin(
 	else if ( xyo->y1AxisSource[yi] == XYGC_K_FROM_PV )
 	{
 		minValue = xyo->dbYMin[xyo->lowestYScaleIndex[yi]];
-		for ( i = 1; i < xyo->numTraces; i++ )
+		for ( i = 1; i < (size_t)xyo->numTraces; i++ )
 		{
 			yScaleIndex = 0;
 			if ( xyo->y2Scale[i] )
@@ -1106,7 +1108,7 @@ cancelKpYMin(
 		//	if( minValue   > xyo->curY1Max[yi] )
 		//		minValue = 1.1 * xyo->curY1Max[yi];
 		first = 1;
-		for ( i = 0; i < xyo->numTraces; i++ )
+		for ( i = 0; i < (size_t)xyo->numTraces; i++ )
 		{
 			if ( xyo->traceIsDisabled( i ) )
 				continue;
@@ -1203,7 +1205,7 @@ cancelKpYMax(
 	else if ( xyo->y1AxisSource[yi] == XYGC_K_FROM_PV )
 	{
 		maxValue = xyo->dbYMax[xyo->lowestYScaleIndex[yi]];
-		for ( i = 1; i < xyo->numTraces; i++ )
+		for ( i = 1; i < (size_t)xyo->numTraces; i++ )
 		{
 			yScaleIndex = 0;
 			if ( xyo->y2Scale[i] )
@@ -1230,7 +1232,7 @@ cancelKpYMax(
 		if( maxValue < xyo->curY1Min[yi] )
 			maxValue = 0.9 * xyo->curY1Min[yi];
 		first = 1;
-		for ( i = 0; i < xyo->numTraces; i++ )
+		for ( i = 0; i < (size_t)xyo->numTraces; i++ )
 		{
 			if ( xyo->traceIsDisabled( i ) )
 				continue;	// Trace not enabled
@@ -1349,6 +1351,7 @@ trigMonitorConnection(
 {
 	xyGraphClass       *xyo = ( xyGraphClass * ) userarg;
 
+	if ( debugMode(  ) ) printf( "trigMonitorConnection: %s\n", pv->get_name() );
 	if ( pv->is_valid(  ) )
 	{
 		xyo->actWin->appCtx->proc->lock(  );
@@ -1370,9 +1373,10 @@ trigValueUpdate(
 	double              dxValue,
 	                    dyValue;
 
+	if ( debugMode(  ) ) printf( "trigValueUpdate: %s\n", pv->get_name() );
 	xyo->actWin->appCtx->proc->lock(  );
 
-	for ( i = 0; i < xyo->numTraces; i++ )
+	for ( i = 0; i < (size_t)xyo->numTraces; i++ )
 	{
 		if ( xyo->plotUpdateMode[i] != XYGC_K_UPDATE_ON_TRIG )
 			continue;
@@ -1577,6 +1581,7 @@ xMonitorConnection(
 	objPlusIndexPtr     ptr = ( objPlusIndexPtr ) userarg;
 	xyGraphClass      * xyo = ( xyGraphClass * ) ptr->objPtr;
 
+	if ( debugMode(  ) ) printf( "xMonitorConnection: %s\n", pv->get_name() );
 	if ( pv->is_valid(  ) )
 	{
 		if( !xyo->connection.pvsConnected(  ) )
@@ -1620,6 +1625,7 @@ xValueUpdate(
 	if ( !xyo->activeMode )
 		return;
 
+	if ( debugMode(  ) ) printf( "xValueUpdate: %s\n", pv->get_name() );
 	xyo->actWin->appCtx->proc->lock(  );
 
 	if( xyo->xArrayGotValueCallback[i] == 0 )
@@ -1788,6 +1794,7 @@ nMonitorConnection(
 	xyGraphClass       *xyo = ( xyGraphClass * ) ptr->objPtr;
 	unsigned int        i = ptr->index;
 
+	if ( debugMode(  ) ) printf( "nMonitorConnection: %s\n", pv->get_name() );
 	if ( pv->is_valid(  ) )
 	{
 
@@ -1816,6 +1823,7 @@ nValueUpdate(
 	xyGraphClass       *xyo = ( xyGraphClass * ) ptr->objPtr;
 	unsigned int        i = ptr->index;
 
+	if ( debugMode(  ) ) printf( "nValueUpdate: %s\n", pv->get_name() );
 	if ( pv->is_valid(  ) )
 	{
 
@@ -1837,6 +1845,7 @@ yMonitorConnection(
 	objPlusIndexPtr     ptr = ( objPlusIndexPtr ) userarg;
 	xyGraphClass       *xyo = ( xyGraphClass * ) ptr->objPtr;
 
+	if ( debugMode(  ) ) printf( "yMonitorConnection: %s\n", pv->get_name() );
 	if ( pv->is_valid(  ) )
 	{
 		if ( !xyo->connection.pvsConnected(  ) )
@@ -1880,6 +1889,7 @@ yValueUpdate(
 	if ( !xyo->activeMode )
 		return;
 
+	if ( debugMode(  ) ) printf( "yValueUpdate: %s\n", pv->get_name() );
 	xyo->actWin->appCtx->proc->lock(  );
 
 	if( xyo->yArrayGotValueCallback[i] != 0 )
@@ -2062,6 +2072,7 @@ yValueWithTimeUpdate(
 	if ( !xyo->activeMode )
 		return;
 
+	if ( debugMode(  ) ) printf( "yValueWithTimeUpdate: %s\n", pv->get_name() );
 	xyo->actWin->appCtx->proc->lock(  );
 
 	if( xyo->yArrayGotValueCallback[i] != 0 )
@@ -2464,7 +2475,7 @@ axygc_edit_update(
 
 	// check for conflicts
 
-	for ( i = 0; i < axygo->numTraces; i++ )
+	for ( i = 0; i < (size_t)axygo->numTraces; i++ )
 	{
 
 		if ( axygo->xAxisStyle == XYGC_K_AXIS_STYLE_LOG10 )
@@ -2490,7 +2501,6 @@ axygc_edit_update(
 
 		for ( yi = 0; yi < xyGraphClass::NUM_Y_AXES; yi++ )
 		{
-
 			if ( axygo->y1AxisStyle[yi] == XYGC_K_AXIS_STYLE_LOG10 )
 			{
 				if ( axygo->y1Min[yi].value(  ) <= 0.0 )
@@ -2507,9 +2517,7 @@ axygc_edit_update(
 			{
 				axygo->y1Max[yi].setValue( axygo->y1Min[yi].value(  ) + 1.0 );
 			}
-
 		}
-
 	}
 
 	axygo->updateDimensions(  );
@@ -2896,7 +2904,7 @@ xyGraphClass::getDbXMinXMax(
 
 	i = 0;
 	start = numTraces;
-	while ( i < numTraces )
+	while ( i < (size_t) numTraces )
 	{
 		if ( traceType[i] != XYGC_K_TRACE_CHRONOLOGICAL )
 		{
@@ -2912,7 +2920,7 @@ xyGraphClass::getDbXMinXMax(
 		i++;
 	}
 
-	for ( i = start; i < numTraces; i++ )
+	for ( i = start; i < (size_t) numTraces; i++ )
 	{
 		if ( traceIsDisabled( i ) )
 			continue;
@@ -2943,7 +2951,7 @@ xyGraphClass::getDbYMinYMax(
 	{
 		i = 0;
 		start = numTraces;
-		while ( i < numTraces )
+		while ( i < (size_t) numTraces )
 		{
 			if ( !y2Scale[i] )
 			{
@@ -2958,7 +2966,7 @@ xyGraphClass::getDbYMinYMax(
 			i++;
 		}
 
-		for ( i = start; i < numTraces; i++ )
+		for ( i = start; i < (size_t) numTraces; i++ )
 		{
 			if ( !y2Scale[i] )
 			{
@@ -2976,7 +2984,7 @@ xyGraphClass::getDbYMinYMax(
 	{
 		i = 0;
 		start = numTraces;
-		while ( i < numTraces )
+		while ( i < (size_t) numTraces )
 		{
 			if ( y2Scale[i] )
 			{
@@ -2991,7 +2999,7 @@ xyGraphClass::getDbYMinYMax(
 			i++;
 		}
 
-		for ( i = start; i < numTraces; i++ )
+		for ( i = start; i < (size_t) numTraces; i++ )
 		{
 			if ( y2Scale[i] )
 			{
@@ -3021,7 +3029,7 @@ xyGraphClass::getXMinMax(
 
 	*min	= *max = 0;
 	first	= 1;
-	for ( i = 0; i < numTraces; i++ )
+	for ( i = 0; i < (size_t) numTraces; i++ )
 	{
 		if ( traceIsDisabled(i) )
 			continue;
@@ -3066,7 +3074,7 @@ xyGraphClass::getYMinMax(
 		max[i]		= 0;
 	}
 
-	for ( i = 0; i < numTraces; i++ )
+	for ( i = 0; i < (size_t) numTraces; i++ )
 	{
 		if ( traceIsDisabled(i) )
 			continue;
@@ -3554,7 +3562,7 @@ xyGraphClass::old_save(
 
 	fprintf( f, "%-d\n", numTraces );
 
-	for ( i = 0; i < numTraces; i++ )
+	for ( i = 0; i < (size_t) numTraces; i++ )
 	{
 
 		if ( xPvExpStr[i].getRaw(  ) )
@@ -3910,7 +3918,7 @@ xyGraphClass::createFromFile(
 		autoScaleThreshFrac = 0.01 * autoScaleThreshPct.value(  );
 	}
 
-	for ( i = 0; i < numTraces; i++ )
+	for ( i = 0; i < (size_t) numTraces; i++ )
 	{
 
 		if ( plotStyle[i] == XYGC_K_PLOT_STYLE_SINGLE_POINT )
@@ -3955,7 +3963,7 @@ xyGraphClass::createFromFile(
 
 	// check for conflicts
 
-	for ( i = 0; i < numTraces; i++ )
+	for ( i = 0; i < (size_t) numTraces; i++ )
 	{
 
 		if ( xAxisStyle == XYGC_K_AXIS_STYLE_LOG10 )
@@ -4162,7 +4170,7 @@ xyGraphClass::old_createFromFile(
 	fscanf( f, "%d\n", &numTraces );
 	actWin->incLine(  );
 
-	for ( i = 0; i < numTraces; i++ )
+	for ( i = 0; i < (size_t) numTraces; i++ )
 	{
 
 		readStringFromFile( onePv, PV_Factory::MAX_PV_NAME + 1, f );
@@ -4264,7 +4272,7 @@ xyGraphClass::old_createFromFile(
 
 	// check for conflicts
 
-	for ( i = 0; i < numTraces; i++ )
+	for ( i = 0; i < (size_t) numTraces; i++ )
 	{
 		if ( xAxisStyle == XYGC_K_AXIS_STYLE_LOG10 )
 		{
@@ -4460,7 +4468,7 @@ xyGraphClass::genericEdit(
 					 &actWin->appCtx->entryFormH, &actWin->appCtx->largestH,
 					 "Trace Properties", NULL, NULL, NULL );
 
-	for ( i = 0; i < numTraces; i++ )
+	for ( i = 0; i < (size_t) numTraces; i++ )
 	{
 		strncpy( eBuf->bufXPvName[i], xPvExpStr[i].getRaw(  ), PV_Factory::MAX_PV_NAME );
 		eBuf->bufXPvName[i][PV_Factory::MAX_PV_NAME] = 0;
@@ -4768,7 +4776,7 @@ xyGraphClass::regenBuffer( void )
 	                    dyValue;
 
 	count = 0;
-	for ( i = 0; i < numTraces; i++ )
+	for ( i = 0; i < (size_t) numTraces; i++ )
 	{
 		if ( traceIsDisabled(i) )
 			continue;
@@ -4982,13 +4990,13 @@ xyGraphClass::genChronoVector(
 
 		updateDimensions(  );
 
-		for ( unsigned int iii = 0; iii < numTraces; iii++ )
+		for ( unsigned int iii = 0; iii < (size_t) numTraces; iii++ )
 		{
 			xFactor[iii] = ( double ) ( plotAreaW ) / ( curXMax - curXMin );
 			xOffset[iii] = plotAreaX;
 		}
 
-		for ( unsigned int iii = 0; iii < numTraces; iii++ )
+		for ( unsigned int iii = 0; iii < (size_t) numTraces; iii++ )
 		{
 			y1Factor[yi][iii] = ( double ) ( plotAreaH ) / ( curY1Max[yi] - curY1Min[yi] );
 			y1Offset[yi][iii] = plotAreaY;
@@ -5020,6 +5028,7 @@ xyGraphClass::genXyVector(
 	if ( traceIsDisabled( i ) )
 		return;
 
+	if ( debugMode(  ) ) printf( "xyGraphClass::genXyVector: trace %d\n", i );
 	yi = 0;
 	if ( y2Scale[i] )
 		yi = 1;
@@ -5183,13 +5192,13 @@ xyGraphClass::genXyVector(
 
 		updateDimensions(  );
 
-		for ( unsigned int iii = 0; iii < numTraces; iii++ )
+		for ( unsigned int iii = 0; iii < (size_t) numTraces; iii++ )
 		{
 			xFactor[iii] = ( double ) ( plotAreaW ) / ( curXMax - curXMin );
 			xOffset[iii] = plotAreaX;
 		}
 
-		for ( unsigned int iii = 0; iii < numTraces; iii++ )
+		for ( unsigned int iii = 0; iii < (size_t) numTraces; iii++ )
 		{
 			y1Factor[yi][iii] = ( double ) ( plotAreaH ) / ( curY1Max[yi] - curY1Min[yi] );
 			y1Offset[yi][iii] = plotAreaY;
@@ -5244,7 +5253,7 @@ xyGraphClass::fullRefresh(
 	actWin->executeGc.restoreFg(  );
 
 	bufInvalid = 0;
-	for ( i = 0; i < numTraces; i++ )
+	for ( i = 0; i < (size_t) numTraces; i++ )
 	{
 		if ( !traceIsDisabled( i ) )
 			continue;
@@ -5459,7 +5468,7 @@ xyGraphClass::eraseActive(
 
 	XSetClipRectangles( actWin->display(  ), actWin->executeGc.normGC(  ), 0, 0, &xR, 1, Unsorted );
 
-	for ( i = 0; i < numTraces; i++ )
+	for ( i = 0; i < (size_t) numTraces; i++ )
 	{
 
 		if ( yArrayNeedUpdate[i] && xArrayNeedUpdate[i] && traceIsDrawn[i] )
@@ -5741,7 +5750,7 @@ xyGraphClass::drawActive(
 
 	XSetClipRectangles( actWin->display(  ), actWin->executeGc.normGC(  ), 0, 0, &xR, 1, Unsorted );
 
-	for ( i = 0; i < numTraces; i++ )
+	for ( i = 0; i < (size_t) numTraces; i++ )
 	{
 		drawActiveOne( i );
 	}
@@ -5843,7 +5852,7 @@ xyGraphClass::expandTemplate(
 	tmpStr.expand1st( numMacros, macros, expansions );
 	resetPvExpStr.setRaw( tmpStr.getExpanded(  ) );
 
-	for ( i = 0; i < numTraces; i++ )
+	for ( i = 0; i < (size_t) numTraces; i++ )
 	{
 		tmpStr.setRaw( xPvExpStr[i].getRaw(  ) );
 		tmpStr.expand1st( numMacros, macros, expansions );
@@ -5899,7 +5908,7 @@ xyGraphClass::expand1st(
 	if ( !( stat & 1 ) )
 		retStat = stat;
 
-	for ( i = 0; i < numTraces; i++ )
+	for ( i = 0; i < (size_t) numTraces; i++ )
 	{
 		stat = xPvExpStr[i].expand1st( numMacros, macros, expansions );
 		if ( !( stat & 1 ) )
@@ -5954,7 +5963,7 @@ xyGraphClass::expand2nd(
 	if ( !( stat & 1 ) )
 		retStat = stat;
 
-	for ( i = 0; i < numTraces; i++ )
+	for ( i = 0; i < (size_t) numTraces; i++ )
 	{
 		stat = xPvExpStr[i].expand2nd( numMacros, macros, expansions );
 		if ( !( stat & 1 ) )
@@ -6005,7 +6014,7 @@ xyGraphClass::containsMacros( void )
 	if ( result )
 		return result;
 
-	for ( i = 0; i < numTraces; i++ )
+	for ( i = 0; i < (size_t) numTraces; i++ )
 	{
 		result = xPvExpStr[i].containsPrimaryMacros(  );
 		if ( result )
@@ -6343,7 +6352,7 @@ xyGraphClass::activate(
 
 			xPvData.resize( numTraces );
 			yPvData.resize( numTraces );
-			for ( i = 0; i < numTraces; i++ )
+			for ( i = 0; i < (size_t) numTraces; i++ )
 			{
 				xPvCurValue[i] = 0;
 				yPvCurValue[i] = 0;
@@ -6402,7 +6411,7 @@ xyGraphClass::activate(
 				yPvDim[i] = 10;
 			}
 
-			for ( i = 0; i < numTraces; i++ )
+			for ( i = 0; i < (size_t) numTraces; i++ )
 			{
 				if ( !blankOrComment( yPvExpStr[i].getExpanded(  ) ) )
 				{
@@ -6577,7 +6586,7 @@ xyGraphClass::deactivate(	int pass )
 			trigPv = NULL;
 		}
 
-		for ( i = 0; i < numTraces; i++ )
+		for ( i = 0; i < (size_t) numTraces; i++ )
 		{
 			if ( yPv[i] )
 			{
@@ -7304,14 +7313,15 @@ xyGraphClass::executeDeferred( void )
 	// Unlock context
 	actWin->appCtx->proc->unlock(  );
 
+	// if ( debugMode( ) ) printf( "xyGraphClass::executeDeferred: %s\n", activeMode ? "Active" : "Not-Active" );
 	doRescale = 0;
 	if ( !activeMode )
 		return;
 
 	if ( _needNConnect )
 	{
-		if ( debugMode(  ) ) printf( "xyGraph: connecting ...\n" );
-		for ( i = 0; i < numTraces; i++ )
+		if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: connecting ...\n" );
+		for ( i = 0; i < (size_t) numTraces; i++ )
 		{
 			//	TraceSetNeedPvConnect()
 			if ( needNPvConnect[i] == 1 )
@@ -7324,8 +7334,8 @@ xyGraphClass::executeDeferred( void )
 
 	if ( _needNInit )
 	{
-		if ( debugMode(  ) ) printf( "xyGraph: adding trace callbacks ...\n" );
-		for ( i = 0; i < numTraces; i++ )
+		if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: adding trace callbacks ...\n" );
+		for ( i = 0; i < (size_t) numTraces; i++ )
 		{
 			//	TraceAddPvCallback()
 			if ( needNPvConnect[i] == 2 )
@@ -7340,14 +7350,14 @@ xyGraphClass::executeDeferred( void )
 
 	if ( _needConnect )
 	{
-		if ( debugMode(  ) ) printf( "xyGraph: Fetching PV info ...\n" );
+		if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: Fetching PV info ...\n" );
 		xPvData.resize( numTraces );
-		for ( i = 0; i < numTraces; i++ )
+		for ( i = 0; i < (size_t) numTraces; i++ )
 		{
 			//	TraceGetPvInfo()
 			if ( yPv[i] && yPv[i]->is_valid(  ) )
 			{
-				if ( debugMode( ) ) printf( "executeDeferred: needConnect yPv %s, type %s, nElem %zu\n", yPv[i]->get_name(), yPv[i]->get_type().description, yPv[i]->get_dimension() );
+				if ( debugMode( ) ) printf( "xyGraphClass::executeDeferred: needConnect yPv %s, type %s, nElem %zu\n", yPv[i]->get_name(), yPv[i]->get_type().description, yPv[i]->get_dimension() );
 				yPvType[i]	= ( int ) yPv[i]->get_specific_type(  ).type;
 				yPvCount[i]	= ( int ) yPv[i]->get_dimension(  );
 				yPvDim[i]	= ( int ) yPv[i]->get_dimension(  );
@@ -7368,8 +7378,9 @@ xyGraphClass::executeDeferred( void )
 				assert( yPvData[i] == NULL );
 				yPvData[i] = new pvData( yPv[i], yPvType[i], yPvCount[i], ySigned[i] );
 
-				if ( debugMode(  ) )
+				// if ( debugMode(  ) )
 				{
+					printf( "y pv %s\n", yPv[i]->get_name() );
 					printf( "y pv ele size = %-d\n",
 							( int ) yPv[i]->get_specific_type(  ).size / 8 );
 					printf( "y pv dim = %-d\n", yPvDim[i] );
@@ -7383,7 +7394,7 @@ xyGraphClass::executeDeferred( void )
 
 			if ( xPv[i] && xPv[i]->is_valid(  ) )
 			{
-				if ( debugMode( ) ) printf( "executeDeferred: needConnect xPv %s, type %s, nElem %zu\n", xPv[i]->get_name(), xPv[i]->get_type().description, xPv[i]->get_dimension() );
+				if ( debugMode( ) ) printf( "xyGraphClass::executeDeferred: needConnect xPv %s, type %s, nElem %zu\n", xPv[i]->get_name(), xPv[i]->get_type().description, xPv[i]->get_dimension() );
 				xPvType[i]	= ( int ) xPv[i]->get_specific_type(  ).type;
 				xPvCount[i]	= ( int ) xPv[i]->get_dimension(  );
 				xPvDim[i]	= ( int ) xPv[i]->get_dimension(  );
@@ -7404,7 +7415,7 @@ xyGraphClass::executeDeferred( void )
 				assert( xPvData[i] == NULL );
 				xPvData[i] = new pvData( xPv[i], xPvType[i], xPvCount[i], xSigned[i] );
 
-				if ( debugMode(  ) )
+				// if ( debugMode(  ) )
 				{
 					printf( "x pv ele size = %-d\n",
 							( int ) xPv[i]->get_specific_type(  ).size / 8	);
@@ -7431,7 +7442,7 @@ xyGraphClass::executeDeferred( void )
 
 	if ( _needTraceUpdate )
 	{
-		if ( debugMode(  ) ) printf( "xyGraph: TraceUpdate ...\n" );
+		if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: TraceUpdate ...\n" );
 		regenBuffer(  );
 		fullRefresh(  );
 		_needRealUpdate = 1;
@@ -7439,7 +7450,7 @@ xyGraphClass::executeDeferred( void )
 
 	if ( _needResetConnect )
 	{
-		if ( debugMode(  ) ) printf( "xyGraph: NeedResetConnect ...\n" );
+		if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: NeedResetConnect ...\n" );
 		if ( initialResetConnection )
 		{
 			initialResetConnection = 0;
@@ -7449,7 +7460,7 @@ xyGraphClass::executeDeferred( void )
 
 	if ( _needTrigConnect )
 	{
-		if ( debugMode(  ) ) printf( "xyGraph: NeedTrigConnect ...\n" );
+		if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: NeedTrigConnect ...\n" );
 		if ( initialTrigConnection )
 		{
 			initialTrigConnection = 0;
@@ -7459,8 +7470,8 @@ xyGraphClass::executeDeferred( void )
 
 	if ( _needInit )
 	{
-		if ( debugMode(  ) ) printf( "xyGraph: checkSpecial ...\n" );
-		for ( i = 0; i < numTraces; i++ )
+		if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: checkSpecial ...\n" );
+		for ( i = 0; i < (size_t) numTraces; i++ )
 		{
 			// Is this a special trace?
 			special[i] = 0;
@@ -7481,7 +7492,7 @@ xyGraphClass::executeDeferred( void )
 			// ------------------------------------------------------------------
 			// pass one - init, pass two - add events
 
-			if ( debugMode(  ) ) printf( "xyGraph: pass one, TraceInit ...\n" );
+			if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: pass one, TraceInit ...\n" );
 			// TraceInit()
 			{
 				// pass one
@@ -7526,6 +7537,7 @@ xyGraphClass::executeDeferred( void )
 							if ( xPvDim[i] > maxDim )
 								maxDim = xPvDim[i];
 
+							if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: NULL plotInfo vector, PV %s\n", yPvData[i] ? yPvData[i]->GetName() : "NULL" );
 							if( yPvData[i] == NULL )
 								yPvData[i] = new pvData( NULL, ProcessVariable::specificType::integer, yPvSize[i] + 80, 0 );
 							size = ( plotAreaX + plotAreaW ) * 4 + 10;
@@ -7543,7 +7555,7 @@ xyGraphClass::executeDeferred( void )
 							plotInfoSize[i]	= plotAreaX + plotAreaW;
 
 							initPlotInfo( i );
-							if ( debugMode(  ) ) printf( "xyGraph: pass one, vector plotInfo[%u] = %p\n", i, plotInfo[i] );
+							if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: pass one, vector plotInfo[%u] = %p\n", i, plotInfo[i] );
 						}
 						else
 						{			// scalar
@@ -7556,6 +7568,7 @@ xyGraphClass::executeDeferred( void )
 							if( bufferScrollSize < 1 )
 								bufferScrollSize = 1;
 
+							if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: NULL plotInfo scalar, PV %s\n", yPvData[i] ? yPvData[i]->GetName() : "NULL" );
 							if( yPvData[i] == NULL )
 								yPvData[i] = new pvData(	NULL, ProcessVariable::specificType::integer,
 															yPvSize[i] * ( tmpC + 10 ), 0 );
@@ -7574,7 +7587,7 @@ xyGraphClass::executeDeferred( void )
 							plotInfoSize[i]	= plotAreaX + plotAreaW;
 
 							initPlotInfo( i );
-							if ( debugMode(  ) ) printf( "xyGraph: pass one, scalar plotInfo[%u] = %p\n", i, plotInfo[i] );
+							if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: pass one, scalar plotInfo[%u] = %p\n", i, plotInfo[i] );
 						}
 					}
 
@@ -7584,7 +7597,7 @@ xyGraphClass::executeDeferred( void )
 						{
 							if ( xAxisSource == XYGC_K_FROM_PV )
 							{
-								if ( debugMode(  ) ) printf( "executeDeferred: set curXMax fromPV %f to %f\n", curXMax, dbXMax[i] );
+								if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: set curXMax fromPV %f to %f\n", curXMax, dbXMax[i] );
 								curXMin = dbXMin[i];
 								curXMax = dbXMax[i];
 								curXPrec = dbXPrec[i];
@@ -7620,8 +7633,9 @@ xyGraphClass::executeDeferred( void )
 						xPvSize[i] = sizeof( double );
 						if ( xPvData[i] != NULL )
 						{
-							printf( "deleting xPvData %p\n", xPvData[i] );
-							delete              xPvData[i];
+							printf( "xyGraphClass::executeDeferred: chrono deleting xPvData %p for PV %s\n", xPvData[i], xPvData[i]->GetName() );
+							delete	xPvData[i];
+							xPvData[i] = NULL;
 						}
 						xPvData[i] = new pvData( NULL, ProcessVariable::specificType::integer, plotBufSize[i], 0 );
 						for ( ii = 0; ii < plotBufSize[i]; ii++ )
@@ -7641,8 +7655,9 @@ xyGraphClass::executeDeferred( void )
 #else
 					if ( xPvData[i] != NULL )
 					{
-						printf( "deleting xPvData %p\n", xPvData[i] );
-						delete              xPvData[i];
+						printf( "xyGraphClass::executeDeferred: deleting xPvData %p for PV %s\n", xPvData[i], xPvData[i]->GetName() );
+						delete	xPvData[i];
+						xPvData[i] = NULL;
 					}
 					size_t              numElem = 0;
 					if ( forceVector[i] || ( xPvCount[i] > 1 ) )
@@ -7657,9 +7672,11 @@ xyGraphClass::executeDeferred( void )
 							tmpC = count;
 						numElem = tmpC + 10;
 					}
+					if ( (int) numElem != xPvDim[i] )
+						printf( "xPvData[%d] for PV None, numElem=%zu, xPvDim=%d\n", i, numElem, xPvDim[i] );
 					xPvData[i] = new pvData( NULL, xPvType[i], numElem, xSigned[i] );	// ??
-#endif
 				}
+#endif
 			}
 
 			// end of pass one
@@ -7667,7 +7684,7 @@ xyGraphClass::executeDeferred( void )
 
 			//	TraceAddEventCallbacks()
 			{
-				if ( debugMode(  ) ) printf( "xyGraph: pass two, TraceAddEventCallbacks ...\n" );
+				if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: pass two, TraceAddEventCallbacks ...\n" );
 				// pass two
 				if ( yArrayNeedInit[i] )
 				{
@@ -7745,10 +7762,10 @@ xyGraphClass::executeDeferred( void )
 	// this needs to come before _needBufferScroll, _needXRescale, _needY1Rescale[i]
 	if ( _needVectorUpdate )
 	{
-		if ( debugMode(  ) ) printf( "xyGraph: NeedVectorUpdate ...\n" );
+		if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: NeedVectorUpdate ...\n" );
 		drawGridFlag	= 1;
 		anyRescale		= 0;
-		for ( i = 0; i < numTraces; i++ )
+		for ( i = 0; i < (size_t) numTraces; i++ )
 		//	TraceUpdateVector()
 		{
 			if( yArrayGotValueCallback[i] == 1 )
@@ -7771,11 +7788,11 @@ xyGraphClass::executeDeferred( void )
 					{
 						xArrayNeedUpdate[i] = 1;
 
-						if ( debugMode(  ) ) printf( "xyGraph: genChronoVector\n" );
+						if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: genChronoVector\n" );
 						genChronoVector( i, &doRescale );
 						if ( doRescale )
 						{
-							if ( debugMode(  ) ) printf( "xyGraph: Chrono rescale\n" );
+							if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: genChronoVector rescale\n" );
 							anyRescale = 1;
 						}
 					}
@@ -7850,13 +7867,13 @@ xyGraphClass::executeDeferred( void )
 
 		if ( anyRescale )
 		{
-			if ( debugMode(  ) ) printf( "xyGraph: Rescale requires full refresh\n" );
+			if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: Rescale requires full refresh\n" );
 			regenBuffer(  );
 			fullRefresh(  );
 		}
 		else
 		{
-			if ( debugMode(  ) ) printf( "xyGraph: Setting needUpdate\n" );
+			if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: Setting needUpdate\n" );
 			_needUpdate = 1;
 		}
 	}
@@ -7864,8 +7881,8 @@ xyGraphClass::executeDeferred( void )
 	if ( _needBoxRescale )
 	//	xyGraphClass::rescaleBox( void )
 	{
-		if ( debugMode(  ) ) printf( "xyGraph: NeedBoxRescale ...\n" );
-		if ( debugMode(  ) ) printf( "xyGraph: set curXMax from boxXMax %f to %f\n", curXMax,  boxXMax );
+		if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: NeedBoxRescale ...\n" );
+		if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: set curXMax from boxXMax %f to %f\n", curXMax,  boxXMax );
 		curXMin = boxXMin;
 		curXMax = boxXMax;
 
@@ -7918,7 +7935,7 @@ xyGraphClass::executeDeferred( void )
 				curXMin = adjCurXMin;
 			if ( ( xAxisSource == XYGC_K_AUTOSCALE ) && kpXMaxEfDouble.isNull(  ) )
 			{
-				if ( debugMode(  ) ) printf( "genXyVector: autoscale curXMax from adjCurXMax %f to %f\n", curXMax, adjCurXMax );
+				if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: needBoxRescale autoscale curXMax from adjCurXMax %f to %f\n", curXMax, adjCurXMax );
 				curXMax = adjCurXMax;
 			}
 		}
@@ -7978,7 +7995,7 @@ xyGraphClass::executeDeferred( void )
 
 		updateDimensions(  );
 
-		for ( i = 0; i < numTraces; i++ )
+		for ( i = 0; i < (size_t) numTraces; i++ )
 		{
 			yi = 0;
 			if ( y2Scale[i] )
@@ -8007,9 +8024,9 @@ xyGraphClass::executeDeferred( void )
 	if ( _needBufferScroll )
 	//	xyGraphClass::bufferScroll( void )
 	{
-		if ( debugMode(  ) ) printf( "xyGraph: BufferScroll ...\n" );
+		if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: BufferScroll ...\n" );
 		drawGridFlag = 1;
-		for ( i = 0; i < numTraces; i++ )
+		for ( i = 0; i < (size_t) numTraces; i++ )
 		//	trace::bufferScroll( void )
 		{
 			if ( special[i] )
@@ -8072,7 +8089,7 @@ xyGraphClass::executeDeferred( void )
 	if ( _needXRescale )
 	//	xyGraphClass::doXRescale( void )
 	{
-		if ( debugMode(  ) ) printf( "executeDeferred: needXRescale ...\n" );
+		if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: needXRescale ...\n" );
 		oldXMin = curXMin;
 		if ( xRescaleValue < curXMin )
 		{
@@ -8087,13 +8104,13 @@ xyGraphClass::executeDeferred( void )
 				getXMinMax( &curXMin, &oneMax );
 
 				range	= xRescaleValue - curXMin;
-				if ( debugMode(  ) ) printf( "executeDeferred: needXRescale from %f to %f\n", curXMax, xRescaleValue );
+				if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: needXRescale from %f to %f\n", curXMax, xRescaleValue );
 				curXMax	= xRescaleValue;
 			//	curXMax = xRescaleValue + 0.33 * range;
 			}
 			else
 			{
-				if ( debugMode(  ) ) printf( "executeDeferred: set curXMax from xRescaleValue %f to %f\n", curXMax, xRescaleValue );
+				if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: set curXMax from xRescaleValue %f to %f\n", curXMax, xRescaleValue );
 				range	= xRescaleValue - curXMin;
 				curXMax = xRescaleValue;
 			//	curXMax = xRescaleValue + 0.1 * range;
@@ -8115,7 +8132,7 @@ xyGraphClass::executeDeferred( void )
 		if ( !kpXMaxEfDouble.isNull(  ) )
 		{
 			//fprintf( stderr, "user xmax = %-g\n", kpXMaxEfDouble.value() );
-			if ( debugMode(  ) ) printf( "executeDeferred: set curXMax from kpXMaxEfDouble %f to %f\n", curXMax, kpXMaxEfDouble.value() );
+			if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: set curXMax from kpXMaxEfDouble %f to %f\n", curXMax, kpXMaxEfDouble.value() );
 			curXMax = kpXMaxEfDouble.value(  );
 			if ( ( xAxisStyle == XYGC_K_AXIS_STYLE_LOG10 ) ||
 				 ( xAxisStyle == XYGC_K_AXIS_STYLE_TIME_LOG10 ) )
@@ -8154,7 +8171,7 @@ xyGraphClass::executeDeferred( void )
 			kpCancelMaxX = 0;
 			if ( xAxisSource == XYGC_K_FROM_PV )
 			{
-				if ( debugMode(  ) ) printf( "executeDeferred: kpCancelMaxX from %f to %f\n", curXMax, dbXMax[0] );
+				if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: kpCancelMaxX from %f to %f\n", curXMax, dbXMax[0] );
 				curXMax = dbXMax[0];
 				if ( xAxisStyle == XYGC_K_AXIS_STYLE_LOG10 )
 				{
@@ -8171,14 +8188,14 @@ xyGraphClass::executeDeferred( void )
 			}
 			else
 			{
-				if ( debugMode(  ) ) printf( "executeDeferred: kpCancelMaxX rescale %f to %f\n", curXMax, xRescaleValue );
+				if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: kpCancelMaxX rescale %f to %f\n", curXMax, xRescaleValue );
 				curXMax = xRescaleValue;
 			}
 		}
 
 		if ( curXMin >= curXMax )
 		{
-			if ( debugMode(  ) ) printf( "executeDeferred: curXMin %f >= curXMax %f\n", curXMin, curXMax );
+			if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: curXMin %f >= curXMax %f\n", curXMin, curXMax );
 			if ( xAxisStyle == XYGC_K_AXIS_STYLE_LOG10 )
 				curXMax = curXMin * 10.0;
 			else if ( xAxisStyle == XYGC_K_AXIS_STYLE_TIME_LOG10 )
@@ -8188,7 +8205,7 @@ xyGraphClass::executeDeferred( void )
 		}
 		if ( curXMin >= curXMax )
 		{						// in case xMin is 0
-			if ( debugMode(  ) ) printf( "executeDeferred: curXMin %f still >= curXMax %f\n", curXMin, curXMax );
+			if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: curXMin %f still >= curXMax %f\n", curXMin, curXMax );
 			curXMax = curXMin + 1.0;
 		}
 
@@ -8227,14 +8244,14 @@ xyGraphClass::executeDeferred( void )
 				curXMin = adjCurXMin;
 			if ( ( xAxisSource == XYGC_K_AUTOSCALE ) && kpXMaxEfDouble.isNull(  ) )
 			{
-				if ( debugMode(  ) ) printf( "executeDeferred: curXMax from adjCurXMax %f to %f\n", curXMax, adjCurXMax );
+				if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: curXMax from adjCurXMax %f to %f\n", curXMax, adjCurXMax );
 				curXMax = adjCurXMax;
 			}
 		}
 
 		updateDimensions(  );
 
-		for ( i = 0; i < numTraces; i++ )
+		for ( i = 0; i < (size_t) numTraces; i++ )
 		{
 			xFactor[i] = ( double ) ( plotAreaW ) / ( curXMax - curXMin );
 			xOffset[i] = plotAreaX;
@@ -8249,7 +8266,7 @@ xyGraphClass::executeDeferred( void )
 		if ( _needY1Rescale[yi] == 0 )
 			continue;
 
-		if ( debugMode(  ) ) printf( "xyGraph: needYRescale[%d] ...\n", yi );
+		if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: needYRescale[%d] ...\n", yi );
 		if ( y1RescaleValue[yi] < curY1Min[yi] )
 		{
 			range = curY1Max[yi] - y1RescaleValue[yi];
@@ -8358,7 +8375,7 @@ xyGraphClass::executeDeferred( void )
 
 		updateDimensions(  );
 
-		for ( i = 0; i < numTraces; i++ )
+		for ( i = 0; i < (size_t) numTraces; i++ )
 		{
 			yScaleIndex = 0;
 			if ( y2Scale[i] )
@@ -8377,7 +8394,7 @@ xyGraphClass::executeDeferred( void )
 	if ( _needOriginalLimits )
 	//	xyGraphClass::selectOriginalLimits( void )
 	{
-		if ( debugMode(  ) ) printf( "xyGraph: needOriginalLimits ...\n" );
+		if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: needOriginalLimits ...\n" );
 		getXMinMax( &xmin, &xmax );
 		getYMinMax( 0, ymin, ymax );
 		getYMinMax( 1, ymin, ymax );
@@ -8393,11 +8410,11 @@ xyGraphClass::executeDeferred( void )
 			if ( xAxisSource == XYGC_K_FROM_PV )
 			{
 				allChronological = getDbXMinXMax( &curXMin, &curXMax );
-				if ( debugMode(  ) ) printf( "executeDeferred: curXMax from allChron %f\n", curXMax );
+				if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: curXMax from allChron %f\n", curXMax );
 			}
 			else if ( xAxisSource == XYGC_K_USER_SPECIFIED )
 			{
-				if ( debugMode(  ) ) printf( "executeDeferred: curXMax from user %f to %f\n", curXMax, xMax.value() );
+				if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: curXMax from user %f to %f\n", curXMax, xMax.value() );
 				curXMin = xMin.value(  );
 				curXMax = xMax.value(  );
 				get_scale_params1( curXMin, curXMax,
@@ -8412,14 +8429,14 @@ xyGraphClass::executeDeferred( void )
 			}
 			else
 			{
-				if ( debugMode(  ) ) printf( "executeDeferred: curXMax from xMax %f to %f\n", curXMax, xMax.value() );
+				if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: curXMax from xMax %f to %f\n", curXMax, xMax.value() );
 				curXMin = xMin.value(  );
 				curXMax = xMax.value(  );
 				if( curXMin > xmin )
 					curXMin = xmin;
 				if( curXMax < xmax )
 				{
-					if ( debugMode(  ) ) printf( "executeDeferred: curXMax from xmax %f to %f\n", curXMax, xmax );
+					if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: curXMax from xmax %f to %f\n", curXMax, xmax );
 					curXMax = xmax;
 				}
 				if ( xAxisStyle == XYGC_K_AXIS_STYLE_LOG10 )
@@ -8447,7 +8464,7 @@ xyGraphClass::executeDeferred( void )
 						curXMin = adjCurXMin;
 					if ( ( xAxisSource == XYGC_K_AUTOSCALE ) && kpXMaxEfDouble.isNull(  ) )
 					{
-						if ( debugMode(  ) ) printf( "executeDeferred: curXMax from adjCurXMax %f to %f\n", curXMax, adjCurXMax );
+						if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: curXMax from adjCurXMax %f to %f\n", curXMax, adjCurXMax );
 						curXMax = adjCurXMax;
 					}
 				}
@@ -8473,7 +8490,7 @@ xyGraphClass::executeDeferred( void )
 
 			if ( allChronological )
 			{					// then autoscale X
-				if ( debugMode(  ) ) printf( "executeDeferred: allChron curXMax from xmax %f to %f\n", curXMax, xmax );
+				if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: allChron curXMax from xmax %f to %f\n", curXMax, xmax );
 				if( curXMin > xmin )
 					curXMin = xmin;
 				if( curXMax < xmax )
@@ -8616,7 +8633,7 @@ xyGraphClass::executeDeferred( void )
 
 			updateDimensions(  );
 
-			for ( i = 0; i < numTraces; i++ )
+			for ( i = 0; i < (size_t) numTraces; i++ )
 			{
 				xFactor[i] = ( double ) ( plotAreaW ) / ( curXMax - curXMin );
 				xOffset[i] = plotAreaX;
@@ -8625,7 +8642,7 @@ xyGraphClass::executeDeferred( void )
 			for ( yi = 0; yi < xyGraphClass::NUM_Y_AXES; yi++ )
 			{
 
-				for ( i = 0; i < numTraces; i++ )
+				for ( i = 0; i < (size_t) numTraces; i++ )
 				{
 					y1Factor[yi][i] = ( double ) ( plotAreaH ) / ( curY1Max[yi] - curY1Min[yi] );
 					y1Offset[yi][i] = plotAreaY;
@@ -8651,7 +8668,7 @@ xyGraphClass::executeDeferred( void )
 	if ( _needAutoScaleUpdate && !doingBoxRescale )
 	//	xyGraphClass::doAutoScale( void )
 	{
-		if ( debugMode(  ) ) printf( "xyGraph: needAutoScaleUpdate ...\n" );
+		if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: needAutoScaleUpdate ...\n" );
 		if ( xAxisSource == XYGC_K_AUTOSCALE )
 		{
 			maxDiff = 0;
@@ -8778,7 +8795,7 @@ xyGraphClass::executeDeferred( void )
 						curXMax = adjCurXMax;
 				}
 
-				for ( i = 0; i < numTraces; i++ )
+				for ( i = 0; i < (size_t) numTraces; i++ )
 				{
 					xFactor[i] = ( double ) ( plotAreaW ) / ( curXMax - curXMin );
 					xOffset[i] = plotAreaX;
@@ -8850,7 +8867,7 @@ xyGraphClass::executeDeferred( void )
 						}
 					}
 
-					for ( i = 0; i < numTraces; i++ )
+					for ( i = 0; i < (size_t) numTraces; i++ )
 					{
 						yScaleIndex = 0;
 						if ( y2Scale[i] )
@@ -8875,20 +8892,20 @@ xyGraphClass::executeDeferred( void )
 	if ( _needNewLimits )
 	//	xyGraphClass::resetLimits( void )
 	{
-		if ( debugMode(  ) ) printf( "xyGraph: needNewLimits ...\n" );
+		if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: needNewLimits ...\n" );
 		anyRescale = 0;
 		if ( xAxisSource == XYGC_K_AUTOSCALE )
 		{
 			anyRescale = 1;
 			getXMinMax( &checkXMin, &checkXMax );
-			if ( debugMode(  ) ) printf( "executeDeferred: needNewLimits checkXMin = %f, checkXMax = %f\n", checkXMin, checkXMax );
+			if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: needNewLimits checkXMin = %f, checkXMax = %f\n", checkXMin, checkXMax );
 
 			if ( kpXMinEfDouble.isNull(  ) )
 				curXMin = checkXMin - 0.02 * fabs( checkXMax - curXMin );
 			if ( kpXMaxEfDouble.isNull(  ) )
 			{
 				double	newXMax	= checkXMax + 0.02 * fabs( checkXMax - curXMin );
-				if ( debugMode(  ) ) printf( "executeDeferred: needNewLimits checkXMax from %f to %f\n", curXMax, newXMax );
+				if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: needNewLimits checkXMax from %f to %f\n", curXMax, newXMax );
 				curXMax	= newXMax;
 			}
 
@@ -8930,23 +8947,23 @@ xyGraphClass::executeDeferred( void )
 								   &adjCurXMin, &adjCurXMax,
 								   &curXNumLabelTicks, &curXMajorsPerLabel, &curXMinorsPerMajor,
 								   format );
-				if ( debugMode(  ) ) printf( "executeDeferred: get_scale_params1 adjCurXMin=%f, adjCurXMax=%f\n", adjCurXMin, adjCurXMax );
+				if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: get_scale_params1 adjCurXMin=%f, adjCurXMax=%f\n", adjCurXMin, adjCurXMax );
 				if ( xAxisSmoothing == XYGC_K_NO_SMOOTHING )
 				{
 					adjCurXMin = curXMin;
 					adjCurXMax = curXMax;
-					if ( debugMode(  ) ) printf( "executeDeferred: no smoothing adjCurXMin=%f, adjCurXMax=%f\n", adjCurXMin, adjCurXMax );
+					if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: no smoothing adjCurXMin=%f, adjCurXMax=%f\n", adjCurXMin, adjCurXMax );
 				}
 				if ( ( xAxisSource == XYGC_K_AUTOSCALE ) && kpXMinEfDouble.isNull(  ) )
 					curXMin = adjCurXMin;
 				if ( ( xAxisSource == XYGC_K_AUTOSCALE ) && kpXMaxEfDouble.isNull(  ) )
 				{
-					if ( debugMode(  ) ) printf( "executeDeferred: needNewLimits adjCurXMax from %f to %f\n", curXMax, adjCurXMax );
+					if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: needNewLimits adjCurXMax from %f to %f\n", curXMax, adjCurXMax );
 					curXMax = adjCurXMax;
 				}
 			}
 
-			for ( i = 0; i < numTraces; i++ )
+			for ( i = 0; i < (size_t) numTraces; i++ )
 			{
 				xFactor[i] = ( double ) ( plotAreaW ) / ( curXMax - curXMin );
 				xOffset[i] = plotAreaX;
@@ -9014,7 +9031,7 @@ xyGraphClass::executeDeferred( void )
 						curY1Max[yi] = adjCurY1Max[yi];
 				}
 
-				for ( i = 0; i < numTraces; i++ )
+				for ( i = 0; i < (size_t) numTraces; i++ )
 				{
 					y1Factor[yi][i] = ( double ) ( plotAreaH ) / ( curY1Max[yi] - curY1Min[yi] );
 					y1Offset[yi][i] = plotAreaY;
@@ -9031,14 +9048,14 @@ xyGraphClass::executeDeferred( void )
 
 	if ( doRescale )
 	{
-		if ( debugMode(  ) ) printf( "xyGraph: doRescale ...\n" );
+		if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: doRescale ...\n" );
 		regenBuffer(  );
 		fullRefresh(  );
 	}
 
 	if ( _needUpdate )
 	{
-		if ( debugMode(  ) ) printf( "xyGraph: needUpdate ...\n" );
+		if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: needUpdate ...\n" );
 		if ( updateTimerValue <= 0 )
 		{
 			_needRealUpdate = 1;			// fall through to next if block
@@ -9057,8 +9074,8 @@ xyGraphClass::executeDeferred( void )
 	if ( _needRealUpdate )
 	//	xyGraphClass::reDraw( void )
 	{
-		if ( debugMode(  ) ) printf( "xyGraph: needRealUpdate ...\n" );
-		for ( i = 0; i < numTraces; i++ )
+		if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: needRealUpdate ...\n" );
+		for ( i = 0; i < (size_t) numTraces; i++ )
 		//	Trace::reDraw( void )
 		{
 			if( yArrayGotValueCallback[i] == 1 )
@@ -9080,20 +9097,20 @@ xyGraphClass::executeDeferred( void )
 
 	if ( _needRefresh )
 	{
-		if ( debugMode(  ) ) printf( "xyGraph: needRefresh ...\n" );
+		if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: needRefresh ...\n" );
 		regenBuffer(  );
 		fullRefresh(  );
 	}
 
 	if ( _needReset )
 	{
-		if ( debugMode(  ) ) printf( "xyGraph: needReset ...\n" );
+		if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: needReset ...\n" );
 		firstTimeSample = 1;
-		for ( i = 0; i < numTraces; i++ )
+		for ( i = 0; i < (size_t) numTraces; i++ )
 		{
 			initPlotInfo( i );
-			yArrayNeedUpdate[i] = xArrayNeedUpdate[i] = 0;
-			yArrayGotValue[i] = xArrayGotValue[i] = 0;
+			yArrayNeedUpdate[i]	= xArrayNeedUpdate[i]	= 0;
+			yArrayGotValue[i]	= xArrayGotValue[i]		= 0;
 			arrayHead[i] = arrayTail[i] = arrayNumPoints[i] = curNpts[i] = totalCount[i] = 0;
 			plotState[i] = XYGC_K_STATE_INITIALIZING;
 		}
@@ -9110,17 +9127,17 @@ xyGraphClass::executeDeferred( void )
 			if ( xAxisSource == XYGC_K_FROM_PV )
 			{
 				allChronological = getDbXMinXMax( &curXMin, &curXMax );
-				if ( debugMode(  ) ) printf( "executeDeferred: curXMax fromPV allChron %f\n", curXMax );
+				if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: curXMax fromPV allChron %f\n", curXMax );
 			}
 			else if ( xAxisSource == XYGC_K_USER_SPECIFIED )
 			{
-				if ( debugMode(  ) ) printf( "executeDeferred: needReset user xMax %f to %f\n", curXMax, xMax.value() );
+				if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: needReset user xMax %f to %f\n", curXMax, xMax.value() );
 				curXMin = xMin.value(  );
 				curXMax = xMax.value(  );
 			}
 			else
 			{
-				if ( debugMode(  ) ) printf( "executeDeferred: needReset xMax %f to %f\n", curXMax, xMax.value() );
+				if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: needReset xMax %f to %f\n", curXMax, xMax.value() );
 				curXMin = xMin.value(  );
 				curXMax = xMax.value(  );
 				if ( xAxisStyle == XYGC_K_AXIS_STYLE_LOG10 )
@@ -9196,7 +9213,7 @@ xyGraphClass::executeDeferred( void )
 						curXMin = adjCurXMin;
 					if ( ( xAxisSource == XYGC_K_AUTOSCALE ) && kpXMaxEfDouble.isNull(  ) )
 		 			{
-						if ( debugMode(  ) ) printf( "executeDeferred: allChron adjCurXMax %f to %f\n", curXMax, adjCurXMax );
+						if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: allChron adjCurXMax %f to %f\n", curXMax, adjCurXMax );
 						curXMax = adjCurXMax;
 					}
 				}
@@ -9239,7 +9256,7 @@ xyGraphClass::executeDeferred( void )
 				curY1MinorsPerMajor[yi] = y1NumMinorPerMajor[yi].value(  );
 			}
 
-			for ( i = 0; i < numTraces; i++ )
+			for ( i = 0; i < (size_t) numTraces; i++ )
 			{
 				xFactor[i] = ( double ) ( plotAreaW ) / ( curXMax - curXMin );
 				xOffset[i] = plotAreaX;
@@ -9306,7 +9323,7 @@ xyGraphClass::executeDeferred( void )
 						curY1Max[yi] = adjCurY1Max[yi];
 				}
 
-				for ( i = 0; i < numTraces; i++ )
+				for ( i = 0; i < (size_t) numTraces; i++ )
 				{
 					y1Factor[yi][i] = ( double ) ( plotAreaH ) / ( curY1Max[yi] - curY1Min[yi] );
 					y1Offset[yi][i] = plotAreaY;
@@ -9349,8 +9366,8 @@ xyGraphClass::executeDeferred( void )
 
 	if ( _needArraySizeChange )
 	{							// this needs to be at end
-		if ( debugMode(  ) ) printf( "xyGraph: needArraySizeChange ...\n" );
-		for ( i = 0; i < numTraces; i++ )
+		if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: needArraySizeChange ...\n" );
+		for ( i = 0; i < (size_t) numTraces; i++ )
 		{
 			if( traceSize[i] < 0 )
 				traceSize[i] = 0;
@@ -9367,7 +9384,7 @@ xyGraphClass::executeDeferred( void )
 		}
 
 		actWin->appCtx->proc->lock(  );
-		for ( i = 0; i < numTraces; i++ )
+		for ( i = 0; i < (size_t) numTraces; i++ )
 		{
 			yArrayNeedUpdate[i] = 1;
 			xArrayNeedUpdate[i] = 1;
@@ -9378,6 +9395,7 @@ xyGraphClass::executeDeferred( void )
 		actWin->addDefExeNode( aglPtr );
 		actWin->appCtx->proc->unlock(  );
 	}
+	if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: done\n" );
 }
 
 void
@@ -9409,7 +9427,10 @@ xyGraphClass::addPoint(
 		if ( debugMode(  ) ) printf( "addPoint: plotInfo[%d] == NULL!\n", trace );
 		return;
 	}
+	// if ( debugMode(  ) ) printf( "addPoint: (%f,%f)\n", dxValue, dyValue );
 
+	// if ( debugMode(  ) ) printf( "addPoint xScale:  curXMin=%f xFactor=%f,  xOffset=%f\n", curXMin, xFactor[trace], xOffset[trace] );
+	// if ( debugMode(  ) ) printf( "addPoint yScale: curY1Min=%f y1Factor=%f, y1Offset=%f, plotAreaH=%d\n", curY1Min[yAxisSelect], y1Factor[yAxisSelect][trace], y1Offset[yAxisSelect][trace], plotAreaH );
 	double	dscaledX	=	nearbyint( ( dxValue - curXMin ) * xFactor[trace] + xOffset[trace] );
 
 	double	dscaledY	=	plotAreaH
