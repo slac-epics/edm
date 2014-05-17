@@ -1,0 +1,18 @@
+# RELEASE
+include $(TOP)/RELEASE_SITE
+
+# Define location of EPICS base
+BASE_MODULE_VERSION = R3.14.12-0.4.0
+EPICS_BASE=$(EPICS_SITE_TOP)/base/$(BASE_MODULE_VERSION)
+
+
+# ===============================================================
+# Define the version of modules needed by
+# IOC apps or other Support apps
+# ===============================================================
+# example: IPAC_MODULE_VERSION=R2.8.4-0.2.0
+
+# ============================================================
+# External Support
+# ============================================================
+# example: IPAC=$(EPICS_MODULES)/ipac/$(IPAC_MODULE_VERSION)
