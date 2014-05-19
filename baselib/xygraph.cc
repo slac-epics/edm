@@ -7387,16 +7387,14 @@ xyGraphClass::executeDeferred( void )
 						printf( "New array size %u for y pv %s, deleted old array\n",
 								yPvCount[i], yPv[i]->get_name() );
 					}
-					else
+					else if ( debugMode(  ) )
 						printf( "Allocating new array size %u for y pv %s\n",
 								yPvCount[i], yPv[i]->get_name() );
 					yPvData[i] = new pvData( yPv[i], yPvType[i], yPvCount[i], ySigned[i] );
 				}
 
-				// if ( debugMode(  ) )
+				if ( debugMode(  ) )
 				{
-					printf( "Allocating new array size %u for y pv %s\n",
-							yPvCount[i], yPv[i]->get_name() );
 					printf( "y pv ele size = %-d\n",
 							( int ) yPv[i]->get_specific_type(  ).size / 8 );
 					printf( "y pv dim = %-d\n", yPvDim[i] );
@@ -7437,13 +7435,13 @@ xyGraphClass::executeDeferred( void )
 						printf( "New array size %u for xPv %s, deleted old array\n",
 								xPvCount[i], xPv[i]->get_name() );
 					}
-					else
+					else if ( debugMode(  ) )
 						printf( "Allocating new array size %u for xPv %s\n",
 								xPvCount[i], xPv[i]->get_name() );
 					xPvData[i] = new pvData( xPv[i], xPvType[i], xPvCount[i], xSigned[i] );
 				}
 
-				// if ( debugMode(  ) )
+				if ( debugMode(  ) )
 				{
 					printf( "x pv ele size = %-d\n",
 							( int ) xPv[i]->get_specific_type(  ).size / 8	);
@@ -7661,7 +7659,8 @@ xyGraphClass::executeDeferred( void )
 						xPvSize[i] = sizeof( double );
 						if ( xPvData[i] != NULL )
 						{
-							printf( "xyGraphClass::executeDeferred: chrono deleting xPvData %p for PV %s\n", xPvData[i], xPvData[i]->GetName() );
+							if ( debugMode(  ) )
+								printf( "xyGraphClass::executeDeferred: chrono deleting xPvData %p for PV %s\n", xPvData[i], xPvData[i]->GetName() );
 							delete	xPvData[i];
 							xPvData[i] = NULL;
 						}
