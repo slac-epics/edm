@@ -143,7 +143,7 @@ void pvData::SetValuesFromPv( ProcessVariable *	pv, size_t pvCount	)
 			{
 				printf( "pvData::SetValuesFromPv: NULL array ptr!: pv %s, type %s, nElem %zu\n",
 						pv->get_name(), pv->get_type().description, pv->get_dimension() );
-						break;
+				break;
 			}
 			newValue = pValues[index];
 			}
@@ -197,7 +197,7 @@ void pvData::SetValuesFromPv( ProcessVariable *	pv, size_t pvCount	)
 		}
 
 		// SetValue( index, newValue );
-		if ( debugMode( ) ) printf( "pvData::SetValuesFromPv: m_values[%u]=%f, type %d\n", index, newValue, m_pvType );
+		if ( debugMode( ) >= 3 ) printf( "pvData::SetValuesFromPv: m_values[%u]=%f, type %d\n", index, newValue, m_pvType );
 		m_values[index] = newValue;
 	}
 }
@@ -7357,7 +7357,11 @@ xyGraphClass::executeDeferred( void )
 			//	TraceGetPvInfo()
 			if ( yPv[i] && yPv[i]->is_valid(  ) )
 			{
-				if ( debugMode( ) ) printf( "xyGraphClass::executeDeferred: needConnect yPv %s, type %s, nElem %zu\n", yPv[i]->get_name(), yPv[i]->get_type().description, yPv[i]->get_dimension() );
+				size_t		priorCount	= yPvCount[i];
+				if ( debugMode( ) )
+					printf( "xyGraphClass::executeDeferred: needConnect yPv %s, type %s, nElem %zu\n",
+							yPv[i]->get_name(), yPv[i]->get_type().description,
+							yPv[i]->get_dimension() );
 				yPvType[i]	= ( int ) yPv[i]->get_specific_type(  ).type;
 				yPvCount[i]	= ( int ) yPv[i]->get_dimension(  );
 				yPvDim[i]	= ( int ) yPv[i]->get_dimension(  );
@@ -7375,12 +7379,24 @@ xyGraphClass::executeDeferred( void )
 				dbYMax[i]	= yPv[i]->get_upper_disp_limit(  );
 				dbYPrec[i]	= yPv[i]->get_precision(  );
 
-				assert( yPvData[i] == NULL );
-				yPvData[i] = new pvData( yPv[i], yPvType[i], yPvCount[i], ySigned[i] );
+				if ( yPvData[i] == NULL || yPvCount[i] != priorCount )
+				{
+					if ( yPvData[i] != NULL )
+					{
+						delete yPvData[i];
+						printf( "New array size %u for y pv %s, deleted old array\n",
+								yPvCount[i], yPv[i]->get_name() );
+					}
+					else
+						printf( "Allocating new array size %u for y pv %s\n",
+								yPvCount[i], yPv[i]->get_name() );
+					yPvData[i] = new pvData( yPv[i], yPvType[i], yPvCount[i], ySigned[i] );
+				}
 
 				// if ( debugMode(  ) )
 				{
-					printf( "y pv %s\n", yPv[i]->get_name() );
+					printf( "Allocating new array size %u for y pv %s\n",
+							yPvCount[i], yPv[i]->get_name() );
 					printf( "y pv ele size = %-d\n",
 							( int ) yPv[i]->get_specific_type(  ).size / 8 );
 					printf( "y pv dim = %-d\n", yPvDim[i] );
@@ -7394,6 +7410,7 @@ xyGraphClass::executeDeferred( void )
 
 			if ( xPv[i] && xPv[i]->is_valid(  ) )
 			{
+				size_t		priorCount	= xPvCount[i];
 				if ( debugMode( ) ) printf( "xyGraphClass::executeDeferred: needConnect xPv %s, type %s, nElem %zu\n", xPv[i]->get_name(), xPv[i]->get_type().description, xPv[i]->get_dimension() );
 				xPvType[i]	= ( int ) xPv[i]->get_specific_type(  ).type;
 				xPvCount[i]	= ( int ) xPv[i]->get_dimension(  );
@@ -7412,8 +7429,19 @@ xyGraphClass::executeDeferred( void )
 				dbXMax[i]	= xPv[i]->get_upper_disp_limit(  );
 				dbXPrec[i]	= xPv[i]->get_precision(  );
 
-				assert( xPvData[i] == NULL );
-				xPvData[i] = new pvData( xPv[i], xPvType[i], xPvCount[i], xSigned[i] );
+				if ( xPvData[i] == NULL || xPvCount[i] != priorCount )
+				{
+					if ( xPvData[i] != NULL )
+					{
+						delete xPvData[i];
+						printf( "New array size %u for xPv %s, deleted old array\n",
+								xPvCount[i], xPv[i]->get_name() );
+					}
+					else
+						printf( "Allocating new array size %u for xPv %s\n",
+								xPvCount[i], xPv[i]->get_name() );
+					xPvData[i] = new pvData( xPv[i], xPvType[i], xPvCount[i], xSigned[i] );
+				}
 
 				// if ( debugMode(  ) )
 				{
@@ -7675,8 +7703,8 @@ xyGraphClass::executeDeferred( void )
 					if ( (int) numElem != xPvDim[i] )
 						printf( "xPvData[%d] for PV None, numElem=%zu, xPvDim=%d\n", i, numElem, xPvDim[i] );
 					xPvData[i] = new pvData( NULL, xPvType[i], numElem, xSigned[i] );	// ??
-				}
 #endif
+				}
 			}
 
 			// end of pass one
@@ -9424,7 +9452,7 @@ xyGraphClass::addPoint(
 {
 	if ( plotInfo[trace] == NULL )
 	{
-		if ( debugMode(  ) ) printf( "addPoint: plotInfo[%d] == NULL!\n", trace );
+		if ( debugMode(  ) >= 4 ) printf( "addPoint: plotInfo[%d] == NULL!\n", trace );
 		return;
 	}
 	// if ( debugMode(  ) ) printf( "addPoint: (%f,%f)\n", dxValue, dyValue );
@@ -9452,7 +9480,7 @@ xyGraphClass::addPoint(
 	short	scaledX		= static_cast<short>( dclamp( dscaledX ) );
 	short	scaledY		= static_cast<short>( dclamp( dscaledY ) );
 	short	scaledYZero	= static_cast<short>( dclamp( yZero ) );
-	if ( debugMode(  ) )
+	if ( debugMode(  ) >= 4 )
 		printf( "addPoint: %f at (%d,%d), yZero=%d\n", oneX, scaledX, scaledY, scaledYZero );
 
 	if ( opMode[trace] == XYGC_K_SCOPE_MODE )

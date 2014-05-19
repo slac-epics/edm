@@ -398,6 +398,11 @@ class pvData
 		m_values.resize( newSize );
 	}
 
+	const char * GetName( ) const
+	{
+		return( m_pv == NULL ? "NULL" : m_pv->get_name() );
+	}
+
 	const size_t		size( )
 	{
 		return m_values.size( );

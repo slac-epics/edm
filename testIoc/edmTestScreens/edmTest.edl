@@ -3,8 +3,8 @@ beginScreenProperties
 major 4
 minor 0
 release 1
-x 1290
-y 453
+x 737
+y 73
 w 466
 h 566
 font "helvetica-medium-r-12.0"
@@ -35,21 +35,6 @@ major 4
 minor 0
 release 0
 x 5
-y 36
-w 456
-h 523
-lineColor index 3
-fill
-fillColor index 3
-endObjectProperties
-
-# (Rectangle)
-object activeRectangleClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 5
 y 2
 w 456
 h 26
@@ -58,63 +43,70 @@ fill
 fillColor index 54
 endObjectProperties
 
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 136
+y 36
+w 116
+h 24
+controlPv "$(PRE):counter"
+font "helvetica-medium-r-12.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 1
+smartRefresh
+useHexPrefix
+newPos
+objType "monitors"
+endObjectProperties
+
 # (Static Text)
 object activeXTextClass
 beginObjectProperties
 major 4
 minor 1
-release 0
-x 13
-y 7
-w 166
-h 16
-font "helvetica-bold-r-14.0"
-fgColor index 14
-bgColor index 54
-value {
-  "myIoc Template 480x600"
-}
-autoSize
-endObjectProperties
-
-# (Lines)
-object activeLineClass
-beginObjectProperties
-major 4
-minor 0
 release 1
-x 257
-y 39
-w 0
-h 0
-lineColor index 14
-fillColor index 10
-numPoints 3
-xPoints {
-  0 257
-  1 257
-  2 257
-}
-yPoints {
-  0 39
-  1 39
-  2 39
+x 8
+y 36
+w 116
+h 24
+font "helvetica-medium-r-12.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 1
+useDisplayBg
+value {
+  "Counter"
 }
 endObjectProperties
 
-# (Rectangle)
-object activeRectangleClass
+# (Text Monitor)
+object activeXTextDspClass:noedit
 beginObjectProperties
 major 4
-minor 0
+minor 7
 release 0
-x 216
-y 40
-w 240
-h 516
-lineColor index 14
-fill
-fillColor index 2
+x 136
+y 68
+w 116
+h 24
+controlPv "$(PRE):exp"
+font "helvetica-medium-r-12.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 1
+smartRefresh
+useHexPrefix
+newPos
+objType "monitors"
 endObjectProperties
 
 # (Static Text)
@@ -122,203 +114,300 @@ object activeXTextClass
 beginObjectProperties
 major 4
 minor 1
-release 0
-x 228
-y 48
-w 55
-h 21
-font "helvetica-bold-r-18.0"
+release 1
+x 8
+y 68
+w 116
+h 24
+font "helvetica-medium-r-12.0"
+fontAlign "right"
 fgColor index 14
-bgColor index 2
+bgColor index 1
+useDisplayBg
 value {
-  "Status"
+  "Exponential"
 }
-autoSize
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 136
+y 100
+w 116
+h 24
+controlPv "$(PRE):log"
+font "helvetica-medium-r-12.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 1
+smartRefresh
+useHexPrefix
+newPos
+objType "monitors"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 8
+y 100
+w 116
+h 24
+font "helvetica-medium-r-12.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 1
+useDisplayBg
+value {
+  "log base 10"
+}
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 136
+y 132
+w 116
+h 24
+controlPv "$(PRE):loge"
+font "helvetica-medium-r-12.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 1
+smartRefresh
+useHexPrefix
+newPos
+objType "monitors"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 8
+y 132
+w 116
+h 24
+font "helvetica-medium-r-12.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 1
+useDisplayBg
+value {
+  "natural log  base e"
+}
+endObjectProperties
+
+# (Text Monitor)
+object activeXTextDspClass:noedit
+beginObjectProperties
+major 4
+minor 7
+release 0
+x 136
+y 164
+w 116
+h 24
+controlPv "$(PRE):sin"
+font "helvetica-medium-r-12.0"
+fontAlign "center"
+fgColor index 15
+bgColor index 12
+limitsFromDb
+nullColor index 1
+smartRefresh
+useHexPrefix
+newPos
+objType "monitors"
+endObjectProperties
+
+# (Static Text)
+object activeXTextClass
+beginObjectProperties
+major 4
+minor 1
+release 1
+x 8
+y 164
+w 116
+h 24
+font "helvetica-medium-r-12.0"
+fontAlign "right"
+fgColor index 14
+bgColor index 1
+useDisplayBg
+value {
+  "sin"
+}
 endObjectProperties
 
 # (Related Display)
 object relatedDisplayClass
 beginObjectProperties
 major 4
-minor 2
+minor 4
 release 0
-x 409
-y 7
-w 47
-h 16
+x 260
+y 36
+w 140
+h 24
 fgColor index 14
-bgColor index 4
+bgColor index 3
 topShadowColor index 1
-botShadowColor index 11
-font "helvetica-medium-r-12.0"
-buttonLabel "Home"
+botShadowColor index 13
+font "helvetica-medium-r-14.0"
+buttonLabel "Counter Graph"
 numPvs 4
 numDsps 1
 displayFileName {
-  0 "$(HOME)"
+  0 "edmTestScreens/graphCounter.edl"
 }
 setPosition {
-  0 "parentWindow"
+  0 "button"
 }
-replaceSymbols {
-  0 1
-}
+icon
 endObjectProperties
 
-# (Text Monitor)
-object activeXTextDspClass:noedit
+# (Related Display)
+object relatedDisplayClass
 beginObjectProperties
 major 4
-minor 2
+minor 4
 release 0
-x 296
-y 532
-w 148
-h 14
-controlPv "$(IOC):TOD"
-font "helvetica-medium-r-12.0"
-fontAlign "center"
+x 260
+y 68
+w 140
+h 24
 fgColor index 14
-bgColor index 1
-useDisplayBg
-autoHeight
-limitsFromDb
-nullColor index 1
-smartRefresh
-useHexPrefix
-newPos
-objType "monitors"
-endObjectProperties
-
-# (Message Button)
-object activeMessageButtonClass
-beginObjectProperties
-major 4
-minor 0
-release 0
-x 336
-y 4
-w 64
-h 20
-fgColor index 14
-onColor index 1
-offColor index 4
+bgColor index 3
 topShadowColor index 1
-botShadowColor index 14
-controlPv "$(IOC):SYSRESET"
-pressValue "1"
-onLabel "Reboot Now!"
-offLabel "Reboot"
-3d
-font "helvetica-medium-r-12.0"
-endObjectProperties
-
-# (Text Monitor)
-object activeXTextDspClass:noedit
-beginObjectProperties
-major 4
-minor 2
-release 0
-x 300
-y 76
-w 148
-h 14
-controlPv "$(IOC):UPTIME"
-font "helvetica-medium-r-12.0"
-fontAlign "center"
-fgColor index 14
-bgColor index 3
-autoHeight
-limitsFromDb
-nullColor index 1
-smartRefresh
-useHexPrefix
-newPos
-objType "monitors"
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 0
-x 228
-y 76
-w 37
-h 14
-font "helvetica-medium-r-12.0"
-fontAlign "center"
-fgColor index 14
-bgColor index 1
-useDisplayBg
-value {
-  "Uptime"
+botShadowColor index 13
+font "helvetica-medium-r-14.0"
+buttonLabel "Exp Graph"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "edmTestScreens/graphExp.edl"
 }
-autoSize
+setPosition {
+  0 "button"
+}
+icon
 endObjectProperties
 
-# (Text Monitor)
-object activeXTextDspClass:noedit
+# (Related Display)
+object relatedDisplayClass
 beginObjectProperties
 major 4
-minor 2
+minor 4
 release 0
-x 300
+x 260
 y 100
-w 148
-h 14
-controlPv "$(IOC):HEARTBEAT"
-font "helvetica-medium-r-12.0"
-fontAlign "center"
+w 140
+h 24
 fgColor index 14
 bgColor index 3
-autoHeight
-limitsFromDb
-nullColor index 1
-smartRefresh
-useHexPrefix
-newPos
-objType "monitors"
+topShadowColor index 1
+botShadowColor index 13
+font "helvetica-medium-r-14.0"
+buttonLabel "Log 10 Graph"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "edmTestScreens/graphLog10.edl"
+}
+setPosition {
+  0 "button"
+}
+icon
 endObjectProperties
 
-# (Static Text)
-object activeXTextClass
+# (Related Display)
+object relatedDisplayClass
 beginObjectProperties
 major 4
-minor 1
+minor 4
 release 0
-x 228
-y 100
-w 54
-h 14
-font "helvetica-medium-r-12.0"
-fontAlign "center"
+x 260
+y 132
+w 140
+h 24
 fgColor index 14
-bgColor index 1
-useDisplayBg
-value {
-  "Heartbeat"
+bgColor index 3
+topShadowColor index 1
+botShadowColor index 13
+font "helvetica-medium-r-14.0"
+buttonLabel "LogE Graph"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "edmTestScreens/graphLogE.edl"
 }
-autoSize
+setPosition {
+  0 "button"
+}
+icon
+endObjectProperties
+
+# (Related Display)
+object relatedDisplayClass
+beginObjectProperties
+major 4
+minor 4
+release 0
+x 260
+y 164
+w 140
+h 24
+fgColor index 14
+bgColor index 3
+topShadowColor index 1
+botShadowColor index 13
+font "helvetica-medium-r-14.0"
+buttonLabel "Sine Graph"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "edmTestScreens/graphSin.edl"
+}
+setPosition {
+  0 "button"
+}
+icon
 endObjectProperties
 
 # (Text Monitor)
 object activeXTextDspClass:noedit
 beginObjectProperties
 major 4
-minor 2
+minor 7
 release 0
-x 300
-y 128
-w 148
-h 14
-controlPv "$(IOC):HOSTNAME"
+x 136
+y 196
+w 116
+h 24
+controlPv "$(PRE):cos"
 font "helvetica-medium-r-12.0"
 fontAlign "center"
-fgColor index 14
-bgColor index 3
-autoHeight
+fgColor index 15
+bgColor index 12
 limitsFromDb
 nullColor index 1
 smartRefresh
@@ -332,86 +421,72 @@ object activeXTextClass
 beginObjectProperties
 major 4
 minor 1
-release 0
-x 228
-y 128
-w 61
-h 14
+release 1
+x 8
+y 196
+w 116
+h 24
 font "helvetica-medium-r-12.0"
-fontAlign "center"
+fontAlign "right"
 fgColor index 14
 bgColor index 1
 useDisplayBg
 value {
-  "Host Name"
+  "cos"
 }
-autoSize
 endObjectProperties
 
-# (Text Monitor)
-object activeXTextDspClass:noedit
+# (Related Display)
+object relatedDisplayClass
 beginObjectProperties
 major 4
-minor 2
+minor 4
 release 0
-x 300
-y 152
-w 148
-h 14
-controlPv "$(IOC):LOAD"
-font "helvetica-medium-r-12.0"
-fontAlign "center"
+x 260
+y 196
+w 140
+h 24
 fgColor index 14
 bgColor index 3
-autoHeight
-limitsFromDb
-nullColor index 1
-smartRefresh
-useHexPrefix
-showUnits
-newPos
-objType "monitors"
+topShadowColor index 1
+botShadowColor index 13
+font "helvetica-medium-r-14.0"
+buttonLabel "Cosine Graph"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "edmTestScreens/graphCos.edl"
+}
+setPosition {
+  0 "button"
+}
+icon
 endObjectProperties
 
-# (Static Text)
-object activeXTextClass
+# (Related Display)
+object relatedDisplayClass
 beginObjectProperties
 major 4
-minor 1
+minor 4
 release 0
-x 228
-y 152
-w 57
-h 14
-font "helvetica-medium-r-12.0"
-fontAlign "center"
+x 20
+y 284
+w 140
+h 24
 fgColor index 14
-bgColor index 1
-useDisplayBg
-value {
-  "CPU Load"
+bgColor index 3
+topShadowColor index 1
+botShadowColor index 13
+font "helvetica-medium-r-14.0"
+buttonLabel "Polar Graph"
+numPvs 4
+numDsps 1
+displayFileName {
+  0 "edmTestScreens/graphPolar.edl"
 }
-autoSize
-endObjectProperties
-
-# (Static Text)
-object activeXTextClass
-beginObjectProperties
-major 4
-minor 1
-release 0
-x 300
-y 48
-w 139
-h 21
-font "helvetica-medium-r-18.0"
-fontAlign "center"
-fgColor index 14
-bgColor index 1
-useDisplayBg
-value {
-  "$(IOC)"
+setPosition {
+  0 "button"
 }
-autoSize
+icon
 endObjectProperties
 
