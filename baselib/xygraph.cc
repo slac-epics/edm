@@ -106,7 +106,7 @@ void pvData::SetValueFromPv( size_t index, ProcessVariable *	pv )
 		if ( m_pvIsSigned )
 			newValue = pv->get_int();
 		else
-			newValue = static_cast<unsigned long>( pv->get_int() );
+			newValue = static_cast<unsigned int>( pv->get_int() );
 		break;
 	case ProcessVariable::specificType::enumerated:
 		if ( m_pvIsSigned )
@@ -189,7 +189,7 @@ void pvData::SetValuesFromPv( ProcessVariable *	pv, size_t pvCount	)
 				break;
 			}
 			if ( m_pvIsSigned )
-				newValue = static_cast<short>( pValues[index] );
+				newValue = static_cast<int>( pValues[index] );
 			else
 				newValue = static_cast<unsigned int>( pValues[index] );
 			}
@@ -1892,7 +1892,7 @@ yValueUpdate(
 	if ( debugMode(  ) ) printf( "yValueUpdate: %s\n", pv->get_name() );
 	xyo->actWin->appCtx->proc->lock(  );
 
-	if( xyo->yArrayGotValueCallback[i] != 0 )
+	if( xyo->yArrayGotValueCallback[i] == 0 )
 		xyo->yArrayGotValueCallback[i] = 1;
 
 	yi = 0;
@@ -2075,7 +2075,7 @@ yValueWithTimeUpdate(
 	if ( debugMode(  ) ) printf( "yValueWithTimeUpdate: %s\n", pv->get_name() );
 	xyo->actWin->appCtx->proc->lock(  );
 
-	if( xyo->yArrayGotValueCallback[i] != 0 )
+	if( xyo->yArrayGotValueCallback[i] == 0 )
 		xyo->yArrayGotValueCallback[i] = 1;
 
 	yi = 0;
