@@ -408,6 +408,11 @@ class pvData
 		return m_values.size( );
 	}
 
+	const size_t		getNumElem( )
+	{
+		return m_pvNumElem;
+	}
+
  private:
 	ProcessVariable	*	m_pv;
 	std::vector<double>	m_values;
@@ -822,9 +827,7 @@ class xyGraphClass : public activeGraphicClass
 
 	int plotState[XYGC_K_MAX_TRACES];
 
-	int		yPvDim[XYGC_K_MAX_TRACES];
-	int		xPvDim[XYGC_K_MAX_TRACES];
-	int		traceSize[XYGC_K_MAX_TRACES];
+	unsigned int	traceSize[XYGC_K_MAX_TRACES];
 
 	typedef struct plotInfoTag
 	{
@@ -855,6 +858,8 @@ class xyGraphClass : public activeGraphicClass
 	double			yPvMax[XYGC_K_MAX_TRACES];
 	unsigned int	xPvCount[XYGC_K_MAX_TRACES];
 	unsigned int	yPvCount[XYGC_K_MAX_TRACES];
+	unsigned int	yPvDim[XYGC_K_MAX_TRACES];
+	unsigned int	xPvDim[XYGC_K_MAX_TRACES];
 	unsigned int	xPvSize[XYGC_K_MAX_TRACES];
 	unsigned int	yPvSize[XYGC_K_MAX_TRACES];
 
@@ -897,7 +902,7 @@ class xyGraphClass : public activeGraphicClass
 	expStringClass	trigPvExpStr;
 	expStringClass	resetPvExpStr;
 
-	unsigned int	count;
+	unsigned int	count;		// nPts from xygraph properties
 	unsigned int	bufferScrollSize;
 	int				plotStyle[XYGC_K_MAX_TRACES];
 	int				plotMode;

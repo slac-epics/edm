@@ -44,7 +44,7 @@ pvData::pvData(
 		m_values(						),
 		m_pvType(		pvType			),
 		m_pvNumElem(	pvNumElem		),
-		m_pvIsSigned(	pvIsSigned		)
+		m_pvIsSigned(	pvIsSigned != 0	)
 {
 	m_values.resize( m_pvNumElem );
 }
@@ -69,16 +69,26 @@ inline void pvData::SetValue( size_t index, double	newValue	)
 {
 	if( m_values.size() <= index )
 	{
-		printf( "Growing m_values from %zu to %zu!\n", m_values.size(), index + 1 );
+		static	bool fShow	= true;
+		if ( fShow )
+		{
+			printf( "pvData::SetValue %s: Growing m_values from %zu to %zu!\n",
+					GetName(), m_values.size(), index + 1 );
+			fShow	= false;
+		}
 		m_values.resize( index + 1 );
 	}
-	if ( debugMode( ) ) printf( "pvData::SetValue: m_values[%zu]=%f\n", index, newValue );
+	if ( debugMode( ) >= 4 ) printf( "pvData::SetValue %s: m_values[%zu]=%f\n", GetName(), index, newValue );
 	m_values[index] = newValue;
 }
 
 void pvData::SetValueFromPv( size_t index, ProcessVariable *	pv )
 {
 	double	newValue	= 0.0;
+	if ( pv != m_pv )
+	{
+		printf( "pvData::SetValueFromPv: pv %s != m_pv %s\n", (pv?pv->get_name():"NULL"), GetName() );
+	}
 
 	// There are two views of pv types, Type and specificType; this uses
 	// specificType
@@ -116,7 +126,7 @@ void pvData::SetValueFromPv( size_t index, ProcessVariable *	pv )
 		break;
 	}
 	// SetValue( index, newValue );
-	if ( debugMode( ) ) printf( "pvData::SetValueFromPv: m_values[%zu]=%f, type %d\n", index, newValue, m_pvType );
+	if ( debugMode( ) >= 4 ) printf( "pvData::SetValueFromPv %s: m_values[%zu]=%f, type %s\n", GetName(), index, newValue, m_pv->get_type().description );
 	m_values[index] = newValue;
 }
 
@@ -124,81 +134,106 @@ void pvData::SetValuesFromPv( ProcessVariable *	pv, size_t pvCount	)
 {
 	if ( pv != m_pv )
 	{
-		printf( "pvData::SetValuesFromPv: pv %s != m_pv %s\n", (pv?pv->get_name():"NULL"), (m_pv?m_pv->get_name():"NULL") );
+		printf( "pvData::SetValuesFromPv: pv %s != m_pv %s\n", (pv?pv->get_name():"NULL"), GetName() );
 	}
-	if ( debugMode( ) ) printf( "pvData::SetValuesFromPv: pv %s, type %s, nElem %zu\n", pv->get_name(), pv->get_type().description, pv->get_dimension() );
-	for ( unsigned int index = 0; index < pvCount; index++ )
+	if ( pvCount != m_pvNumElem )
 	{
-		// There are two views of pv types, Type and specificType;
-		// This uses specificType
-		double	newValue	= 0.0;
-		switch ( m_pvType )
-		{
-		default:
-		case ProcessVariable::specificType::real:
-		case ProcessVariable::specificType::flt:
-			{
-			const double	*	pValues	= pv->get_double_array();
-			if ( pValues == NULL )
-			{
-				printf( "pvData::SetValuesFromPv: NULL array ptr!: pv %s, type %s, nElem %zu\n",
-						pv->get_name(), pv->get_type().description, pv->get_dimension() );
-				break;
-			}
-			newValue = pValues[index];
-			}
-			break;
-		case ProcessVariable::specificType::shrt:
-			{
-			const short	*	pValues	= pv->get_short_array();
-			if ( pValues == NULL )
-			{
-				printf( "pvData::SetValuesFromPv: NULL array ptr!: pv %s, type %s, nElem %zu\n",
-						pv->get_name(), pv->get_type().description, pv->get_dimension() );
-						break;
-			}
-			if ( m_pvIsSigned )
-				newValue = static_cast<short>( pValues[index] );
-			else
-				newValue = static_cast<unsigned short>( pValues[index] );
-			}
-			break;
-		case ProcessVariable::specificType::chr:
-			{
-			const char	*	pValues	= pv->get_char_array();
-			if ( pValues == NULL )
-			{
-				printf( "pvData::SetValuesFromPv: NULL array ptr!: pv %s, type %s, nElem %zu\n",
-						pv->get_name(), pv->get_type().description, pv->get_dimension() );
-						break;
-			}
-			if ( m_pvIsSigned )
-				newValue = static_cast<char>( pValues[index] );
-			else
-				newValue = static_cast<unsigned char>( pValues[index] );
-			}
-			break;
-		case ProcessVariable::specificType::integer:
-		case ProcessVariable::specificType::enumerated:
-			{
-			const int	*	pValues	= pv->get_int_array();
-			if ( pValues == NULL )
-			{
-				printf( "pvData::SetValuesFromPv: NULL array ptr!: pv %s, type %s, nElem %zu\n",
-						pv->get_name(), pv->get_type().description, pv->get_dimension() );
-				break;
-			}
-			if ( m_pvIsSigned )
-				newValue = static_cast<int>( pValues[index] );
-			else
-				newValue = static_cast<unsigned int>( pValues[index] );
-			}
-			break;
-		}
+		printf( "pvData::SetValuesFromPv %s: numElem %zu != count %zu\n", GetName(), m_pvNumElem, pvCount );
+	}
+	if ( debugMode() >= 2 ) printf( "pvData::SetValuesFromPv: pv %s, type %s, nElem %zu, count %zu\n", pv->get_name(), pv->get_type().description, pv->get_dimension(), pvCount );
 
-		// SetValue( index, newValue );
-		if ( debugMode( ) >= 3 ) printf( "pvData::SetValuesFromPv: m_values[%u]=%f, type %d\n", index, newValue, m_pvType );
-		m_values[index] = newValue;
+	// There are two views of pv types, Type and specificType;
+	// This uses specificType
+	switch ( m_pvType )
+	{
+	default:
+	case ProcessVariable::specificType::real:
+	case ProcessVariable::specificType::flt:
+		{
+		const double	*	pValues	= pv->get_double_array();
+		if ( pValues == NULL )
+		{
+			printf( "pvData::SetValuesFromPv: NULL double array ptr!: pv %s, type %s, nElem %zu\n",
+					pv->get_name(), pv->get_type().description, pv->get_dimension() );
+			return;
+		}
+		for ( unsigned int index = 0; index < pvCount; index++ )
+		{
+			m_values[index] = pValues[index];
+			if ( debugMode( ) >= 4 ) printf( "pvData::SetValuesFromPv %s: m_values[%u]=%f, type %s\n", GetName(), index, m_values[index], m_pv->get_type().description );
+		}
+		}
+		break;
+	case ProcessVariable::specificType::shrt:
+		{
+		const short	*	pValues	= pv->get_short_array();
+		if ( pValues == NULL )
+		{
+			printf( "pvData::SetValuesFromPv: NULL short array ptr!: pv %s, type %s, nElem %zu\n",
+					pv->get_name(), pv->get_type().description, pv->get_dimension() );
+			return;
+		}
+		if ( m_pvIsSigned )
+			for ( unsigned int index = 0; index < pvCount; index++ )
+			{
+				m_values[index] = static_cast<short>( pValues[index] );
+				if ( debugMode( ) >= 4 ) printf( "pvData::SetValuesFromPv %s: m_values[%u]=%f, type %s\n", GetName(), index, m_values[index], m_pv->get_type().description );
+			}
+		else
+			for ( unsigned int index = 0; index < pvCount; index++ )
+			{
+				m_values[index] = static_cast<unsigned short>( pValues[index] );
+				if ( debugMode( ) >= 4 ) printf( "pvData::SetValuesFromPv %s: m_values[%u]=%f, type %s\n", GetName(), index, m_values[index], m_pv->get_type().description );
+			}
+		}
+		break;
+	case ProcessVariable::specificType::chr:
+		{
+		const char	*	pValues	= pv->get_char_array();
+		if ( pValues == NULL )
+		{
+			printf( "pvData::SetValuesFromPv: NULL char array ptr!: pv %s, type %s, nElem %zu\n",
+					pv->get_name(), pv->get_type().description, pv->get_dimension() );
+			return;
+		}
+		if ( m_pvIsSigned )
+			for ( unsigned int index = 0; index < pvCount; index++ )
+			{
+				m_values[index] = static_cast<char>( pValues[index] );
+				if ( debugMode( ) >= 4 ) printf( "pvData::SetValuesFromPv %s: m_values[%u]=%f, type %s\n", GetName(), index, m_values[index], m_pv->get_type().description );
+			}
+		else
+			for ( unsigned int index = 0; index < pvCount; index++ )
+			{
+				m_values[index] = static_cast<unsigned char>( pValues[index] );
+				if ( debugMode( ) >= 4 ) printf( "pvData::SetValuesFromPv %s: m_values[%u]=%f, type %s\n", GetName(), index, m_values[index], m_pv->get_type().description );
+			}
+		}
+		break;
+	case ProcessVariable::specificType::integer:
+	case ProcessVariable::specificType::enumerated:
+		{
+		const int	*	pValues	= pv->get_int_array();
+		if ( pValues == NULL )
+		{
+			printf( "pvData::SetValuesFromPv: NULL int array ptr!: pv %s, type %s, nElem %zu\n",
+					pv->get_name(), pv->get_type().description, pv->get_dimension() );
+			return;
+		}
+		if ( m_pvIsSigned )
+			for ( unsigned int index = 0; index < pvCount; index++ )
+			{
+				m_values[index] = static_cast<int>( pValues[index] );
+				if ( debugMode( ) >= 4 ) printf( "pvData::SetValuesFromPv %s: m_values[%u]=%f, type %s\n", GetName(), index, m_values[index], m_pv->get_type().description );
+			}
+		else
+			for ( unsigned int index = 0; index < pvCount; index++ )
+			{
+				m_values[index] = static_cast<unsigned int>( pValues[index] );
+				if ( debugMode( ) >= 4 ) printf( "pvData::SetValuesFromPv %s: m_values[%u]=%f, type %s\n", GetName(), index, m_values[index], m_pv->get_type().description );
+			}
+		}
+		break;
 	}
 }
 
@@ -411,6 +446,8 @@ dump_edit_apply(
 
 	for ( i = 0; i < (size_t)xyo->numTraces; i++ )
 	{
+		assert( xyo->xPvData[i] != NULL );
+		assert( xyo->yPvData[i] != NULL );
 		if ( xyo->traceType[i] == XYGC_K_TRACE_CHRONOLOGICAL )
 		{
 			// vector
@@ -1458,6 +1495,7 @@ trigValueUpdate(
 					}
 				}
 
+				// Call addPoint for next trigValueUpdate
 				xyo->addPoint( dxValue, dxValue, dyValue, i, yi );
 
 				xyo->yArrayGotValue[i] = xyo->xArrayGotValue[i] = 0;
@@ -1536,6 +1574,7 @@ trigValueUpdate(
 					}
 				}
 
+				// Call addPoint for next scalar trigValueUpdate
 				xyo->addPoint( dxValue, dxValue, dyValue, i, yi );
 
 				xyo->yArrayGotValue[i] = xyo->xArrayGotValue[i] = 0;
@@ -1742,6 +1781,7 @@ xValueUpdate(
 					}
 				}
 
+				// Call addPoint for next xValueUpdate
 				xyo->addPoint( dxValue, dxValue, dyValue, i, yi );
 
 				xyo->yArrayGotValue[i] = xyo->xArrayGotValue[i] = 0;
@@ -1826,13 +1866,18 @@ nValueUpdate(
 	if ( debugMode(  ) ) printf( "nValueUpdate: %s\n", pv->get_name() );
 	if ( pv->is_valid(  ) )
 	{
-
 		xyo->actWin->appCtx->proc->lock(  );
-		xyo->traceSize[i] = ( int ) pv->get_int(  );
-		xyo->needArraySizeChange = 1;
-		xyo->actWin->addDefExeNode( xyo->aglPtr );
+		int		pvVal	= pv->get_int();
+		if( pvVal < 0 )
+			pvVal = 0;
+		// Optimize this update on actual traceSize change
+		if( xyo->traceSize[i] != static_cast<unsigned int>( pvVal ) )
+		{
+			xyo->traceSize[i] =  static_cast<unsigned int>( pvVal );
+			xyo->needArraySizeChange = 1;
+			xyo->actWin->addDefExeNode( xyo->aglPtr );
+		}
 		xyo->actWin->appCtx->proc->unlock(  );
-
 	}
 
 }
@@ -1998,6 +2043,7 @@ yValueUpdate(
 					}
 				}
 
+				// Call addPoint for next yValueUpdate
 				xyo->addPoint( dxValue, dxValue, dyValue, i, yi );
 
 				xyo->yArrayGotValue[i] = xyo->xArrayGotValue[i] = 0;
@@ -2072,7 +2118,7 @@ yValueWithTimeUpdate(
 	if ( !xyo->activeMode )
 		return;
 
-	if ( debugMode(  ) ) printf( "yValueWithTimeUpdate: %s\n", pv->get_name() );
+	if ( debugMode() >= 2 ) printf( "yValueWithTimeUpdate: %s\n", pv->get_name() );
 	xyo->actWin->appCtx->proc->lock(  );
 
 	if( xyo->yArrayGotValueCallback[i] == 0 )
@@ -2096,7 +2142,7 @@ yValueWithTimeUpdate(
 			else
 				for ( ii = 0; ii < xyo->yPvCount[i]; ii++ )
 				{
-					if ( debugMode(  ) ) printf( "yValueWithTimeUpdate: chron vector SetValueFromPv %u\n", ii );
+					if ( debugMode() >= 4 ) printf( "yValueWithTimeUpdate: chron vector SetValueFromPv %u\n", ii );
 					xyo->xPvData[i]->SetValue( ii, ii );
 					xyo->yPvData[i]->SetValueFromPv( ii, pv );
 				}
@@ -2149,7 +2195,7 @@ yValueWithTimeUpdate(
 				dxValue = ( double ) sec + ( double ) nsec *0.000000001;
 				xyo->xPvData[i]->SetValue( ii, dxValue );
 
-				// Should this go before the SetValue?
+				// TODO: Should this go before the SetValue?
 				dxValue = loc_log10( dxValue );
 			}
 			else if ( xyo->xAxisStyle == XYGC_K_AXIS_STYLE_LINEAR )
@@ -2221,6 +2267,7 @@ yValueWithTimeUpdate(
 					}
 				}
 
+				// Call addPoint for next yValueWithTimeUpdate
 				xyo->addPoint( dxValue, dxValue, dyValue, i, yi );
 
 				xyo->yArrayGotValue[i] = xyo->xArrayGotValue[i] = 0;
@@ -2396,8 +2443,8 @@ axygc_edit_update(
 			axygo->traceType[i] = XYGC_K_TRACE_INVALID;
 		}
 
-		axygo->xSigned[i] = axygo->eBuf->bufXSigned[i];
-		axygo->ySigned[i] = axygo->eBuf->bufYSigned[i];
+		axygo->xSigned[i] = axygo->eBuf->bufXSigned[i] != 0;
+		axygo->ySigned[i] = axygo->eBuf->bufYSigned[i] != 0;
 
 		if ( !blankOrComment( axygo->eBuf->bufNPvName[i] ) )
 		{
@@ -4491,8 +4538,8 @@ xyGraphClass::genericEdit(
 		}
 		eBuf->bufOpMode[i] = opMode[i];
 		eBuf->bufY2Scale[i] = y2Scale[i];
-		eBuf->bufXSigned[i] = xSigned[i];
-		eBuf->bufYSigned[i] = ySigned[i];
+		eBuf->bufXSigned[i] = xSigned[i] != 0;
+		eBuf->bufYSigned[i] = ySigned[i] != 0;
 	}
 	for ( i = numTraces; i < XYGC_K_MAX_TRACES; i++ )
 	{
@@ -4770,12 +4817,10 @@ xyGraphClass::regenBuffer( void )
 {
 	unsigned int        i,
 	                    ii,
-	                    yi,
-	                    count;
+	                    yi;
 	double              dxValue,
 	                    dyValue;
 
-	count = 0;
 	for ( i = 0; i < (size_t) numTraces; i++ )
 	{
 		if ( traceIsDisabled(i) )
@@ -4815,6 +4860,7 @@ xyGraphClass::regenBuffer( void )
 				dxValue = loc_log10( dxValue );
 			}
 
+			// Call addPoint for next regenBuffer point
 			addPoint( dxValue, dxValue, dyValue, i, yi );
 
 			ii++;
@@ -4845,13 +4891,12 @@ xyGraphClass::genChronoVector(
 	initPlotInfo( i );
 	arrayNumPoints[i] = 0;
 
+	if ( debugMode() >= 3 ) printf( "genChronoVector %s,%s: generating %u points\n", xPvData[i]->GetName(), yPvData[i]->GetName(), yPvCount[i] );
 	for ( unsigned int ii = 0; ii < yPvCount[i]; ii++ )
 	{
 		double	dyValue = yPvData[i]->GetValue( ii );
 		double	dxValue = xPvData[i]->GetValue( ii );
-		if ( debugMode(  ) ) printf( "genChronoVector: dyValue = %f\n", dyValue );
-		if ( debugMode(  ) ) printf( "genChronoVector: dxValue = %f\n", dxValue );
-
+		if ( debugMode() >= 4 ) printf( "genChronoVector X %s[%u] = %f, Y %s[%u] = %f\n", xPvData[i]->GetName(), ii, dxValue, yPvData[i]->GetName(), ii, dyValue );
 		if ( y1AxisStyle[yi] == XYGC_K_AXIS_STYLE_LOG10 )
 		{
 			dyValue = loc_log10( dyValue );
@@ -4866,6 +4911,7 @@ xyGraphClass::genChronoVector(
 			dxValue = loc_log10( dxValue );
 		}
 
+		// Call addPoint for this genChronoVector generated x,y point for index ii
 		addPoint( dxValue, dxValue, dyValue, i, yi );
 
 		if ( xAxisSource == XYGC_K_AUTOSCALE )
@@ -5037,13 +5083,14 @@ xyGraphClass::genXyVector(
 	arrayNumPoints[i] = 0;
 
 	n = yPvCount[i];
-	if ( xPvCount[i] < n )
+	if( n > xPvCount[i] )
 		n = xPvCount[i];
 
 	for ( unsigned int ii = 0; ii < n; ii++ )
 	{
 		double	dxValue = xPvData[i]->GetValue( ii );
 		double	dyValue = yPvData[i]->GetValue( ii );
+		if ( debugMode() >= 4 ) printf( "genXyVector X %s[%u] = %f, Y %s[%u] = %f\n", xPvData[i]->GetName(), ii, dxValue, yPvData[i]->GetName(), ii, dyValue );
 
 		if ( y1AxisStyle[yi] == XYGC_K_AXIS_STYLE_LOG10 )
 		{
@@ -5070,6 +5117,7 @@ xyGraphClass::genXyVector(
 			dxValue = loc_log10( dxValue );
 		}
 
+		// Call addPoint for this genXyVector generated x,y point for index ii
 		addPoint( dxValue, dxValue, dyValue, i, yi );
 
 		if ( xAxisSource == XYGC_K_AUTOSCALE )
@@ -5293,7 +5341,7 @@ xyGraphClass::drawCircles(
 	                    j,
 	                    symHW,
 	                    symHH;
-	if ( debugMode(  ) ) printf( "drawCircles: Trace %u, plotting %u circles\n", index, n );
+	if ( debugMode() >= 2 ) printf( "drawCircles: Trace %u, plotting %u circles\n", index, n );
 
 	symHH = symHalfHeight + lineThk[index];
 	symHW = symHalfWidth + lineThk[index];
@@ -5601,7 +5649,7 @@ xyGraphClass::drawActiveOne(
 	if ( traceIsDisabled( i ) )
 		return 1;
 
-	if ( debugMode(  ) ) printf( "drawActiveOne: Trace %u\n", iTrace );
+	if ( debugMode() >= 3 ) printf( "drawActiveOne: Trace %u\n", iTrace );
 	actWin->executeGc.setLineWidth( 1 );
 	actWin->executeGc.setLineStyle( LineSolid );
 
@@ -5618,13 +5666,13 @@ xyGraphClass::drawActiveOne(
 		if ( forceVector[i] || ( yPvCount[i] > 1 ) )
 		{						// vector
 			npts = fillVectorPlotArray( i );
-			if ( debugMode(  ) ) printf( "drawActiveOne: Trace %u, plotting vector of %u pts\n", iTrace, npts );
 
 			if ( npts > 0 )
 			{
 				if (	plotStyle[i] == XYGC_K_PLOT_STYLE_POINT
 					||	plotStyle[i] == XYGC_K_PLOT_STYLE_SINGLE_POINT )
 				{
+					if ( debugMode() >= 2 ) printf( "drawActiveOne: Trace %u, plotting vector of %u pts\n", iTrace, npts );
 					if ( plotSymbolType[i] == XYGC_K_SYMBOL_TYPE_NONE )
 						XDrawPoints( actWin->d, pixmap,
 									 actWin->executeGc.normGC(  ), plotBuf[i], npts,
@@ -5649,7 +5697,7 @@ xyGraphClass::drawActiveOne(
 
 					if ( npts > 1 )
 					{
-						if ( debugMode(  ) ) printf( "drawActiveOne: Trace %u, plotting lines for %u pts\n", i, npts );
+						if ( debugMode() >= 2 ) printf( "drawActiveOne: Trace %u, plotting lines for %u pts\n", i, npts );
 						actWin->executeGc.setLineWidth( lineThk[i] );
 						actWin->executeGc.setLineStyle( lineStyle[i] );
 
@@ -5665,7 +5713,7 @@ xyGraphClass::drawActiveOne(
 		else
 		{						// scalar
 			npts = fillScalarPlotArray( i );
-			if ( debugMode(  ) ) printf( "drawActiveOne: Trace %u, plotting scalar of %u pts\n", iTrace, npts );
+			if ( debugMode() >= 2 ) printf( "drawActiveOne: Trace %u, plotting scalar of %u pts\n", iTrace, npts );
 			if ( npts > 0 )
 			{
 				if (	plotStyle[i] == XYGC_K_PLOT_STYLE_POINT
@@ -7236,12 +7284,10 @@ xyGraphClass::executeDeferred( void )
 {
 	unsigned int        i;
 	unsigned int        ii;
-	int					tmpC;
 	int                 doRescale;
 	int                 anyRescale;
-	int                 size;
 	int                 num;
-	int                 maxDim;
+	unsigned int		maxDim;
 	double              dyValue;
 	double              dxValue;
 	double              range;
@@ -7363,16 +7409,13 @@ xyGraphClass::executeDeferred( void )
 							yPv[i]->get_name(), yPv[i]->get_type().description,
 							yPv[i]->get_dimension() );
 				yPvType[i]	= ( int ) yPv[i]->get_specific_type(  ).type;
-				yPvCount[i]	= ( int ) yPv[i]->get_dimension(  );
 				yPvDim[i]	= ( int ) yPv[i]->get_dimension(  );
 
-				if( traceSize[i] < 0 )
-					traceSize[i] = 0;
-
-				if( traceSize[i] > yPvDim[i] )
-					yPvCount[i]  = yPvDim[i];
-				else if ( traceSize[i] > 0 )
-					yPvCount[i]  = traceSize[i];
+				// If a trace size is specified and is smaller than the PV size, use it
+				yPvCount[i]	= yPvDim[i];
+				if ( traceSize[i] )
+					if( yPvCount[i] > traceSize[i] )
+						yPvCount[i] = traceSize[i];
 
 				yPvSize[i]	= yPvDim[i] * ( int ) yPv[i]->get_specific_type(  ).size / 8;
 				dbYMin[i]	= yPv[i]->get_lower_disp_limit(  );
@@ -7384,16 +7427,17 @@ xyGraphClass::executeDeferred( void )
 					if ( yPvData[i] != NULL )
 					{
 						delete yPvData[i];
+						yPvData[i] = NULL;
 						printf( "New array size %u for y pv %s, deleted old array\n",
 								yPvCount[i], yPv[i]->get_name() );
 					}
-					else if ( debugMode(  ) )
+					else if ( debugMode() )
 						printf( "Allocating new array size %u for y pv %s\n",
 								yPvCount[i], yPv[i]->get_name() );
 					yPvData[i] = new pvData( yPv[i], yPvType[i], yPvCount[i], ySigned[i] );
 				}
 
-				if ( debugMode(  ) )
+				if ( debugMode() >= 2 )
 				{
 					printf( "y pv ele size = %-d\n",
 							( int ) yPv[i]->get_specific_type(  ).size / 8 );
@@ -7411,16 +7455,13 @@ xyGraphClass::executeDeferred( void )
 				size_t		priorCount	= xPvCount[i];
 				if ( debugMode( ) ) printf( "xyGraphClass::executeDeferred: needConnect xPv %s, type %s, nElem %zu\n", xPv[i]->get_name(), xPv[i]->get_type().description, xPv[i]->get_dimension() );
 				xPvType[i]	= ( int ) xPv[i]->get_specific_type(  ).type;
-				xPvCount[i]	= ( int ) xPv[i]->get_dimension(  );
 				xPvDim[i]	= ( int ) xPv[i]->get_dimension(  );
 
-				if( traceSize[i] < 0 )
-					traceSize[i] = 0;
-
-				if ( traceSize[i] > xPvDim[i] )
-					xPvCount[i] = xPvDim[i];
-				else if ( traceSize[i] > 0 )
-					xPvCount[i] = traceSize[i];
+				// If a trace size is specified and is smaller than the PV size, use it
+				xPvCount[i]	= xPvDim[i];
+				if ( traceSize[i] )
+					if( xPvCount[i] > traceSize[i] )
+						xPvCount[i] = traceSize[i];
 
 				xPvSize[i]	= xPvDim[i] * ( int ) xPv[i]->get_specific_type(  ).size / 8;
 				dbXMin[i]	= xPv[i]->get_lower_disp_limit(  );
@@ -7432,23 +7473,24 @@ xyGraphClass::executeDeferred( void )
 					if ( xPvData[i] != NULL )
 					{
 						delete xPvData[i];
+						xPvData[i]	= NULL;
 						printf( "New array size %u for xPv %s, deleted old array\n",
 								xPvCount[i], xPv[i]->get_name() );
 					}
-					else if ( debugMode(  ) )
+					else if ( debugMode() )
 						printf( "Allocating new array size %u for xPv %s\n",
 								xPvCount[i], xPv[i]->get_name() );
 					xPvData[i] = new pvData( xPv[i], xPvType[i], xPvCount[i], xSigned[i] );
 				}
 
-				if ( debugMode(  ) )
+				if ( debugMode() >= 2 )
 				{
 					printf( "x pv ele size = %-d\n",
 							( int ) xPv[i]->get_specific_type(  ).size / 8	);
 					printf( "x pv dim = %-d\n",		xPvDim[i]	);
 					printf( "x pv size = %-d\n",	xPvSize[i]	);
-					printf( "x pv count = %-d\n", xPvCount[i] );
-					printf( "x traceSize = %-d\n", traceSize[i] );
+					printf( "x pv count = %-d\n",	xPvCount[i] );
+					printf( "x traceSize = %-d\n",	traceSize[i] );
 				}
 				_needInit = 1;
 				xArrayNeedInit[i] = 1;
@@ -7458,7 +7500,7 @@ xyGraphClass::executeDeferred( void )
 
 	if ( _needTraceCtlConnect )
 	{
-		if ( debugMode(  ) ) printf( "xyGraph: TraceCtlConnect ...\n" );
+		if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: TraceCtlConnect ...\n" );
 		if ( initialTraceCtlConnection )
 		{
 			initialTraceCtlConnection = 0;
@@ -7554,29 +7596,44 @@ xyGraphClass::executeDeferred( void )
 					yvArgRec[i].objPtr = ( void * ) this;
 					yvArgRec[i].index = i;
 
-					// if ( yPvData[i] == NULL )
-					if ( plotInfo[i] == NULL )
+					assert( yPvData[i] != NULL );
+					if ( plotInfo[i] == NULL || yPvData[i] == NULL )
 					{
 						if ( forceVector[i] || ( yPvCount[i] > 1 ) )
 						{			// vector
 							maxDim = yPvDim[i];
-							if ( xPvDim[i] > maxDim )
+							if( maxDim < xPvDim[i] )
 								maxDim = xPvDim[i];
 
-							if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: NULL plotInfo vector, PV %s\n", yPvData[i] ? yPvData[i]->GetName() : "NULL" );
+							if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: NULL plotInfo vector, PV %s\n", yPv[i] ? yPv[i]->get_name() : "NULL" );
 							if( yPvData[i] == NULL )
-								yPvData[i] = new pvData( NULL, ProcessVariable::specificType::integer, yPvSize[i] + 80, 0 );
-							size = ( plotAreaX + plotAreaW ) * 4 + 10;
-							if( size < 3 * maxDim + 10 )
+							{
+								yPvData[i] = new pvData( yPv[i], yPvType[i], yPvCount[i], ySigned[i] );
+								//	yPvData[i] = new pvData( NULL, ProcessVariable::specificType::integer, yPvSize[i] + 80, 0 );
+							}
+							int	size = ( plotAreaX + plotAreaW ) * 4 + 10;
+							if( size < static_cast<int>( 3 * maxDim + 10 ) )
 								size = 3 * maxDim + 10;
 
+							if ( plotBuf[i] != NULL )
+							{
+								printf( "xyGraphClass::executeDeferred: Deleting old plotBuf\n" );
+								delete plotBuf[i];
+							}
+							if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred %s: Alloc plotBuf w/ array of %d XPoints\n", yPvData[i]->GetName(), size );
 							plotBuf[i]		= ( XPoint * ) new XPoint[size];
 
 							plotBufSize[i]	= yPvDim[i] + 1;	// used with plotInfo in scope mode
 							size = plotAreaX + plotAreaW + 10;
-							if( size < 2 * maxDim + 10 )
+							if( size < static_cast<int>( 2 * maxDim + 10 ) )
 								size = 2 * maxDim + 10;
 
+							if ( plotInfo[i] != NULL )
+							{
+								printf( "xyGraphClass::executeDeferred: Deleting old plotInfo\n" );
+								delete plotInfo[i];
+							}
+							if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred %s: Alloc plotInfo w/ array of %d plotInfoType\n", yPvData[i]->GetName(), size );
 							plotInfo[i]		= ( plotInfoPtr ) new plotInfoType[size];
 							plotInfoSize[i]	= plotAreaX + plotAreaW;
 
@@ -7585,30 +7642,39 @@ xyGraphClass::executeDeferred( void )
 						}
 						else
 						{			// scalar
-							if ( count < 2 )
-								tmpC = 2;
-							else
-								tmpC = count;
-
-							bufferScrollSize = ( int ) ( ( double ) tmpC * 0.1 );
+							unsigned int	scrollCount	= count;
+							if( scrollCount < 2 )
+								scrollCount = 2;
+							bufferScrollSize = ( int ) ( ( double ) scrollCount * 0.1 );
 							if( bufferScrollSize < 1 )
 								bufferScrollSize = 1;
 
 							if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: NULL plotInfo scalar, PV %s\n", yPvData[i] ? yPvData[i]->GetName() : "NULL" );
 							if( yPvData[i] == NULL )
-								yPvData[i] = new pvData(	NULL, ProcessVariable::specificType::integer,
-															yPvSize[i] * ( tmpC + 10 ), 0 );
+							{
+								yPvData[i] = new pvData( yPv[i], yPvType[i], yPvCount[i], ySigned[i] );
+							}
 
-							size = ( plotAreaX + plotAreaW ) * 4 + 10;
-							if ( 2 * tmpC + 10 > size )
-								size = 2 * tmpC + 10;
+							int		size = ( plotAreaX + plotAreaW ) * 4 + 10;
+							if( size < static_cast<int>( 2 * scrollCount + 10 ) )
+								size = 2 * scrollCount + 10;
+							if ( plotBuf[i] != NULL )
+							{
+								printf( "xyGraphClass::executeDeferred: Deleting old plotBuf scalar\n" );
+								delete plotBuf[i];
+							}
 							plotBuf[i]		= ( XPoint * ) new XPoint[size];
 
-							plotBufSize[i]	= tmpC + 1;	// used with plotInfo in scope mode
+							plotBufSize[i]	= scrollCount + 1;	// used with plotInfo in scope mode
 
 							size = plotAreaX + plotAreaW + 10;
-							if( size < 2 * tmpC + 10 )
-								size = 2 * tmpC + 10;
+							if( size < static_cast<int>( 2 * scrollCount + 10 ) )
+								size = 2 * scrollCount + 10;
+							if ( plotInfo[i] != NULL )
+							{
+								printf( "xyGraphClass::executeDeferred: Deleting old plotInfo scalar\n" );
+								delete plotInfo[i];
+							}
 							plotInfo[i]		= ( plotInfoPtr ) new plotInfoType[size];
 							plotInfoSize[i]	= plotAreaX + plotAreaW;
 
@@ -7693,11 +7759,10 @@ xyGraphClass::executeDeferred( void )
 					}
 					else
 					{				// scalar
-						if ( count < 2 )
-							tmpC = 2;
-						else
-							tmpC = count;
-						numElem = tmpC + 10;
+						unsigned int	scrollCount	= count;
+						if( scrollCount < 2 )
+							scrollCount = 2;
+						numElem = scrollCount + 10;
 					}
 					if ( (int) numElem != xPvDim[i] )
 						printf( "xPvData[%d] for PV None, numElem=%zu, xPvDim=%d\n", i, numElem, xPvDim[i] );
@@ -7715,7 +7780,7 @@ xyGraphClass::executeDeferred( void )
 				// pass two
 				if ( yArrayNeedInit[i] )
 				{
-					yArrayNeedInit[i] = 0;
+					yArrayNeedInit[i] = 0;	// TODO: Should we clear this here?
 
 					if ( traceType[i] == XYGC_K_TRACE_XY )
 					{
@@ -7815,8 +7880,9 @@ xyGraphClass::executeDeferred( void )
 					{
 						xArrayNeedUpdate[i] = 1;
 
-						if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: genChronoVector\n" );
+						if ( debugMode(  ) >= 3 ) printf( "xyGraphClass::executeDeferred: genChronoVector\n" );
 						genChronoVector( i, &doRescale );
+						if ( debugMode(  ) >= 3 ) printf( "xyGraphClass::executeDeferred: genChronoVector done!\n" );
 						if ( doRescale )
 						{
 							if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: genChronoVector rescale\n" );
@@ -8049,7 +8115,7 @@ xyGraphClass::executeDeferred( void )
 	}
 
 	if ( _needBufferScroll )
-	//	xyGraphClass::bufferScroll( void )
+	//	TODO: Make this a function xyGraphClass::bufferScroll( void )
 	{
 		if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: BufferScroll ...\n" );
 		drawGridFlag = 1;
@@ -8084,8 +8150,11 @@ xyGraphClass::executeDeferred( void )
 			if( ii > plotBufSize[i] )
 				ii = ii - plotBufSize[i] - 1;
 			arrayHead[i] = ii;
+			assert( xPvData[i] != NULL );
+			assert( yPvData[i] != NULL );
 			do
 			{
+				// Loop on ii till we scroll to the arrayTail
 				dyValue = yPvData[i]->GetValue( ii );
 				if ( y1AxisStyle[yi] == XYGC_K_AXIS_STYLE_LOG10 )
 				{
@@ -8102,6 +8171,7 @@ xyGraphClass::executeDeferred( void )
 					dxValue = loc_log10( dxValue );
 				}
 
+				// Call addPoint for the next scrolled value
 				addPoint( dxValue, dxValue, dyValue, i, yi );
 
 				ii++;
@@ -8114,7 +8184,7 @@ xyGraphClass::executeDeferred( void )
 	}
 
 	if ( _needXRescale )
-	//	xyGraphClass::doXRescale( void )
+	//	TODO: Make this a function xyGraphClass::doXRescale( void )
 	{
 		if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: needXRescale ...\n" );
 		oldXMin = curXMin;
@@ -9396,18 +9466,16 @@ xyGraphClass::executeDeferred( void )
 		if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: needArraySizeChange ...\n" );
 		for ( i = 0; i < (size_t) numTraces; i++ )
 		{
-			if( traceSize[i] < 0 )
-				traceSize[i] = 0;
-
-			if ( traceSize[i] > yPvDim[i] )
-				yPvCount[i] = yPvDim[i];
-			else if ( traceSize[i] > 0 )
-				yPvCount[i] = traceSize[i];
-
-			if ( traceSize[i] > xPvDim[i] )
-				xPvCount[i] = xPvDim[i];
-			else if ( traceSize[i] > 0 )
-				xPvCount[i] = traceSize[i];
+			yPvCount[i] = yPvDim[i];
+			xPvCount[i] = xPvDim[i];
+			// If a trace size is specified and is smaller than the PV sizes, use it
+			if ( traceSize[i] )
+			{
+				if( yPvCount[i] > traceSize[i] )
+					yPvCount[i] = traceSize[i];
+				if( xPvCount[i] > traceSize[i] )
+					xPvCount[i] = traceSize[i];
+			}
 		}
 
 		actWin->appCtx->proc->lock(  );
@@ -9451,7 +9519,7 @@ xyGraphClass::addPoint(
 {
 	if ( plotInfo[trace] == NULL )
 	{
-		if ( debugMode(  ) >= 4 ) printf( "addPoint: plotInfo[%d] == NULL!\n", trace );
+		printf( "addPoint: plotInfo[%d] == NULL!\n", trace );
 		return;
 	}
 	// if ( debugMode(  ) ) printf( "addPoint: (%f,%f)\n", dxValue, dyValue );
