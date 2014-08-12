@@ -1,0 +1,36 @@
+--- baselib/motifSlider.cc.original	2014-08-12 10:55:26.000000002 -0700
++++ baselib/motifSlider.cc	2014-08-12 11:01:13.000000002 -0700
+@@ -2253,13 +2253,28 @@
+ 
+     be = (XButtonEvent *) e;
+ 
+-    if ( be->state & ControlMask ) {
+-      mult = 10.0;
+-    }
+-    else {
+-      mult = 1.0;
++    // CATER 118737 - SLAC Local patch
++    // Some of the magnet cotrol screens are large and have a scrollbar
++    // When using the mouse wheel to scroll down the page, we sometimes accidentally scroll over motifSliders
++    // In this case, the motif slider captures the mouse wheel events and changes random magnet controls
++    // Request from ops was to ignore mouse wheel events for MOTIF sliders.
++    // This local patch request was requested by Mike Stanek, Matt Gibbs and Mike Zelazny
++    // Ernest Williams and Mike Zelazny approved the local patch
++    // Murali Shankar made this local patch on Aug/12/2014.
++    // We are not sending this patch to the collaboration as EDM has another slider from Triumf that sorta addresses this.
++    // However, it was determined that the TRIUMF slider does not fit our needs.
++    if(be->button == 4 || be->button == 5) { 
++        *continueToDispatch = False;
++        return;
++    } else { 
++        if ( be->state & ControlMask ) {
++            mult = 10.0;
++        } else {
++            mult = 1.0;
++        }
+     }
+ 
++
+     switch ( be->button ) {
+ 
+ //========== B4 Press ========================================
