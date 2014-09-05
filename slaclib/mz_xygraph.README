@@ -1,0 +1,4 @@
+This is a copy of xygraph from baselib as of edm_1_12_98. Murali Shankar added HOPR/LOPR monitors for Mike Z.
+The intent is to test this for a while in production and then see if we can incorporate the changes back into baselib.
+In case this stays separate, I have also add the original xygraph.h and xygraph.cc into this folder to faciliate 3way merges.
+
