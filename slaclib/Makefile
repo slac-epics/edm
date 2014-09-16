@@ -47,6 +47,7 @@ ifdef EPICS_HOST_ARCH
    HCLXmu_DIR = $(X11_LIB)
    
    LIB_SRCS += freeze_button.cc
+   LIB_SRCS += mz_xygraph.cc
    LIB_SRCS += slacWidgets.cc
 
    include $(TOP)/configure/RULES
