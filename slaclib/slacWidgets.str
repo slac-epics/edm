@@ -2,5 +2,6 @@
 #define __slacWidgets_str 1
 
 #define reg_str1 (char *) "Freeze Button"
+#define reg_str2 (char *) "SLAC XY Graph"
 
 #endif
