@@ -3,5 +3,6 @@
 
 #define reg_str1 (char *) "Freeze Button"
 #define reg_str2 (char *) "SLAC XY Graph"
+#define reg_str3 (char *) "SLAC Bar"
 
 #endif

@@ -53,6 +53,7 @@ ifdef EPICS_HOST_ARCH
    
    LIB_SRCS += freeze_button.cc
    LIB_SRCS += mz_xygraph.cc
+   LIB_SRCS += slacBar.cc
    LIB_SRCS += slacWidgets.cc
 
    include $(TOP)/configure/RULES
