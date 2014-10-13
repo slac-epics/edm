@@ -4,6 +4,7 @@
 #include "slacWidgets.str"
 #include "freeze_button.h"
 #include "mz_xygraph.h"
+#include "slacBar.h"
 
 typedef struct libRecTag {
   char *className;
@@ -15,7 +16,8 @@ static int libRecIndex = 0;
 
 static libRecType libRec[] = {
   { "activeFreezeButtonClass", global_str5, reg_str1 },
-  { "mzxyGraphClass", global_str5, reg_str2 }
+  { "mzxyGraphClass", global_str5, reg_str2 },
+  { "activeSlacBarClass", global_str5, reg_str3 } 
 };
 
 #ifdef __cplusplus
@@ -119,6 +121,31 @@ mz_xyGraphClass *ptr, *srcPtr;
   return (void *) ptr;
 
 }
+
+void *create_slacBarClassPtr ( void ) {
+
+activeSlacBarClass *ptr;
+
+  ptr = new activeSlacBarClass;
+  return (void *) ptr;
+
+}
+
+void *clone_slacBarClassPtr (
+  void *_srcPtr )
+{
+
+activeSlacBarClass *ptr, *srcPtr;
+
+  srcPtr = (activeSlacBarClass *) _srcPtr;
+
+  ptr = new activeSlacBarClass( srcPtr );
+
+  return (void *) ptr;
+
+}
+
+
 #ifdef __cplusplus
 }
 #endif
