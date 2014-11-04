@@ -65,11 +65,15 @@ inline double pvData::GetValue( size_t	index	)
 	return retVal;
 }
 
+// TODO: Work to eliminate this.  It's currently used to create
+// the derived x axis values, mostly where newValue equals index.
+// A better architecture would be to just derive those on the fly
+// in genChronoVector() and eliminate lots of code that used pvData::SetValue.
 inline void pvData::SetValue( size_t index, double	newValue	)
 {
 	if( m_values.size() <= index )
 	{
-		static	bool fShow	= true;
+		static	bool fShow	= false;
 		if ( fShow )
 		{
 			printf( "pvData::SetValue %s: Growing m_values from %zu to %zu!\n",
@@ -82,13 +86,9 @@ inline void pvData::SetValue( size_t index, double	newValue	)
 	m_values[index] = newValue;
 }
 
-void pvData::SetValueFromPv( size_t index, ProcessVariable *	pv )
+void pvData::SetValueFromPv( size_t index )
 {
 	double	newValue	= 0.0;
-	if ( pv != m_pv )
-	{
-		printf( "pvData::SetValueFromPv: pv %s != m_pv %s\n", (pv?pv->get_name():"NULL"), GetName() );
-	}
 
 	// There are two views of pv types, Type and specificType; this uses
 	// specificType
@@ -96,51 +96,55 @@ void pvData::SetValueFromPv( size_t index, ProcessVariable *	pv )
 	{
 	default:
 	case ProcessVariable::specificType::real:
-		newValue = pv->get_double();
+		newValue = m_pv->get_double();
 		break;
 	case ProcessVariable::specificType::flt:
-		newValue = static_cast<float>( pv->get_double() );
+		newValue = static_cast<float>( m_pv->get_double() );
 		break;
 	case ProcessVariable::specificType::shrt:
 		if ( m_pvIsSigned )
-			newValue = static_cast<short>( pv->get_int() );
+			newValue = static_cast<short>( m_pv->get_int() );
 		else
-			newValue = static_cast<unsigned short>( pv->get_int() );
+			newValue = static_cast<unsigned short>( m_pv->get_int() );
 	case ProcessVariable::specificType::chr:
 		if ( m_pvIsSigned )
-			newValue = static_cast<char>( pv->get_int() );
+			newValue = static_cast<char>( m_pv->get_int() );
 		else
-			newValue = static_cast<unsigned char>( pv->get_int() );
+			newValue = static_cast<unsigned char>( m_pv->get_int() );
 		break;
 	case ProcessVariable::specificType::integer:
 		if ( m_pvIsSigned )
-			newValue = pv->get_int();
+			newValue = m_pv->get_int();
 		else
-			newValue = static_cast<unsigned int>( pv->get_int() );
+			newValue = static_cast<unsigned int>( m_pv->get_int() );
 		break;
 	case ProcessVariable::specificType::enumerated:
 		if ( m_pvIsSigned )
-			newValue = static_cast<short>( pv->get_int() );
+			newValue = static_cast<short>( m_pv->get_int() );
 		else
-			newValue = static_cast<unsigned short>( pv->get_int() );
+			newValue = static_cast<unsigned short>( m_pv->get_int() );
 		break;
+	}
+
+	if( m_values.size() <= index )
+	{
+		static	bool fShow	= false;
+		if ( fShow )
+		{
+			printf( "pvData::SetValueFromPv %s: Growing m_values from %zu to %zu!\n",
+					GetName(), m_values.size(), index + 1 );
+			fShow	= false;
+		}
+		m_values.resize( index + 1 );
 	}
 	// SetValue( index, newValue );
 	if ( debugMode( ) >= 4 ) printf( "pvData::SetValueFromPv %s: m_values[%zu]=%f, type %s\n", GetName(), index, newValue, m_pv->get_type().description );
 	m_values[index] = newValue;
 }
 
-void pvData::SetValuesFromPv( ProcessVariable *	pv, size_t pvCount	)
+void pvData::SetValuesFromPv( )
 {
-	if ( pv != m_pv )
-	{
-		printf( "pvData::SetValuesFromPv: pv %s != m_pv %s\n", (pv?pv->get_name():"NULL"), GetName() );
-	}
-	if ( pvCount != m_pvNumElem )
-	{
-		printf( "pvData::SetValuesFromPv %s: numElem %zu != count %zu\n", GetName(), m_pvNumElem, pvCount );
-	}
-	if ( debugMode() >= 2 ) printf( "pvData::SetValuesFromPv: pv %s, type %s, nElem %zu, count %zu\n", pv->get_name(), pv->get_type().description, pv->get_dimension(), pvCount );
+	if ( debugMode() >= 2 ) printf( "pvData::SetValuesFromPv: pv %s, type %s, nElem %zu, count %zu\n", GetName(), m_pv->get_type().description, m_pv->get_dimension(), m_pvNumElem );
 
 	// There are two views of pv types, Type and specificType;
 	// This uses specificType
@@ -150,14 +154,14 @@ void pvData::SetValuesFromPv( ProcessVariable *	pv, size_t pvCount	)
 	case ProcessVariable::specificType::real:
 	case ProcessVariable::specificType::flt:
 		{
-		const double	*	pValues	= pv->get_double_array();
+		const double	*	pValues	= m_pv->get_double_array();
 		if ( pValues == NULL )
 		{
 			printf( "pvData::SetValuesFromPv: NULL double array ptr!: pv %s, type %s, nElem %zu\n",
-					pv->get_name(), pv->get_type().description, pv->get_dimension() );
+					GetName(), m_pv->get_type().description, m_pv->get_dimension() );
 			return;
 		}
-		for ( unsigned int index = 0; index < pvCount; index++ )
+		for ( unsigned int index = 0; index < m_pvNumElem; index++ )
 		{
 			m_values[index] = pValues[index];
 			if ( debugMode( ) >= 4 ) printf( "pvData::SetValuesFromPv %s: m_values[%u]=%f, type %s\n", GetName(), index, m_values[index], m_pv->get_type().description );
@@ -166,21 +170,21 @@ void pvData::SetValuesFromPv( ProcessVariable *	pv, size_t pvCount	)
 		break;
 	case ProcessVariable::specificType::shrt:
 		{
-		const short	*	pValues	= pv->get_short_array();
+		const short	*	pValues	= m_pv->get_short_array();
 		if ( pValues == NULL )
 		{
 			printf( "pvData::SetValuesFromPv: NULL short array ptr!: pv %s, type %s, nElem %zu\n",
-					pv->get_name(), pv->get_type().description, pv->get_dimension() );
+					GetName(), m_pv->get_type().description, m_pv->get_dimension() );
 			return;
 		}
 		if ( m_pvIsSigned )
-			for ( unsigned int index = 0; index < pvCount; index++ )
+			for ( unsigned int index = 0; index < m_pvNumElem; index++ )
 			{
 				m_values[index] = static_cast<short>( pValues[index] );
 				if ( debugMode( ) >= 4 ) printf( "pvData::SetValuesFromPv %s: m_values[%u]=%f, type %s\n", GetName(), index, m_values[index], m_pv->get_type().description );
 			}
 		else
-			for ( unsigned int index = 0; index < pvCount; index++ )
+			for ( unsigned int index = 0; index < m_pvNumElem; index++ )
 			{
 				m_values[index] = static_cast<unsigned short>( pValues[index] );
 				if ( debugMode( ) >= 4 ) printf( "pvData::SetValuesFromPv %s: m_values[%u]=%f, type %s\n", GetName(), index, m_values[index], m_pv->get_type().description );
@@ -189,21 +193,21 @@ void pvData::SetValuesFromPv( ProcessVariable *	pv, size_t pvCount	)
 		break;
 	case ProcessVariable::specificType::chr:
 		{
-		const char	*	pValues	= pv->get_char_array();
+		const char	*	pValues	= m_pv->get_char_array();
 		if ( pValues == NULL )
 		{
 			printf( "pvData::SetValuesFromPv: NULL char array ptr!: pv %s, type %s, nElem %zu\n",
-					pv->get_name(), pv->get_type().description, pv->get_dimension() );
+					GetName(), m_pv->get_type().description, m_pv->get_dimension() );
 			return;
 		}
 		if ( m_pvIsSigned )
-			for ( unsigned int index = 0; index < pvCount; index++ )
+			for ( unsigned int index = 0; index < m_pvNumElem; index++ )
 			{
 				m_values[index] = static_cast<char>( pValues[index] );
 				if ( debugMode( ) >= 4 ) printf( "pvData::SetValuesFromPv %s: m_values[%u]=%f, type %s\n", GetName(), index, m_values[index], m_pv->get_type().description );
 			}
 		else
-			for ( unsigned int index = 0; index < pvCount; index++ )
+			for ( unsigned int index = 0; index < m_pvNumElem; index++ )
 			{
 				m_values[index] = static_cast<unsigned char>( pValues[index] );
 				if ( debugMode( ) >= 4 ) printf( "pvData::SetValuesFromPv %s: m_values[%u]=%f, type %s\n", GetName(), index, m_values[index], m_pv->get_type().description );
@@ -213,21 +217,21 @@ void pvData::SetValuesFromPv( ProcessVariable *	pv, size_t pvCount	)
 	case ProcessVariable::specificType::integer:
 	case ProcessVariable::specificType::enumerated:
 		{
-		const int	*	pValues	= pv->get_int_array();
+		const int	*	pValues	= m_pv->get_int_array();
 		if ( pValues == NULL )
 		{
 			printf( "pvData::SetValuesFromPv: NULL int array ptr!: pv %s, type %s, nElem %zu\n",
-					pv->get_name(), pv->get_type().description, pv->get_dimension() );
+					GetName(), m_pv->get_type().description, m_pv->get_dimension() );
 			return;
 		}
 		if ( m_pvIsSigned )
-			for ( unsigned int index = 0; index < pvCount; index++ )
+			for ( unsigned int index = 0; index < m_pvNumElem; index++ )
 			{
 				m_values[index] = static_cast<int>( pValues[index] );
 				if ( debugMode( ) >= 4 ) printf( "pvData::SetValuesFromPv %s: m_values[%u]=%f, type %s\n", GetName(), index, m_values[index], m_pv->get_type().description );
 			}
 		else
-			for ( unsigned int index = 0; index < pvCount; index++ )
+			for ( unsigned int index = 0; index < m_pvNumElem; index++ )
 			{
 				m_values[index] = static_cast<unsigned int>( pValues[index] );
 				if ( debugMode( ) >= 4 ) printf( "pvData::SetValuesFromPv %s: m_values[%u]=%f, type %s\n", GetName(), index, m_values[index], m_pv->get_type().description );
@@ -1682,14 +1686,7 @@ xValueUpdate(
 	case XYGC_K_TRACE_XY:
 		if ( xyo->forceVector[i] || ( xyo->xPvCount[i] > 1 ) )
 		{						// vector
-			if( xyo->xPvCount[i] > 1 )
-				xyo->xPvData[i]->SetValuesFromPv( pv, xyo->xPvCount[i] );
-			else
-			{
-				for ( ii = 0; ii < xyo->xPvCount[i]; ii++ )
-					xyo->xPvData[i]->SetValueFromPv( ii, pv );
-			}
-
+			xyo->xPvData[i]->SetValuesFromPv( );
 			xyo->xArrayGotValue[i] = 1;
 
 			if ( xyo->plotUpdateMode[i] != XYGC_K_UPDATE_ON_TRIG )
@@ -1713,7 +1710,7 @@ xValueUpdate(
 
 			// x
 			ii = xyo->arrayTail[i];
-			xyo->xPvData[i]->SetValueFromPv( ii, pv );
+			xyo->xPvData[i]->SetValueFromPv( ii );
 
 			if ( ( xyo->plotUpdateMode[i] == XYGC_K_UPDATE_ON_X_OR_Y ) ||
 				 ( xyo->plotUpdateMode[i] == XYGC_K_UPDATE_ON_X ) )
@@ -1949,14 +1946,7 @@ yValueUpdate(
 	case XYGC_K_TRACE_XY:
 		if ( xyo->forceVector[i] || ( xyo->yPvCount[i] > 1 ) )
 		{						// vector
-			if( xyo->yPvCount[i] > 1 )
-				xyo->yPvData[i]->SetValuesFromPv( pv, xyo->yPvCount[i] );
-			else
-			{
-				for ( unsigned int ii = 0; ii < xyo->yPvCount[i]; ii++ )
-					xyo->yPvData[i]->SetValueFromPv( ii, pv );
-			}
-			xyo->yPvData[i]->SetValuesFromPv( pv, xyo->yPvCount[i] );
+			xyo->yPvData[i]->SetValuesFromPv( );
 			xyo->yArrayGotValue[i] = 1;
 
 			if ( xyo->plotUpdateMode[i] != XYGC_K_UPDATE_ON_TRIG )
@@ -1979,7 +1969,7 @@ yValueUpdate(
 
 			// y
 			unsigned int ii = xyo->arrayTail[i];
-			xyo->yPvData[i]->SetValueFromPv( ii, pv );
+			xyo->yPvData[i]->SetValueFromPv( ii );
 
 			if ( ( xyo->plotUpdateMode[i] == XYGC_K_UPDATE_ON_X_OR_Y ) ||
 				 ( xyo->plotUpdateMode[i] == XYGC_K_UPDATE_ON_Y ) )
@@ -2137,15 +2127,12 @@ yValueWithTimeUpdate(
 	case XYGC_K_TRACE_CHRONOLOGICAL:
 		if ( xyo->forceVector[i] || ( xyo->yPvCount[i] > 1 ) )
 		{						// vector
-			if( xyo->yPvCount[i] > 1 )
-				xyo->yPvData[i]->SetValuesFromPv( pv, xyo->yPvCount[i] );
-			else
-				for ( ii = 0; ii < xyo->yPvCount[i]; ii++ )
-				{
-					if ( debugMode() >= 4 ) printf( "yValueWithTimeUpdate: chron vector SetValueFromPv %u\n", ii );
-					xyo->xPvData[i]->SetValue( ii, ii );
-					xyo->yPvData[i]->SetValueFromPv( ii, pv );
-				}
+			xyo->yPvData[i]->SetValuesFromPv( );
+			for ( ii = 0; ii < xyo->yPvCount[i]; ii++ )
+			{
+				if ( debugMode() >= 4 ) printf( "yValueWithTimeUpdate: chron vector SetValueFromPv %u\n", ii );
+				xyo->xPvData[i]->SetValue( ii, ii );
+			}
 
 			if ( xyo->plotUpdateMode[i] != XYGC_K_UPDATE_ON_TRIG )
 			{
@@ -2166,8 +2153,8 @@ yValueWithTimeUpdate(
 
 			ii = xyo->arrayTail[i];
 
-			if ( debugMode(  ) ) printf( "yValueWithTimeUpdate: chron scalar setValueFromPv %u\n", ii );
-			xyo->yPvData[i]->SetValueFromPv( ii, pv );
+			if ( debugMode(  ) >= 2 ) printf( "yValueWithTimeUpdate: chron scalar setValueFromPv %u\n", ii );
+			xyo->yPvData[i]->SetValueFromPv( ii );
 			dyValue = xyo->yPvData[i]->GetValue( ii );
 			sec		= pv->get_time_t(  );
 			nsec	= pv->get_nano(  );
@@ -6332,6 +6319,8 @@ xyGraphClass::activate(
 				needXRescale = needBufferScroll = needVectorUpdate =
 				needRealUpdate = needBoxRescale = needNewLimits =
 				needOriginalLimits = needAutoScaleUpdate = needArraySizeChange = 0;
+			needNConnect = 0;
+			needNInit	 = 0;
 			drawGridFlag = 0;
 
 			for ( yi = 0; yi < xyGraphClass::NUM_Y_AXES; yi++ )
@@ -7403,7 +7392,6 @@ xyGraphClass::executeDeferred( void )
 			//	TraceGetPvInfo()
 			if ( yPv[i] && yPv[i]->is_valid(  ) )
 			{
-				size_t		priorCount	= yPvCount[i];
 				if ( debugMode( ) )
 					printf( "xyGraphClass::executeDeferred: needConnect yPv %s, type %s, nElem %zu\n",
 							yPv[i]->get_name(), yPv[i]->get_type().description,
@@ -7422,18 +7410,9 @@ xyGraphClass::executeDeferred( void )
 				dbYMax[i]	= yPv[i]->get_upper_disp_limit(  );
 				dbYPrec[i]	= yPv[i]->get_precision(  );
 
-				if ( yPvData[i] == NULL || yPvCount[i] != priorCount )
+				if ( yPvData[i] == NULL )
 				{
-					if ( yPvData[i] != NULL )
-					{
-						delete yPvData[i];
-						yPvData[i] = NULL;
-						printf( "New array size %u for y pv %s, deleted old array\n",
-								yPvCount[i], yPv[i]->get_name() );
-					}
-					else if ( debugMode() )
-						printf( "Allocating new array size %u for y pv %s\n",
-								yPvCount[i], yPv[i]->get_name() );
+					if ( debugMode() ) printf( "Allocating new array size %u for y pv %s\n", yPvCount[i], yPv[i]->get_name() );
 					yPvData[i] = new pvData( yPv[i], yPvType[i], yPvCount[i], ySigned[i] );
 				}
 
@@ -7452,7 +7431,6 @@ xyGraphClass::executeDeferred( void )
 
 			if ( xPv[i] && xPv[i]->is_valid(  ) )
 			{
-				size_t		priorCount	= xPvCount[i];
 				if ( debugMode( ) ) printf( "xyGraphClass::executeDeferred: needConnect xPv %s, type %s, nElem %zu\n", xPv[i]->get_name(), xPv[i]->get_type().description, xPv[i]->get_dimension() );
 				xPvType[i]	= ( int ) xPv[i]->get_specific_type(  ).type;
 				xPvDim[i]	= ( int ) xPv[i]->get_dimension(  );
@@ -7468,18 +7446,9 @@ xyGraphClass::executeDeferred( void )
 				dbXMax[i]	= xPv[i]->get_upper_disp_limit(  );
 				dbXPrec[i]	= xPv[i]->get_precision(  );
 
-				if ( xPvData[i] == NULL || xPvCount[i] != priorCount )
+				if ( xPvData[i] == NULL )
 				{
-					if ( xPvData[i] != NULL )
-					{
-						delete xPvData[i];
-						xPvData[i]	= NULL;
-						printf( "New array size %u for xPv %s, deleted old array\n",
-								xPvCount[i], xPv[i]->get_name() );
-					}
-					else if ( debugMode() )
-						printf( "Allocating new array size %u for xPv %s\n",
-								xPvCount[i], xPv[i]->get_name() );
+					if ( debugMode() ) printf( "Allocating new array size %u for xPv %s\n", xPvCount[i], xPv[i]->get_name() );
 					xPvData[i] = new pvData( xPv[i], xPvType[i], xPvCount[i], xSigned[i] );
 				}
 
@@ -7597,7 +7566,7 @@ xyGraphClass::executeDeferred( void )
 					yvArgRec[i].index = i;
 
 					assert( yPvData[i] != NULL );
-					if ( plotInfo[i] == NULL || yPvData[i] == NULL )
+					if ( plotInfo[i] == NULL )
 					{
 						if ( forceVector[i] || ( yPvCount[i] > 1 ) )
 						{			// vector
@@ -7606,11 +7575,6 @@ xyGraphClass::executeDeferred( void )
 								maxDim = xPvDim[i];
 
 							if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: NULL plotInfo vector, PV %s\n", yPv[i] ? yPv[i]->get_name() : "NULL" );
-							if( yPvData[i] == NULL )
-							{
-								yPvData[i] = new pvData( yPv[i], yPvType[i], yPvCount[i], ySigned[i] );
-								//	yPvData[i] = new pvData( NULL, ProcessVariable::specificType::integer, yPvSize[i] + 80, 0 );
-							}
 							int	size = ( plotAreaX + plotAreaW ) * 4 + 10;
 							if( size < static_cast<int>( 3 * maxDim + 10 ) )
 								size = 3 * maxDim + 10;
@@ -7628,11 +7592,6 @@ xyGraphClass::executeDeferred( void )
 							if( size < static_cast<int>( 2 * maxDim + 10 ) )
 								size = 2 * maxDim + 10;
 
-							if ( plotInfo[i] != NULL )
-							{
-								printf( "xyGraphClass::executeDeferred: Deleting old plotInfo\n" );
-								delete plotInfo[i];
-							}
 							if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred %s: Alloc plotInfo w/ array of %d plotInfoType\n", yPvData[i]->GetName(), size );
 							plotInfo[i]		= ( plotInfoPtr ) new plotInfoType[size];
 							plotInfoSize[i]	= plotAreaX + plotAreaW;
@@ -7650,10 +7609,6 @@ xyGraphClass::executeDeferred( void )
 								bufferScrollSize = 1;
 
 							if ( debugMode(  ) ) printf( "xyGraphClass::executeDeferred: NULL plotInfo scalar, PV %s\n", yPvData[i] ? yPvData[i]->GetName() : "NULL" );
-							if( yPvData[i] == NULL )
-							{
-								yPvData[i] = new pvData( yPv[i], yPvType[i], yPvCount[i], ySigned[i] );
-							}
 
 							int		size = ( plotAreaX + plotAreaW ) * 4 + 10;
 							if( size < static_cast<int>( 2 * scrollCount + 10 ) )
@@ -7670,11 +7625,6 @@ xyGraphClass::executeDeferred( void )
 							size = plotAreaX + plotAreaW + 10;
 							if( size < static_cast<int>( 2 * scrollCount + 10 ) )
 								size = 2 * scrollCount + 10;
-							if ( plotInfo[i] != NULL )
-							{
-								printf( "xyGraphClass::executeDeferred: Deleting old plotInfo scalar\n" );
-								delete plotInfo[i];
-							}
 							plotInfo[i]		= ( plotInfoPtr ) new plotInfoType[size];
 							plotInfoSize[i]	= plotAreaX + plotAreaW;
 
@@ -7725,11 +7675,13 @@ xyGraphClass::executeDeferred( void )
 						xPvSize[i] = sizeof( double );
 						if ( xPvData[i] != NULL )
 						{
-							if ( debugMode(  ) )
+							//	if ( debugMode(  ) )
 								printf( "xyGraphClass::executeDeferred: chrono deleting xPvData %p for PV %s\n", xPvData[i], xPvData[i]->GetName() );
 							delete	xPvData[i];
 							xPvData[i] = NULL;
 						}
+						// TODO: Do we ever get here? Yes! But why?
+						// printf( "Allocating new NULL xPvData size %u\n", xPvCount[i] );
 						xPvData[i] = new pvData( NULL, ProcessVariable::specificType::integer, plotBufSize[i], 0 );
 						for ( ii = 0; ii < plotBufSize[i]; ii++ )
 							xPvData[i]->SetValue( ii, ii );
@@ -7742,32 +7694,7 @@ xyGraphClass::executeDeferred( void )
 
 					xvArgRec[i].objPtr = ( void * ) this;
 					xvArgRec[i].index = i;
-
-#if 1
 					assert( xPvData[i] != NULL );
-#else
-					if ( xPvData[i] != NULL )
-					{
-						printf( "xyGraphClass::executeDeferred: deleting xPvData %p for PV %s\n", xPvData[i], xPvData[i]->GetName() );
-						delete	xPvData[i];
-						xPvData[i] = NULL;
-					}
-					size_t              numElem = 0;
-					if ( forceVector[i] || ( xPvCount[i] > 1 ) )
-					{				// vector
-						numElem = xPvSize[i] + 80;	// ??
-					}
-					else
-					{				// scalar
-						unsigned int	scrollCount	= count;
-						if( scrollCount < 2 )
-							scrollCount = 2;
-						numElem = scrollCount + 10;
-					}
-					if ( (int) numElem != xPvDim[i] )
-						printf( "xPvData[%d] for PV None, numElem=%zu, xPvDim=%d\n", i, numElem, xPvDim[i] );
-					xPvData[i] = new pvData( NULL, xPvType[i], numElem, xSigned[i] );	// ??
-#endif
 				}
 			}
 

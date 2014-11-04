@@ -389,9 +389,9 @@ class pvData
 
 	void		SetValue(			size_t index, double	newValue	);
 
-	void		SetValueFromPv(		size_t index, ProcessVariable *	pv	);
+	void		SetValueFromPv(		size_t index );
 
-	void		SetValuesFromPv(	ProcessVariable *	pv, size_t	pvCount	);
+	void		SetValuesFromPv( );
 
 	void		resize(				size_t	newSize )
 	{
