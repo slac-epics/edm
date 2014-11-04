@@ -5,6 +5,7 @@
 #include "freeze_button.h"
 #include "mz_xygraph.h"
 #include "slacBar.h"
+#include "mmover.h"
 
 typedef struct libRecTag {
   char *className;
@@ -17,7 +18,8 @@ static int libRecIndex = 0;
 static libRecType libRec[] = {
   { "activeFreezeButtonClass", global_str5, reg_str1 },
   { "mzxyGraphClass", global_str5, reg_str2 },
-  { "activeSlacBarClass", global_str5, reg_str3 } 
+  { "activeSlacBarClass", global_str5, reg_str3 },
+  { "mmvClass", global_str5, reg_str4 } 
 };
 
 #ifdef __cplusplus
@@ -144,6 +146,9 @@ activeSlacBarClass *ptr, *srcPtr;
   return (void *) ptr;
 
 }
+
+
+// The create and the clone for the mmover are defined in mmover.cc
 
 
 #ifdef __cplusplus
