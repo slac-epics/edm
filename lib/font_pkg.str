@@ -14,6 +14,7 @@
 #define fontInfoClass_str11 (char *) "Internal error at line %-d in file %s\n"
 #define fontInfoClass_str12 (char *) "Font group syntax error near line %-d\n"
 #define fontInfoClass_str13 (char *) "Warning - duplicate font tag name: [%s], from line: %-d\n"
+#define fontInfoClass_str14 (char *) "Error - unable to open font file: [%s]\n"
 
 //#define fontInfoClass_str (char *) "\n"
 

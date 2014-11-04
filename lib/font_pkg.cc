@@ -1570,6 +1570,7 @@ XFontStruct *fs;
           return stat;
 	}
         if ( dup ) {
+	  // Here's where it prints the "Warning - duplicate font tag name" msgs
           fprintf( stderr, fontInfoClass_str13, cur->name, lastNonCommentLine );
 	}
 
@@ -2026,6 +2027,7 @@ XFontStruct *fs;
   //f = fopen( fileName, "r" );
   f = fileOpen( fileName, "r" );
   if ( !f ) {
+    fprintf( stderr, fontInfoClass_str14 );
     return FONTINFO_NO_FILE;
   }
 
@@ -2057,6 +2059,7 @@ XFontStruct *fs;
     ptr = fgets ( defSiteFontTag, 127, f );
     if ( !ptr ) {
       fclose( f );
+	  fprintf( stderr, fontInfoClass_str3, lastNonCommentLine );
       return FONTINFO_EMPTY;
     }
 
@@ -2067,6 +2070,7 @@ XFontStruct *fs;
   ptr = fgets ( defFontTag, 127, f );
   if ( !ptr ) {
     fclose( f );
+	fprintf( stderr, fontInfoClass_str3, lastNonCommentLine );
     return FONTINFO_EMPTY;
   }
 
@@ -2110,6 +2114,7 @@ XFontStruct *fs;
         stat = this->resolveFont( fontSpec, cur );
         if ( !( stat & 1 ) ) {
           delete cur;
+      	  fprintf( stderr, fontInfoClass_str8, fontSpec );
           return stat;
         }
 
