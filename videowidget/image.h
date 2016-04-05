@@ -48,12 +48,17 @@ void transformImageData (
   double *src
 );
 
-// Convert value into index in the palette of XImage
+// Convert value into index in the palette of XImage (between 0 and 255!)
 unsigned char convert (
   double d
 ) {
-	if(d<0) d = d + (1<<nbits);
-	return ((unsigned int)d)>>(nbits-8);
+    unsigned int c;
+    if(d<0) d = d + (1<<nbits);
+    c = ((unsigned int)d)>>(nbits-8);
+    if (c <= 255)
+	return c;
+    else
+        return 255;
 };
 
 Display *display;
