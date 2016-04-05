@@ -219,7 +219,7 @@ activeMultSegRampButtonClass *msrbto = (activeMultSegRampButtonClass *) userarg;
   }
   else {
 
-    msrbto->connection.setPvDisconnected( (void *) msrbto->destPvConnection );
+    msrbto->connection.setPvDisconnected( (void *) msrbto->destPvId );
     msrbto->active = 0;
     msrbto->bgColor.setDisconnected();
     msrbto->needDraw = 1;
@@ -259,7 +259,7 @@ int i, index = -1;
   }
   else {
 
-    msrbto->connection.setPvDisconnected( (void *) msrbto->finalPvConnection[index] );
+    msrbto->connection.setPvDisconnected( (void *) msrbto->finalPvId[index] );
     msrbto->active = 0;
     msrbto->bgColor.setDisconnected();
     msrbto->needDraw = 1;
@@ -299,7 +299,7 @@ int i, index = -1;
   }
   else {
 
-    msrbto->connection.setPvDisconnected( (void *) msrbto->rampRatePvConnection[index] );
+    msrbto->connection.setPvDisconnected( (void *) msrbto->rampRatePvId[index] );
     msrbto->active = 0;
     msrbto->bgColor.setDisconnected();
     msrbto->needDraw = 1;
@@ -329,7 +329,7 @@ activeMultSegRampButtonClass *msrbto = (activeMultSegRampButtonClass *) userarg;
   }
   else {
 
-    msrbto->connection.setPvDisconnected( (void *) msrbto->rampStatePvConnection );
+    msrbto->connection.setPvDisconnected( (void *) msrbto->rampStatePvId );
     msrbto->active = 0;
     msrbto->bgColor.setDisconnected();
     msrbto->needDraw = 1;
@@ -421,7 +421,7 @@ activeMultSegRampButtonClass *msrbto = (activeMultSegRampButtonClass *) userarg;
   }
   else {
 
-    msrbto->connection.setPvDisconnected( (void *) msrbto->visPvConnection );
+    msrbto->connection.setPvDisconnected( (void *) msrbto->visPvId );
     msrbto->active = 0;
     msrbto->bgColor.setDisconnected();
     msrbto->needDraw = 1;
@@ -464,7 +464,7 @@ activeMultSegRampButtonClass *msrbto = (activeMultSegRampButtonClass *) userarg;
   }
   else {
 
-    msrbto->connection.setPvDisconnected( (void *) msrbto->colorPvConnection );
+    msrbto->connection.setPvDisconnected( (void *) msrbto->colorPvId );
     msrbto->active = 0;
     msrbto->bgColor.setDisconnected();
     msrbto->needDraw = 1;
@@ -2502,7 +2502,7 @@ int stat, index, invisColor;
 
   if ( nc ) {
 
-    connection.setPvConnected( (void *) destPvConnection );
+    connection.setPvConnected( (void *) destPvId );
     destType = (int) destPvId->get_type().type;
 
     if ( limitsFromDb || efScaleMin.isNull() ) {
@@ -2545,7 +2545,7 @@ int stat, index, invisColor;
 
     if ( nsc[i] ) {
 
-      connection.setPvConnected( (void *) finalPvConnection[i] );
+      connection.setPvConnected( (void *) finalPvId[i] );
       finalType[i] = (int) finalPvId[i]->get_type().type;
 
       if ( initialFinalValueConnection[i] ) {
@@ -2566,7 +2566,7 @@ int stat, index, invisColor;
 
     if ( nrrc[i] ) {
 
-      connection.setPvConnected( (void *) rampRatePvConnection[i] );
+      connection.setPvConnected( (void *) rampRatePvId[i] );
       rampRateType[i] = (int) rampRatePvId[i]->get_type().type;
 
       if ( initialRampRateConnection[i] ) {
@@ -2589,7 +2589,7 @@ int stat, index, invisColor;
 
   if ( nrsc ) {
 
-    connection.setPvConnected( (void *) rampStatePvConnection );
+    connection.setPvConnected( (void *) rampStatePvId );
     rampStateType = (int) rampStatePvId->get_type().type;
 
     if ( initialRampStateValueConnection ) {
@@ -2617,7 +2617,7 @@ int stat, index, invisColor;
     minVis = atof( minVisString );
     maxVis = atof( maxVisString );
 
-    connection.setPvConnected( (void *) visPvConnection );
+    connection.setPvConnected( (void *) visPvId );
 
     visValue = curVisValue = visPvId->get_double();
 
@@ -2696,7 +2696,7 @@ int stat, index, invisColor;
 
     }
 
-    connection.setPvConnected( (void *) colorPvConnection );
+    connection.setPvConnected( (void *) colorPvId );
 
     if ( connection.pvsConnected() ) {
       bgColor.setConnected();
