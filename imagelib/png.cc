@@ -18,6 +18,7 @@
 
 #define __png_cc 1
 
+#include <zlib.h>
 #include "myPng.h"
 #include "app_pkg.h"
 #include "act_win.h"
