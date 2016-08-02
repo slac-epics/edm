@@ -7,6 +7,7 @@ ifdef TOP
  DIRS += lib 
  DIRS += epicsPv
  DIRS += logPv
+ DIRS += proxyPv
  DIRS += calcPv
  DIRS += locPv
  DIRS += baselib 

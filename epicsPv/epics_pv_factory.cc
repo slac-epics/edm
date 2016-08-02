@@ -318,6 +318,7 @@ void EPICS_ProcessVariable::ca_value_callback(struct event_handler_args args)
 
     if (args.status == ECA_NORMAL  &&  args.dbr)
     {
+		// TODO: Is CA_V414 crashing in this call?
         me->value->read_value(args.dbr);
     }
 
@@ -437,7 +438,7 @@ bool EPICS_ProcessVariable::have_write_access() const
 bool EPICS_ProcessVariable::put(double value)
 {
 
-    if ( isReadOnly() ) {
+    if ( !have_write_access() ) {
       return false;
     }
 
@@ -454,7 +455,7 @@ bool EPICS_ProcessVariable::put(double value)
 bool EPICS_ProcessVariable::put(int value)
 {
 
-    if ( isReadOnly() ) {
+    if ( !have_write_access() ) {
       return false;
     }
 
@@ -471,7 +472,7 @@ bool EPICS_ProcessVariable::put(int value)
 bool EPICS_ProcessVariable::put(const char *value)
 {
 
-    if ( isReadOnly() ) {
+    if ( !have_write_access() ) {
       return false;
     }
 
@@ -487,7 +488,7 @@ bool EPICS_ProcessVariable::put(const char *value)
 bool EPICS_ProcessVariable::putText(char *value)
 {
 
-    if ( isReadOnly() ) {
+    if ( !have_write_access() ) {
       return false;
     }
 
@@ -503,7 +504,7 @@ bool EPICS_ProcessVariable::putText(char *value)
 bool EPICS_ProcessVariable::putArrayText(char *value)
 {
 
-    if ( isReadOnly() ) {
+    if ( !have_write_access() ) {
       return false;
     }
 
@@ -519,7 +520,7 @@ bool EPICS_ProcessVariable::putArrayText(char *value)
 bool EPICS_ProcessVariable::putAck(short value)
 {
 
-    if ( isReadOnly() ) {
+    if ( !have_write_access() ) {
       return false;
     }
 
@@ -1117,7 +1118,10 @@ void PVValueChar::read_value(const void *buf)
     status = val->status;
     severity = val->severity;
     size_t copy = epv->get_dimension();
+	// TODO: Need actual number of used elements to optimize this
     memcpy(value, &val->value, copy);
+	// This value[epv->get_dimension()]=0 looks bad but was allocated
+	// as epv->get_dimension()+1
     value[copy] = '\0';
     len = copy;
     //    fprintf( stderr,"PVValueChar(%s)::read_value '%s'\n",
