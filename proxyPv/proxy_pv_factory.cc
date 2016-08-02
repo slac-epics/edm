@@ -1,29 +1,23 @@
-// log_pv_factory.cc
+// proxy_pv_factory.cc
+//
+// kasemir@lanl.gov, sinclairjw@ornl.gov
 
 #include<stdio.h>
 #include<stdlib.h>
 #include<float.h>
 #include<ctype.h>
-#include <string.h>
-#include <errno.h>
 
 #include<alarm.h>
 #include<cvtFast.h>
-#include"log_pv_factory.h"
+#include"proxy_pv_factory.h"
 #include "epicsVersion.h"
-#include "environment.str"
 
-int sys_get_datetime_string (
-  int string_size,
-  char *string
-);
+static PV_Factory *proxy_pv_factory = new PROXY_PV_Factory();
 
-static PV_Factory *log_pv_factory = new LOG_PV_Factory();
+//#define DEBUG_PROXY
 
-//#define DEBUG_LOG
-
-#if EPICS_VERSION == 3
-  #if EPICS_REVISION < 14
+#if PROXY_VERSION == 3
+  #if PROXY_REVISION < 14
   /* 1/1/90 20 yr (5 leap) of seconds */
   static const unsigned epochSecPast1970 = 7305*86400;
   #else
@@ -33,85 +27,11 @@ static PV_Factory *log_pv_factory = new LOG_PV_Factory();
   static const unsigned epochSecPast1970 = 0;
 #endif
 
-// --------------------- LOG_PV_Factory -------------------------------
+// --------------------- PROXY_PV_Factory -------------------------------
 
 static int g_context_created = 0;
 
-static FILE *g_pipe = NULL;
-static int g_pipe_disabled = 0;
-static char user[31+1], host[31+1], sshCon[131+1];
-
-static void writePipe(
-  char *text
-) {
-
-char *str;
-int err;
-
-  if ( g_pipe_disabled ) return;
-
-  if ( !g_pipe ) {
-
-    str =  getenv( "SSH_CONNECTION" );
-    if ( str ) {
-      strncpy( sshCon, " ssh=\"", 131 );
-      Strncat( sshCon, str, 131 );
-      Strncat( sshCon, "\" ", 131 );
-      sshCon[131] = 0;
-    }
-    else {
-      strcpy( sshCon, " " );
-    }
-
-    str = getenv( "USER" );
-    if ( str ) {
-      strncpy( user, str, 31 );
-      user[31] = 0;
-    }
-    else {
-      strcpy( user, "UnknownUser" );
-    }
-
-    str = getenv( "HOSTNAME" );
-    if ( str ) {
-      strncpy( host, str, 31 );
-      host[31] = 0;
-    }
-    else {
-      strcpy( host, "UnknownHost" );
-    }
-
-    str = getenv( environment_str17 );
-    if ( !str ) {
-      g_pipe_disabled = 1;
-      return;
-    }
-
-    g_pipe = popen( str, "w" );
-
-    if ( !g_pipe ) {  
-      g_pipe_disabled = 1;
-      return;
-    }
-
-  }
-
-  err = ferror( g_pipe );
-  if ( err ) {
-    pclose( g_pipe );
-    g_pipe = NULL;
-    g_pipe_disabled = 0;
-  }
-  else {
-    fprintf( g_pipe, "user=\"%s\" host=\"%s\"%s",
-     user, host, sshCon );
-    fprintf( g_pipe, "%s\n", text );
-    fflush( g_pipe );
-  }
-
-}
-
-// All LOG_PV_Factories share the same static PV pool,
+// All PROXY_PV_Factories share the same static PV pool,
 // a hashtable by PV name
 //enum { HashTableSize=43 };
 enum { HashTableSize=5003 };
@@ -119,7 +39,7 @@ class HashTableItem
 {
 public:
     const char *name;
-    LOG_ProcessVariable *pv;
+    PROXY_ProcessVariable *pv;
     DLNode node;
 };
 
@@ -135,33 +55,33 @@ typedef Hashtable<HashTableItem,
                   HashTableSize> PVHash;
 static PVHash processvariables;
 
-LOG_PV_Factory::LOG_PV_Factory()
+PROXY_PV_Factory::PROXY_PV_Factory()
 {
 
   // explicitly set ca single threaded mode
   if ( !g_context_created ) {
     g_context_created = 1;
-#if (EPICS_VERSION>3)||((EPICS_VERSION==3)&&(EPICS_REVISION>=14))
+#if (PROXY_VERSION>3)||((PROXY_VERSION==3)&&(PROXY_REVISION>=14))
     ca_context_create( ca_disable_preemptive_callback );
 #endif
   }
 
-#ifdef DEBUG_LOG
-  fprintf( stderr,"LOG_PV_Factory created\n");
+#ifdef DEBUG_PROXY
+  fprintf( stderr,"PROXY_PV_Factory created\n");
 #endif
 
 }
 
-LOG_PV_Factory::~LOG_PV_Factory()
+PROXY_PV_Factory::~PROXY_PV_Factory()
 {
-#ifdef DEBUG_LOG
-    fprintf( stderr,"LOG_PV_Factory deleted\n");
+#ifdef DEBUG_PROXY
+    fprintf( stderr,"PROXY_PV_Factory deleted\n");
 #endif
 }
 
-ProcessVariable *LOG_PV_Factory::create(const char *PV_name)
+ProcessVariable *PROXY_PV_Factory::create(const char *PV_name)
 {
-    LOG_ProcessVariable *pv;
+    PROXY_ProcessVariable *pv;
     HashTableItem item;
     item.name = PV_name;
     PVHash::iterator entry = processvariables.find(&item);
@@ -174,7 +94,7 @@ ProcessVariable *LOG_PV_Factory::create(const char *PV_name)
     else
     {
         HashTableItem *n_item = new HashTableItem();
-        pv = new LOG_ProcessVariable(PV_name);
+        pv = new PROXY_ProcessVariable(PV_name);
         n_item->name = pv->get_name();
         n_item->pv = pv;
         processvariables.insert(n_item);
@@ -182,7 +102,7 @@ ProcessVariable *LOG_PV_Factory::create(const char *PV_name)
     return pv;
 }
 
-void LOG_PV_Factory::forget(LOG_ProcessVariable *pv)
+void PROXY_PV_Factory::forget(PROXY_ProcessVariable *pv)
 {
     HashTableItem item;
     item.name = pv->get_name();
@@ -194,22 +114,34 @@ void LOG_PV_Factory::forget(LOG_ProcessVariable *pv)
         delete p_item;
         return;
     }
-    fprintf(stderr,"LOG_PV_Factory: internal error in 'forget', PV %s\n",
+    fprintf(stderr,"PROXY_PV_Factory: internal error in 'forget', PV %s\n",
             pv->get_name());
 }
 
-// ---------------------- LOG_ProcessVariable -------------------------
+// ---------------------- PROXY_ProcessVariable -------------------------
 
-LOG_ProcessVariable::LOG_ProcessVariable(const char *_name)
+PROXY_ProcessVariable::PROXY_ProcessVariable(const char *_name)
         : ProcessVariable(_name)
 {
     is_connected = false;
+    proxy_is_connected = false;
     have_ctrlinfo = false;
+    proxy_have_ctrlinfo = false;
     read_access = write_access = false;
     pv_chid = 0;
+    proxy_pv_chid = 0;
     pv_value_evid = 0;
+    proxy_pv_value_evid = 0;
+    proxy_name = NULL;
     value = 0;
-    //fprintf( stderr,"LOG_ProcessVariable %s created\n", get_name());
+    proxy_value = 0;
+
+    int len = strlen( get_name() ) + strlen( "_PROXY" ) + 1;
+    proxy_name = new char[len];
+    strcpy( proxy_name, get_name() );
+    strcat( proxy_name, "_PROXY" );
+
+    //fprintf( stderr,"PROXY_ProcessVariable %s created\n", get_name());
     int stat = ca_search_and_connect(get_name(), &pv_chid,
                                      ca_connect_callback, this);
     if (stat != ECA_NORMAL)
@@ -217,18 +149,31 @@ LOG_ProcessVariable::LOG_ProcessVariable(const char *_name)
         fprintf(stderr, "CA search & connect error('%s'): %s\n",
                 get_name(), ca_message(stat));
     }
+    stat = ca_search_and_connect(get_proxy_name(), &proxy_pv_chid,
+                                     ca_proxy_connect_callback, this);
 }
 
-LOG_ProcessVariable::~LOG_ProcessVariable()
+PROXY_ProcessVariable::~PROXY_ProcessVariable()
 {
-    LOG_PV_Factory::forget(this);
+    PROXY_PV_Factory::forget(this);
     if (pv_chid)
         ca_clear_channel(pv_chid);
-    //fprintf( stderr,"LOG_ProcessVariable %s deleted\n", get_name());
+    if (proxy_pv_chid)
+        ca_clear_channel(proxy_pv_chid);
+    //fprintf( stderr,"PROXY_ProcessVariable %s deleted\n", get_name());
     delete value;
+    delete proxy_value;
+    if ( proxy_name ) {
+      free(proxy_name);
+      proxy_name = NULL;
+    }
 }
 
-void LOG_ProcessVariable::processExistingPv ( void ) {
+const char *PROXY_ProcessVariable::get_proxy_name() const {
+  return proxy_name;
+}
+
+void PROXY_ProcessVariable::processExistingPv ( void ) {
 
     // This function is not currently in use
 
@@ -245,10 +190,10 @@ void LOG_ProcessVariable::processExistingPv ( void ) {
 
 }
 
-void LOG_ProcessVariable::ca_connect_callback(
+void PROXY_ProcessVariable::ca_connect_callback(
     struct connection_handler_args arg)
 {
-    LOG_ProcessVariable *me = (LOG_ProcessVariable *)ca_puser(arg.chid);
+    PROXY_ProcessVariable *me = (PROXY_ProcessVariable *)ca_puser(arg.chid);
     if (arg.op == CA_OP_CONN_UP)
     {
 
@@ -306,10 +251,69 @@ void LOG_ProcessVariable::ca_connect_callback(
     }
 }
 
-void LOG_ProcessVariable::ca_access_security_callback(
+void PROXY_ProcessVariable::ca_proxy_connect_callback(
+    struct connection_handler_args arg)
+{
+    PROXY_ProcessVariable *me = (PROXY_ProcessVariable *)ca_puser(arg.chid);
+    if (arg.op == CA_OP_CONN_UP)
+    {
+
+        // Check type of PVValue *value
+        if (me->proxy_value && me->proxy_value->get_DBR() != ca_field_type(arg.chid))
+        {
+            delete me->proxy_value;
+            me->proxy_value = 0;
+        }
+        if (!me->proxy_value)
+        {
+            switch (ca_field_type(arg.chid))
+            {   // TODO: Implement more types?
+                case DBF_STRING:
+                    me->proxy_value = new PVValueString(me);
+                    break;
+                case DBF_ENUM:
+                    me->proxy_value = new PVValueEnum(me);
+                    break;
+                case DBF_CHAR:
+                    me->proxy_value = new PVValueChar(me);
+                    break;
+                case DBF_INT:
+                    me->proxy_value = new PVValueShort(me);
+                    break;
+                case DBF_LONG:
+                    me->proxy_value = new PVValueInt(me);
+                    break;
+                case DBF_FLOAT:
+                    me->proxy_value = new PVValueDouble(me,"float");
+                    break;
+                case DBF_DOUBLE:
+                default: // fallback: request as double
+                    me->proxy_value = new PVValueDouble(me);
+            }
+        }
+        // CA quirk: DBR_CTRL doesn't work with arrays,
+        // so get only one element:
+        int stat = ca_array_get_callback(me->proxy_value->get_DBR()+DBR_CTRL_STRING,
+                                         1u, me->proxy_pv_chid,
+                                         ca_proxy_ctrlinfo_callback, me);
+        if (stat != ECA_NORMAL)
+            fprintf(stderr, "CA get control info error('%s'): %s\n",
+                    me->get_proxy_name(), ca_message(stat));
+        me->proxy_is_connected = true;
+        // status_callback only after ctrlinfo arrives
+    }
+    else
+    {
+        me->proxy_is_connected = false;
+        me->proxy_have_ctrlinfo = false;
+    }
+
+}
+
+void PROXY_ProcessVariable::ca_access_security_callback(
     struct access_rights_handler_args arg)
 {
-    LOG_ProcessVariable *me = (LOG_ProcessVariable *)ca_puser(arg.chid);
+    PROXY_ProcessVariable *me = (PROXY_ProcessVariable *)ca_puser(arg.chid);
 
     if ( arg.ar.read_access ) {
       me->read_access = true;
@@ -325,14 +329,19 @@ void LOG_ProcessVariable::ca_access_security_callback(
       me->write_access = false;
     }
 
+    //printf( "PROXY_ProcessVariable::ca_access_security_callback\n" );
+    //printf( "me->read_access = %-d\n", (int) me->read_access );
+    //printf( "me->write_access = %-d\n", (int) me->write_access );
+    //printf( "\n" );
+
     me->do_access_security_callbacks(); // tell widgets about change
 
 }
 
-void LOG_ProcessVariable::ca_ctrlinfo_callback(
+void PROXY_ProcessVariable::ca_ctrlinfo_callback(
     struct event_handler_args args)
 {
-    LOG_ProcessVariable *me = (LOG_ProcessVariable *)args.usr;
+    PROXY_ProcessVariable *me = (PROXY_ProcessVariable *)args.usr;
 
     // Sometimes "get callback" functions get called with
     // args.status set to ECA_DISCONN and args.dbr set to NULL.
@@ -356,12 +365,12 @@ void LOG_ProcessVariable::ca_ctrlinfo_callback(
             fprintf(stderr, "CA add event error('%s'): %s\n",
                     me->get_name(), ca_message(stat));
 
-        stat = ca_replace_access_rights_event(me->pv_chid,
-                          ca_access_security_callback);
+        // stat = ca_replace_access_rights_event(me->pv_chid,
+        //                  ca_access_security_callback);
 
-        if (stat != ECA_NORMAL)
-            fprintf(stderr, "CA replace access rights event error('%s'): %s\n",
-                    me->get_name(), ca_message(stat));
+        //if (stat != ECA_NORMAL)
+        //    fprintf(stderr, "CA replace access rights event error('%s'): %s\n",
+        //            me->get_name(), ca_message(stat));
 
     }
     else
@@ -370,18 +379,64 @@ void LOG_ProcessVariable::ca_ctrlinfo_callback(
             me->have_ctrlinfo = true;
             me->do_conn_state_callbacks();  // tell widgets we connected
 	                                    // & got info
+            //me->do_access_security_callbacks();
+	}
+    }
+}
+
+void PROXY_ProcessVariable::ca_proxy_ctrlinfo_callback(
+    struct event_handler_args args)
+{
+    PROXY_ProcessVariable *me = (PROXY_ProcessVariable *)args.usr;
+
+    // Sometimes "get callback" functions get called with
+    // args.status set to ECA_DISCONN and args.dbr set to NULL.
+    // If so, return
+    if ( !args.dbr ) return;
+
+    if (!me->proxy_pv_value_evid)
+    {
+        int stat = ca_add_masked_array_event(me->proxy_value->get_DBR()+
+                                             DBR_TIME_STRING,
+                                             me->get_dimension(),
+                                             me->proxy_pv_chid,
+                                             ca_proxy_value_callback,
+                                             (void *)me,
+                                             (float) 0.0, (float) 0.0,
+                                             (float) 0.0,
+                                             &me->proxy_pv_value_evid,
+                                             DBE_VALUE|DBE_ALARM);
+        if (stat != ECA_NORMAL)
+            fprintf(stderr, "CA add event error('%s'): %s\n",
+                    me->get_proxy_name(), ca_message(stat));
+
+        stat = ca_replace_access_rights_event(me->proxy_pv_chid,
+                         ca_access_security_callback);
+
+        if (stat != ECA_NORMAL)
+            fprintf(stderr, "CA replace access rights event error('%s'): %s\n",
+                    me->get_proxy_name(), ca_message(stat));
+
+    }
+    else
+    {
+        if ( !me->proxy_have_ctrlinfo ) {
+            me->proxy_have_ctrlinfo = true;
+
+            //printf( "\nme->do_access_security_callbacks();\n\n" );
+
             me->do_access_security_callbacks();
 	}
     }
 }
 
-void LOG_ProcessVariable::ca_ctrlinfo_refresh_callback(
+void PROXY_ProcessVariable::ca_ctrlinfo_refresh_callback(
     struct event_handler_args args)
 {
 
     // This function is not currently in use
 
-    LOG_ProcessVariable *me = (LOG_ProcessVariable *)args.usr;
+    PROXY_ProcessVariable *me = (PROXY_ProcessVariable *)args.usr;
 
     // Sometimes "get callback" functions get called with
     // args.status set to ECA_DISCONN and args.dbr set to NULL.
@@ -392,9 +447,9 @@ void LOG_ProcessVariable::ca_ctrlinfo_refresh_callback(
 
 }
 
-void LOG_ProcessVariable::ca_value_callback(struct event_handler_args args)
+void PROXY_ProcessVariable::ca_value_callback(struct event_handler_args args)
 {
-    LOG_ProcessVariable *me = (LOG_ProcessVariable *)args.usr;
+    PROXY_ProcessVariable *me = (PROXY_ProcessVariable *)args.usr;
 
     if (args.status == ECA_NORMAL  &&  args.dbr)
     {
@@ -415,109 +470,127 @@ void LOG_ProcessVariable::ca_value_callback(struct event_handler_args args)
                 me->get_name(), ca_message(args.status));
 }
 
-bool LOG_ProcessVariable::is_valid() const
-{   return is_connected && have_ctrlinfo; }
-
-const ProcessVariable::Type &LOG_ProcessVariable::get_type() const
-{   return value->get_type(); }   
-
-const ProcessVariable::specificType &LOG_ProcessVariable::get_specific_type() const
-{   return value->get_specific_type(); }   
-
-int LOG_ProcessVariable::get_int() const
-{   return value->get_int(); }
-
-double LOG_ProcessVariable::get_double() const
-{   return value->get_double(); }
-
-size_t LOG_ProcessVariable::get_string(char *strbuf, size_t buflen) const
-{   return value->get_string(strbuf, buflen); }
-
-size_t LOG_ProcessVariable::get_dimension() const
-{   return ca_element_count(pv_chid); }
-
-const char *LOG_ProcessVariable::get_char_array() const
-{   return value->get_char_array(); }
-
-const short *LOG_ProcessVariable::get_short_array() const
-{   return value->get_short_array(); }
-
-const int *LOG_ProcessVariable::get_int_array() const
-{   return value->get_int_array(); }
-
-const double * LOG_ProcessVariable::get_double_array() const
-{   return value->get_double_array(); }
-
-size_t LOG_ProcessVariable::get_enum_count() const
-{   return value->get_enum_count(); }
-
-const char *LOG_ProcessVariable::get_enum(size_t i) const
-{   return value->get_enum(i); }
-
-time_t LOG_ProcessVariable::get_time_t() const
-{   return value->time; }
-
-unsigned long LOG_ProcessVariable::get_nano() const
-{   return value->nano; }
-
-short LOG_ProcessVariable::get_status() const
-{   return value->status; }
-
-short LOG_ProcessVariable::get_severity() const
-{   return value->severity; }
-
-short LOG_ProcessVariable::get_precision() const
-{   return value->precision; }
-
-const char *LOG_ProcessVariable::get_units() const
-{   return value->units; }
-
-double LOG_ProcessVariable::get_upper_disp_limit() const
-{   return value->upper_disp_limit; }
-
-double LOG_ProcessVariable::get_lower_disp_limit() const
-{   return value->lower_disp_limit; }
-
-double LOG_ProcessVariable::get_upper_alarm_limit() const
-{   return value->upper_alarm_limit; }
-
-double LOG_ProcessVariable::get_upper_warning_limit() const
-{   return value->upper_warning_limit; }
-
-double LOG_ProcessVariable::get_lower_warning_limit() const
-{   return value->lower_warning_limit; }
-
-double LOG_ProcessVariable::get_lower_alarm_limit() const
-{   return value->lower_alarm_limit; }
-
-double LOG_ProcessVariable::get_upper_ctrl_limit() const
-{   return value->upper_ctrl_limit; }
-
-double LOG_ProcessVariable::get_lower_ctrl_limit() const
-{   return value->lower_ctrl_limit; }
-
-bool LOG_ProcessVariable::have_read_access() const
+void PROXY_ProcessVariable::ca_proxy_value_callback(struct event_handler_args args)
 {
+    PROXY_ProcessVariable *me = (PROXY_ProcessVariable *)args.usr;
 
-    return ca_read_access(pv_chid) != 0;
+    if ( !me->proxy_have_ctrlinfo ) {
+      me->proxy_have_ctrlinfo = true;
+    }
 
 }
 
-bool LOG_ProcessVariable::have_write_access() const
+bool PROXY_ProcessVariable::is_valid() const
+{   return is_connected && have_ctrlinfo; }
+
+const ProcessVariable::Type &PROXY_ProcessVariable::get_type() const
+{   return value->get_type(); }   
+
+const ProcessVariable::specificType &PROXY_ProcessVariable::get_specific_type() const
+{   return value->get_specific_type(); }   
+
+int PROXY_ProcessVariable::get_int() const
+{   return value->get_int(); }
+
+double PROXY_ProcessVariable::get_double() const
+{   return value->get_double(); }
+
+size_t PROXY_ProcessVariable::get_string(char *strbuf, size_t buflen) const
+{   return value->get_string(strbuf, buflen); }
+
+size_t PROXY_ProcessVariable::get_dimension() const
+{   return ca_element_count(pv_chid); }
+
+const char *PROXY_ProcessVariable::get_char_array() const
+{   return value->get_char_array(); }
+
+const short *PROXY_ProcessVariable::get_short_array() const
+{   return value->get_short_array(); }
+
+const int *PROXY_ProcessVariable::get_int_array() const
+{   return value->get_int_array(); }
+
+const double * PROXY_ProcessVariable::get_double_array() const
+{   return value->get_double_array(); }
+
+size_t PROXY_ProcessVariable::get_enum_count() const
+{   return value->get_enum_count(); }
+
+const char *PROXY_ProcessVariable::get_enum(size_t i) const
+{   return value->get_enum(i); }
+
+time_t PROXY_ProcessVariable::get_time_t() const
+{   return value->time; }
+
+unsigned long PROXY_ProcessVariable::get_nano() const
+{   return value->nano; }
+
+short PROXY_ProcessVariable::get_status() const
+{   return value->status; }
+
+short PROXY_ProcessVariable::get_severity() const
+{   return value->severity; }
+
+short PROXY_ProcessVariable::get_precision() const
+{   return value->precision; }
+
+const char *PROXY_ProcessVariable::get_units() const
+{   return value->units; }
+
+double PROXY_ProcessVariable::get_upper_disp_limit() const
+{   return value->upper_disp_limit; }
+
+double PROXY_ProcessVariable::get_lower_disp_limit() const
+{   return value->lower_disp_limit; }
+
+double PROXY_ProcessVariable::get_upper_alarm_limit() const
+{   return value->upper_alarm_limit; }
+
+double PROXY_ProcessVariable::get_upper_warning_limit() const
+{   return value->upper_warning_limit; }
+
+double PROXY_ProcessVariable::get_lower_warning_limit() const
+{   return value->lower_warning_limit; }
+
+double PROXY_ProcessVariable::get_lower_alarm_limit() const
+{   return value->lower_alarm_limit; }
+
+double PROXY_ProcessVariable::get_upper_ctrl_limit() const
+{   return value->upper_ctrl_limit; }
+
+double PROXY_ProcessVariable::get_lower_ctrl_limit() const
+{   return value->lower_ctrl_limit; }
+
+bool PROXY_ProcessVariable::have_read_access() const
+{
+
+    if ( proxy_is_connected ) {
+      return ca_read_access(proxy_pv_chid) != 0;
+    }
+    else {
+      return 0;
+    }
+
+}
+
+bool PROXY_ProcessVariable::have_write_access() const
 {
 
     if ( isReadOnly() ) {
       return 0;
     }
 
-    return ca_write_access(pv_chid) != 0;
+    if ( proxy_is_connected ) {
+      return ca_write_access(proxy_pv_chid) != 0;
+    }
+    else {
+      return 0;
+    }
 
 }
 
-bool LOG_ProcessVariable::put(double value)
+bool PROXY_ProcessVariable::put(double value)
 {
-
-char str[1023+1];
 
     if ( !have_write_access() ) {
       return false;
@@ -527,43 +600,14 @@ char str[1023+1];
     {
         dbr_double_t v = value;
         ca_put(DBR_DOUBLE, pv_chid, &v);
-        snprintf( str, 1023, "name=\"%s\" old=\"%-f\" new=\"%-f\"",
-         get_name(), get_double(), value );
-	str[1023] = 0;
-	writePipe( str );
         return true;
     }
     return false;
 
 }
 
-bool LOG_ProcessVariable::put(const char *dsp, double value)
+bool PROXY_ProcessVariable::put(int value)
 {
-
-char str[1023+1];
-
-    if ( !have_write_access() ) {
-      return false;
-    }
-
-    if (is_valid())
-    {
-        dbr_double_t v = value;
-        ca_put(DBR_DOUBLE, pv_chid, &v);
-        snprintf( str, 1023, "dsp=\"%s\" name=\"%s\" old=\"%-f\" new=\"%-f\"",
-         dsp, get_name(), get_double(), value );
-	str[1023] = 0;
-	writePipe( str );
-        return true;
-    }
-    return false;
-
-}
-
-bool LOG_ProcessVariable::put(int value)
-{
-
-char str[1023+1];
 
     if ( !have_write_access() ) {
       return false;
@@ -573,43 +617,14 @@ char str[1023+1];
     {
         dbr_long_t v = value;
         ca_put(DBR_LONG, pv_chid, &v);
-        snprintf( str, 1023, "name=\"%s\" old=\"%-d\" new=\"%-d\"",
-         get_name(), get_int(), value );
-	str[1023] = 0;
-	writePipe( str );
         return true;
     }
     return false;
 
 }
     
-bool LOG_ProcessVariable::put(const char *dsp, int value)
+bool PROXY_ProcessVariable::put(const char *value)
 {
-
-char str[1023+1];
-
-    if ( !have_write_access() ) {
-      return false;
-    }
-
-    if (is_valid())
-    {
-        dbr_long_t v = value;
-        ca_put(DBR_LONG, pv_chid, &v);
-        snprintf( str, 1023, "dsp=\"%s\" name=\"%s\" old=\"%-d\" new=\"%-d\"",
-         dsp, get_name(), get_int(), value );
-	str[1023] = 0;
-	writePipe( str );
-        return true;
-    }
-    return false;
-
-}
-
-bool LOG_ProcessVariable::put(const char *value)
-{
-
-char str[1023+1], vstr[63+1];
 
     if ( !have_write_access() ) {
       return false;
@@ -618,46 +633,14 @@ char str[1023+1], vstr[63+1];
     if (is_valid())
     {
         ca_bput(pv_chid, value);
-        get_string( vstr, 63 );
-        vstr[63] = 0;
-        snprintf( str, 1023, "name=\"%s\" old=\"%s\" new=\"%s\"",
-         get_name(), vstr, value );
-	str[1023] = 0;
-	writePipe( str );
         return true;
     }
     return false;
 
 }
 
-bool LOG_ProcessVariable::put(const char *dsp, const char *value)
+bool PROXY_ProcessVariable::putText(char *value)
 {
-
-char str[1023+1], vstr[63+1];
-
-    if ( !have_write_access() ) {
-      return false;
-    }
-
-    if (is_valid())
-    {
-        ca_bput(pv_chid, value);
-        get_string( vstr, 63 );
-        vstr[63] = 0;
-        snprintf( str, 1023, "dsp=\"%s\" name=\"%s\" old=\"%s\" new=\"%s\"",
-         dsp, get_name(), vstr, value );
-	str[1023] = 0;
-	writePipe( str );
-        return true;
-    }
-    return false;
-
-}
-
-bool LOG_ProcessVariable::putText(char *value)
-{
-
-char str[1023+1], vstr[63+1];
 
     if ( !have_write_access() ) {
       return false;
@@ -666,43 +649,13 @@ char str[1023+1], vstr[63+1];
     if (is_valid())
     {
         ca_put( DBR_STRING, pv_chid, value);
-        get_string( vstr, 63 );
-        vstr[63] = 0;
-        snprintf( str, 1023, "name=\"%s\" old=\"%s\" new=\"%s\"",
-         get_name(), vstr, value );
-	str[1023] = 0;
-	writePipe( str );
         return true;
     }
     return false;
 
 }
 
-bool LOG_ProcessVariable::putText(const char *dsp, char *value)
-{
-
-char str[1023+1], vstr[63+1];
-
-    if ( !have_write_access() ) {
-      return false;
-    }
-
-    if (is_valid())
-    {
-        ca_put( DBR_STRING, pv_chid, value);
-        get_string( vstr, 63 );
-        vstr[63] = 0;
-        snprintf( str, 1023, "dsp=\"%s\" name=\"%s\" old=\"%s\" new=\"%s\"",
-         dsp, get_name(), vstr, value );
-	str[1023] = 0;
-	writePipe( str );
-        return true;
-    }
-    return false;
-
-}
-
-bool LOG_ProcessVariable::putArrayText(char *value)
+bool PROXY_ProcessVariable::putArrayText(char *value)
 {
 
     if ( !have_write_access() ) {
@@ -718,10 +671,8 @@ bool LOG_ProcessVariable::putArrayText(char *value)
 
 }
 
-bool LOG_ProcessVariable::putAck(short value)
+bool PROXY_ProcessVariable::putAck(short value)
 {
-
-char str[1023+1];
 
     if ( !have_write_access() ) {
       return false;
@@ -730,32 +681,6 @@ char str[1023+1];
     if (is_valid())
     {
         ca_put( DBR_PUT_ACKS, pv_chid, &value );
-        snprintf( str, 1023, "name=\"%s\" DBR_PUT_ACKS=\"%-d\"",
-         get_name(), (int) value );
-	str[1023] = 0;
-	writePipe( str );
-        return true;
-    }
-    return false;
-
-}
-
-bool LOG_ProcessVariable::putAck(const char *dsp, short value)
-{
-
-char str[1023+1];
-
-    if ( !have_write_access() ) {
-      return false;
-    }
-
-    if (is_valid())
-    {
-        ca_put( DBR_PUT_ACKS, pv_chid, &value );
-        snprintf( str, 1023, "dsp=\"%s\" name=\"%s\" DBR_PUT_ACKS=\"%-d\"",
-         dsp, get_name(), (int) value );
-	str[1023] = 0;
-	writePipe( str );
         return true;
     }
     return false;
@@ -763,7 +688,7 @@ char str[1023+1];
 }
 
 // ---------------------- PVValue ---------------------------------
-PVValue::PVValue(LOG_ProcessVariable *epv)
+PVValue::PVValue(PROXY_ProcessVariable *epv)
 {
     this->epv = epv;
     time = 0;
@@ -838,7 +763,7 @@ static ProcessVariable::specificType i_type =
 static ProcessVariable::specificType s_type =
 { ProcessVariable::specificType::shrt, 16 };
 
-PVValueInt::PVValueInt(LOG_ProcessVariable *epv)
+PVValueInt::PVValueInt(PROXY_ProcessVariable *epv)
         : PVValue(epv)
 {
     unsigned int i;
@@ -847,7 +772,7 @@ PVValueInt::PVValueInt(LOG_ProcessVariable *epv)
     specific_type = i_type;
 }
 
-PVValueInt::PVValueInt(LOG_ProcessVariable *epv, const char* typeInfo)
+PVValueInt::PVValueInt(PROXY_ProcessVariable *epv, const char* typeInfo)
         : PVValue(epv)
 {
     unsigned int i;
@@ -915,7 +840,6 @@ void PVValueInt::read_ctrlinfo(const void *buf)
     upper_ctrl_limit = val->upper_ctrl_limit;
     lower_ctrl_limit = val->lower_ctrl_limit;
     *value = val->value;
-
 }
 
 void PVValueInt::read_value(const void *buf)
@@ -926,6 +850,86 @@ void PVValueInt::read_value(const void *buf)
     status = val->status;
     severity = val->severity;
     memcpy(value, &val->value, sizeof(int) * epv->get_dimension());
+}
+
+// ---------------------- PVValueShort ---------------------------
+
+static ProcessVariable::specificType shrt_type =
+{ ProcessVariable::specificType::shrt, 16 };
+
+PVValueShort::PVValueShort(PROXY_ProcessVariable *epv)
+        : PVValue(epv)
+{
+    unsigned int i;
+    value = new short[epv->get_dimension()];
+    for ( i=0; i<epv->get_dimension(); i++ ) value[i] = 0;
+    specific_type = shrt_type;
+}
+
+PVValueShort::~PVValueShort()
+{
+    delete [] value;
+}
+
+const ProcessVariable::Type &PVValueShort::get_type() const
+{   return integer_type; }
+
+short PVValueShort::get_DBR() const
+{   return DBR_SHORT; }
+
+int PVValueShort::get_int() const
+{   return (int) value[0]; }
+
+double PVValueShort::get_double() const
+{   return (double) value[0]; }
+
+size_t PVValueShort::get_string(char *strbuf, size_t len) const
+{
+    // TODO: Handle arrays?
+    int printed;
+    if (units[0])
+        printed = snprintf(strbuf, len, "%d %s", (int) value[0], units);
+    else
+        printed = snprintf(strbuf, len, "%d", (int) value[0]);
+    // snprintf stops printing at len. But some versions return
+    // full string length even if that would have been > len
+    if (printed > (int)len)
+        return len;
+    if (printed < 0)
+        return 0;
+    return (size_t) printed;
+}
+
+const short * PVValueShort::get_short_array() const
+{   return value; }
+
+void PVValueShort::read_ctrlinfo(const void *buf)
+{
+    const  dbr_ctrl_short *val = (const dbr_ctrl_short *)buf;
+    status = val->status;
+    severity = val->severity;
+    precision = 0;
+    strncpy(units, val->units, MAX_UNITS_SIZE);
+    units[MAX_UNITS_SIZE] = '\0';
+    upper_disp_limit = val->upper_disp_limit;
+    lower_disp_limit = val->lower_disp_limit;
+    upper_alarm_limit = val->upper_alarm_limit; 
+    upper_warning_limit = val->upper_warning_limit;
+    lower_warning_limit = val->lower_warning_limit;
+    lower_alarm_limit = val->lower_alarm_limit;
+    upper_ctrl_limit = val->upper_ctrl_limit;
+    lower_ctrl_limit = val->lower_ctrl_limit;
+    *value = val->value;
+}
+
+void PVValueShort::read_value(const void *buf)
+{
+    const dbr_time_short *val = (const dbr_time_short *)buf;
+    time = val->stamp.secPastEpoch + epochSecPast1970;
+    nano = val->stamp.nsec;
+    status = val->status;
+    severity = val->severity;
+    memcpy(value, &val->value, sizeof(short) * epv->get_dimension());
 }
 
 // ---------------------- PVValueDouble ---------------------------
@@ -939,7 +943,7 @@ static ProcessVariable::specificType d_type =
 static ProcessVariable::specificType f_type =
 { ProcessVariable::specificType::flt, 32 };
 
-PVValueDouble::PVValueDouble(LOG_ProcessVariable *epv)
+PVValueDouble::PVValueDouble(PROXY_ProcessVariable *epv)
         : PVValue(epv)
 {
     unsigned int i;
@@ -948,7 +952,7 @@ PVValueDouble::PVValueDouble(LOG_ProcessVariable *epv)
     specific_type = d_type;
 }
 
-PVValueDouble::PVValueDouble(LOG_ProcessVariable *epv, const char* typeInfo)
+PVValueDouble::PVValueDouble(PROXY_ProcessVariable *epv, const char* typeInfo)
         : PVValue(epv)
 {
     unsigned int i;
@@ -1073,7 +1077,7 @@ static ProcessVariable::Type enum_type =
 static ProcessVariable::specificType e_type =
 { ProcessVariable::specificType::enumerated, 16 };
 
-PVValueEnum::PVValueEnum(LOG_ProcessVariable *epv)
+PVValueEnum::PVValueEnum(PROXY_ProcessVariable *epv)
         : PVValue(epv)
 {
     enums = 0;
@@ -1134,7 +1138,7 @@ static ProcessVariable::Type string_type =
 static ProcessVariable::specificType str_type =
 { ProcessVariable::specificType::text, 0 };
 
-PVValueString::PVValueString(LOG_ProcessVariable *epv)
+PVValueString::PVValueString(PROXY_ProcessVariable *epv)
         : PVValue(epv)
 {
     value[0] = '\0';
@@ -1182,92 +1186,12 @@ void PVValueString::read_value(const void *buf)
     strcpy(value, val->value);
 }
 
-// ---------------------- PVValueShort ---------------------------
-
-static ProcessVariable::specificType shrt_type =
-{ ProcessVariable::specificType::shrt, 16 };
-
-PVValueShort::PVValueShort(LOG_ProcessVariable *epv)
-        : PVValue(epv)
-{
-    unsigned int i;
-    value = new short[epv->get_dimension()];
-    for ( i=0; i<epv->get_dimension(); i++ ) value[i] = 0;
-    specific_type = shrt_type;
-}
-
-PVValueShort::~PVValueShort()
-{
-    delete [] value;
-}
-
-const ProcessVariable::Type &PVValueShort::get_type() const
-{   return integer_type; }
-
-short PVValueShort::get_DBR() const
-{   return DBR_SHORT; }
-
-int PVValueShort::get_int() const
-{   return (int) value[0]; }
-
-double PVValueShort::get_double() const
-{   return (double) value[0]; }
-
-size_t PVValueShort::get_string(char *strbuf, size_t len) const
-{
-    // TODO: Handle arrays?
-    int printed;
-    if (units[0])
-        printed = snprintf(strbuf, len, "%d %s", (int) value[0], units);
-    else
-        printed = snprintf(strbuf, len, "%d", (int) value[0]);
-    // snprintf stops printing at len. But some versions return
-    // full string length even if that would have been > len
-    if (printed > (int)len)
-        return len;
-    if (printed < 0)
-        return 0;
-    return (size_t) printed;
-}
-
-const short * PVValueShort::get_short_array() const
-{   return value; }
-
-void PVValueShort::read_ctrlinfo(const void *buf)
-{
-    const  dbr_ctrl_short *val = (const dbr_ctrl_short *)buf;
-    status = val->status;
-    severity = val->severity;
-    precision = 0;
-    strncpy(units, val->units, MAX_UNITS_SIZE);
-    units[MAX_UNITS_SIZE] = '\0';
-    upper_disp_limit = val->upper_disp_limit;
-    lower_disp_limit = val->lower_disp_limit;
-    upper_alarm_limit = val->upper_alarm_limit; 
-    upper_warning_limit = val->upper_warning_limit;
-    lower_warning_limit = val->lower_warning_limit;
-    lower_alarm_limit = val->lower_alarm_limit;
-    upper_ctrl_limit = val->upper_ctrl_limit;
-    lower_ctrl_limit = val->lower_ctrl_limit;
-    *value = val->value;
-}
-
-void PVValueShort::read_value(const void *buf)
-{
-    const dbr_time_short *val = (const dbr_time_short *)buf;
-    time = val->stamp.secPastEpoch + epochSecPast1970;
-    nano = val->stamp.nsec;
-    status = val->status;
-    severity = val->severity;
-    memcpy(value, &val->value, sizeof(short) * epv->get_dimension());
-}
-
 // ---------------------- PVValueChar -------------------------------
 
 static ProcessVariable::specificType c_type =
 { ProcessVariable::specificType::chr, 8 };
 
-PVValueChar::PVValueChar(LOG_ProcessVariable *epv)
+PVValueChar::PVValueChar(PROXY_ProcessVariable *epv)
         : PVValue(epv)
 {
     unsigned int i;
@@ -1359,7 +1283,7 @@ void PVValueChar::read_value(const void *buf)
 extern "C" {
 #endif
 
-int log_pend_io (
+int proxy_pend_io (
   double sec
 ) {
 
@@ -1367,7 +1291,7 @@ int log_pend_io (
 
 }
 
-int log_pend_event (
+int proxy_pend_event (
   double sec
 ) {
 
@@ -1375,19 +1299,19 @@ int log_pend_event (
 
 }
 
-void log_task_exit ( void ) {
+void proxy_task_exit ( void ) {
 
   ca_task_exit();
 
 }
 
-ProcessVariable *create_LOGPtr (
+ProcessVariable *create_PROXYPtr (
   const char *PV_name
 ) {
 
 ProcessVariable *ptr;
 
-  ptr = log_pv_factory->create( PV_name );
+  ptr = proxy_pv_factory->create( PV_name );
   return ptr;
 
 }
