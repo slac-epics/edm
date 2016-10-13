@@ -21,6 +21,8 @@
 #include "thread.h"
 #include "crc.h"
 #include "edm.version"
+#include <epicsVersion.h>
+#include <cadef.h>
 #include <unistd.h>
 
 #include <X11/Intrinsic.h>
@@ -4354,6 +4356,7 @@ activeWindowListPtr cur;
 static void displayVersion ( void ) {
 
   fprintf( stderr, "  edm version %s Copyright (C) 1999-2016 John W. Sinclair\n", VERSION );
+  fprintf( stderr, "  EPICS version %s, CA Protocol version %s\n", EPICS_VERSION_STRING, ca_version() );
   fprintf( stderr, "\n" );
 
   fprintf( stderr, "  This program is free software; you can redistribute it and/or modify\n" );
