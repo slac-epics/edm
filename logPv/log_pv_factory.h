@@ -129,7 +129,7 @@ public:
 	unsigned long get_nano();
 
     virtual void read_ctrlinfo(const void *buf) = 0;
-    virtual void read_value(const void *buf) = 0;
+    virtual void read_value( const event_handler_args args ) = 0;
 protected:
     friend class LOG_ProcessVariable;
     LOG_ProcessVariable *epv;
@@ -164,7 +164,7 @@ public:
     size_t      get_string(char *strbuf, size_t buflen) const;
     const int  *get_int_array() const;
     void read_ctrlinfo(const void *buf);
-    void read_value(const void *buf);
+    void read_value( const event_handler_args args );
 private:
     int *value;
 };
@@ -180,7 +180,7 @@ public:
     double      get_double() const;
     const double *get_double_array() const;
     void read_ctrlinfo(const void *buf);
-    void read_value(const void *buf);
+    void read_value( const event_handler_args args );
 private:
     double *value;
 };
@@ -196,7 +196,7 @@ public:
     size_t      get_enum_count() const;
     const char *get_enum(size_t i) const;
     void read_ctrlinfo(const void *buf);
-    void read_value(const void *buf);
+    void read_value( const event_handler_args args );
 private:
     int    value;
     size_t enums;
@@ -213,7 +213,7 @@ public:
     double      get_double() const;
     size_t      get_string(char *strbuf, size_t buflen) const;
     void read_ctrlinfo(const void *buf);
-    void read_value(const void *buf);
+    void read_value( const event_handler_args args );
 private:
     dbr_string_t value;
 };
@@ -230,7 +230,7 @@ public:
     const char * get_char_array() const;
     size_t      get_string(char *strbuf, size_t buflen) const;
     void read_ctrlinfo(const void *buf);
-    void read_value(const void *buf);
+    void read_value( const event_handler_args args );
 private:
     char *value;
     size_t len;
@@ -248,7 +248,7 @@ public:
     const short *get_short_array() const;
     size_t      get_string(char *strbuf, size_t buflen) const;
     void read_ctrlinfo(const void *buf);
-    void read_value(const void *buf);
+    void read_value( const event_handler_args args );
 private:
     short *value;
     size_t len;

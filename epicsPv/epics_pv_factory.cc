@@ -266,7 +266,7 @@ void EPICS_ProcessVariable::ca_ctrlinfo_callback(
     {
         int stat = ca_add_masked_array_event(me->value->get_DBR()+
                                              DBR_TIME_STRING,
-                                             me->get_dimension(),
+                                             (me->get_dimension() > 1 ? 0 : 1),
                                              me->pv_chid,
                                              ca_value_callback,
                                              (void *)me,
@@ -320,7 +320,7 @@ void EPICS_ProcessVariable::ca_value_callback(struct event_handler_args args)
 
     if (args.status == ECA_NORMAL  &&  args.dbr)
     {
-        me->value->read_value(args.dbr);
+        me->value->read_value(args);
     }
 
     if ( !me->have_ctrlinfo ) {
@@ -689,14 +689,15 @@ void PVValueInt::read_ctrlinfo(const void *buf)
     *value = val->value;
 }
 
-void PVValueInt::read_value(const void *buf)
+void PVValueInt::read_value(const event_handler_args args)
 {
+	const void	*	buf	= args.dbr;
     const dbr_time_long *val = (const dbr_time_long *)buf;
     time = val->stamp.secPastEpoch + epochSecPast1970;
     nano = val->stamp.nsec;
     status = val->status;
     severity = val->severity;
-    memcpy(value, &val->value, sizeof(int) * epv->get_dimension());
+    memcpy( value, &val->value, sizeof(int) * args.count );
 }
 
 // ---------------------- PVValueShort ---------------------------
@@ -769,14 +770,15 @@ void PVValueShort::read_ctrlinfo(const void *buf)
     *value = val->value;
 }
 
-void PVValueShort::read_value(const void *buf)
+void PVValueShort::read_value(const event_handler_args args)
 {
+	const void	*	buf	= args.dbr;
     const dbr_time_short *val = (const dbr_time_short *)buf;
     time = val->stamp.secPastEpoch + epochSecPast1970;
     nano = val->stamp.nsec;
     status = val->status;
     severity = val->severity;
-    memcpy(value, &val->value, sizeof(short) * epv->get_dimension());
+    memcpy( value, &val->value, sizeof(short) * args.count );
 }
 
 // ---------------------- PVValueDouble ---------------------------
@@ -884,9 +886,9 @@ void PVValueDouble::read_ctrlinfo(const void *buf)
 
 }
 
-void PVValueDouble::read_value(const void *buf)
+void PVValueDouble::read_value(const event_handler_args args)
 {
-
+	const void	*	buf	= args.dbr;
     const  dbr_time_double *dval = (const dbr_time_double *)buf;
     const  dbr_time_float *fval = (const dbr_time_float *)buf;
     unsigned int i;
@@ -898,8 +900,8 @@ void PVValueDouble::read_value(const void *buf)
       status = fval->status;
       severity = fval->severity;
 
-      for ( i=0; i<epv->get_dimension(); i++ ) {
-	value[i] = (double) (&fval->value)[i];
+      for ( i=0; i < (unsigned int) args.count; i++ ) {
+        value[i] = (double) (&fval->value)[i];
       }
 
     }
@@ -910,8 +912,7 @@ void PVValueDouble::read_value(const void *buf)
       status = dval->status;
       severity = dval->severity;
 
-      memcpy(value, &dval->value, sizeof(double) * epv->get_dimension());
-
+      memcpy(value, &dval->value, sizeof(double) * args.count );
     }
 
 }
@@ -966,8 +967,9 @@ void PVValueEnum::read_ctrlinfo(const void *buf)
     upper_ctrl_limit = enums;
 }
 
-void PVValueEnum::read_value(const void *buf)
+void PVValueEnum::read_value(const event_handler_args args)
 {
+	const void	*	buf	= args.dbr;
     const  dbr_time_enum *val = (const dbr_time_enum *)buf;
     time = val->stamp.secPastEpoch + epochSecPast1970;
     nano = val->stamp.nsec;
@@ -1023,8 +1025,9 @@ void PVValueString::read_ctrlinfo(const void *buf)
     Strncpy(value, val->value, MAX_STRING_SIZE );
 }
     
-void PVValueString::read_value(const void *buf)
+void PVValueString::read_value(const event_handler_args args)
 {
+	const void	*	buf	= args.dbr;
     const struct dbr_time_string *val = (const dbr_time_string *)buf;
     time = val->stamp.secPastEpoch + epochSecPast1970;
     nano = val->stamp.nsec;
@@ -1111,14 +1114,15 @@ void PVValueChar::read_ctrlinfo(const void *buf)
     //           epv->get_name(), value);
 }
     
-void PVValueChar::read_value(const void *buf)
+void PVValueChar::read_value(const event_handler_args args)
 {
+	const void	*	buf	= args.dbr;
     const struct dbr_time_char *val = (const dbr_time_char *)buf;
     time = val->stamp.secPastEpoch + epochSecPast1970;
     nano = val->stamp.nsec;
     status = val->status;
     severity = val->severity;
-    size_t copy = epv->get_dimension();
+    size_t copy = args.count;
     memcpy(value, &val->value, copy);
     value[copy] = '\0';
     len = copy;
