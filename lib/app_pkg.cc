@@ -2712,7 +2712,7 @@ activeWindowListPtr cur;
 int appContextClass::getFilePaths ( void ) {
 
   int i, l, allocL, curLen, stat, defaultPos = 0;
-char *envPtr, *gotIt, *buf, save[127+1], path[127+1], msg[127+1], *tk,
+char *envPtr, *gotIt, *buf, save[255+1], path[255+1], msg[255+1], *tk,
  *useHttp;
 
   curLen = -1;
@@ -2736,22 +2736,22 @@ char *envPtr, *gotIt, *buf, save[127+1], path[127+1], msg[127+1], *tk,
     tk = strtok( buf, ":" );
     if ( tk ) {
 
-      strncpy( colorPath, tk, 127 );
+      strncpy( colorPath, tk, 255 );
       if ( colorPath[strlen(colorPath)-1] != '/' ) {
-        Strncat( colorPath, "/", 127 );
+        Strncat( colorPath, "/", 255 );
       }
 
     }
     else {
 
-      strncpy( colorPath, "./", 127 );
+      strncpy( colorPath, "./", 255 );
 
     }
 
   }
   else {
 
-    strncpy( colorPath, "./", 127 );
+    strncpy( colorPath, "./", 255 );
 
   }
 
@@ -2796,7 +2796,7 @@ char *envPtr, *gotIt, *buf, save[127+1], path[127+1], msg[127+1], *tk,
 
       strcpy( path, "." );
 
-      gotIt = getcwd( save, 127 );
+      gotIt = getcwd( save, 255 );
       if ( !gotIt ) {
         fprintf( stderr, appContextClass_str118, __LINE__, __FILE__ );
         exit(0);
@@ -2804,14 +2804,14 @@ char *envPtr, *gotIt, *buf, save[127+1], path[127+1], msg[127+1], *tk,
 
       stat = chdir( path );
       if ( stat && !useHttp ) {
-        snprintf( msg, 127, appContextClass_str119, path );
+        snprintf( msg, 255, appContextClass_str119, path );
         perror( msg );
       }
 
       chdir( save );
 
       if ( path[strlen(path)-1] != '/' )
-       Strncat( path, "/", 127 );
+       Strncat( path, "/", 255 );
 
       numPaths = 1;
       dataFilePrefix = new char *[1];
@@ -2834,12 +2834,12 @@ char *envPtr, *gotIt, *buf, save[127+1], path[127+1], msg[127+1], *tk,
     tk = strtok( buf, ":" );
     for ( i=0; i<numPaths; i++ ) {
 
-      strncpy( path, tk, 127 );
+      strncpy( path, tk, 255 );
       if ( path[strlen(path)-1] == '/' ) path[strlen(path)-1] = 0;
 
       undoFixupHttpPart( path );
 
-      gotIt = getcwd( save, 127 );
+      gotIt = getcwd( save, 255 );
       if ( !gotIt ) {
         fprintf( stderr, appContextClass_str118, __LINE__, __FILE__ );
         exit(0);
@@ -2850,14 +2850,14 @@ char *envPtr, *gotIt, *buf, save[127+1], path[127+1], msg[127+1], *tk,
         if ( path[0] == '=' ) {
           stat = chdir( &path[1] );
           if ( stat && !useHttp ) {
-            snprintf( msg, 127, appContextClass_str119, &path[1] );
+            snprintf( msg, 255, appContextClass_str119, &path[1] );
             perror( msg );
           }
         }
         else {
           stat = chdir( path );
           if ( stat && !useHttp ) {
-            snprintf( msg, 127, appContextClass_str119, path );
+            snprintf( msg, 255, appContextClass_str119, path );
             perror( msg );
           }
         }
@@ -2867,7 +2867,7 @@ char *envPtr, *gotIt, *buf, save[127+1], path[127+1], msg[127+1], *tk,
       }
 
       if ( path[strlen(path)-1] != '/' )
-       Strncat( path, "/", 127 );
+       Strncat( path, "/", 255 );
 
       if ( path[0] == '=' ) { // = means use this a default
         dataFilePrefix[i] = new char[strlen(path)];
@@ -2886,10 +2886,10 @@ char *envPtr, *gotIt, *buf, save[127+1], path[127+1], msg[127+1], *tk,
   }
   else {
 
-    getcwd( path, 127 );
+    getcwd( path, 255 );
 
     if ( path[strlen(path)-1] != '/' )
-     Strncat( path, "/", 127 );
+     Strncat( path, "/", 255 );
 
     numPaths = 1;
 
