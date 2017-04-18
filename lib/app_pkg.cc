@@ -2104,7 +2104,6 @@ void exec_config_save(
 {
   char *fname;
   char msg[1001];
-  char *xtext;
   
   appContextClass *apco = (appContextClass *) client;
   if (*apco->getCfgName()) {          // we had a confirmation dialog
@@ -2129,7 +2128,6 @@ void load_screen_config (
 {
   char filter[MAX_DIR];
   char line[MAX_LINE];
-  char *home;
   Widget dialog;
   XmString t;
   void exec_config_load(Widget, XtPointer, XtPointer);
@@ -2207,14 +2205,11 @@ void exec_config_load (
   char *newMacros[MAX_MACROS];
   char *newValues[MAX_MACROS];
 
-  char *home;
   char fname[MAX_FNAME];
   char line[MAX_LINE];
   char edlname[MAX_NAME];
   char macros[MAX_LINE];
   int nmacros = 0;
-  char **msymbols = 0;
-  char **mvalues = 0;
   int x, y;
   float scale = 1.0;   // to be added to display node later
   char *xfname;
@@ -2263,7 +2258,6 @@ void exec_config_load (
     apco->setScreenAddAll(0);
     return;
   }
-  int i = 0;
   activeWindowListPtr cur;
 #ifdef NO_UNORDERED_MAP
   map<string, string> sigs;
@@ -7658,7 +7652,7 @@ int appContextClass::getCfgDirectory(char *pfilter, char *pmsg) {
     if ( home ) {
       const char * pattern = "/.edm/*.edmcfg";
       if ( (strlen(home) + strlen(pattern)) > MAX_DIR) {
-          snprintf(pmsg, appContextClass_str100, "HOME");  // string too long: %s
+          snprintf(pmsg, MAX_DIR+1, appContextClass_str100, "HOME");  // string too long: %s
           this->postMessage(pmsg);
           return -1;
       }
@@ -7701,12 +7695,13 @@ int appContextClass::writeConfig(char *fname) {
     cur = cur->flink;
   }
   fclose(fp);
+  return 0;
 }
 
 char *appContextClass::checkCfgName(char *fname) {
   char *ps0 = strrchr(fname, '/');
   char *ps = strrchr(ps0+1, '.');
-  int len = (ps ? ps - fname : strlen(fname));
+  size_t len = (ps ? ps - fname : strlen(fname));
 //  printf("check extension - len %d fname %s length %d\n", len, fname, strlen(fname));
   if (len == strlen(fname)) {         // no . in file name
     strcpy(fname+len, ".edmcfg");     // force extension

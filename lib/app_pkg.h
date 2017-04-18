@@ -64,7 +64,7 @@ class pathListClass;
 #define MAX_LINE 1001
 #define MAX_MACROS 101
 #define MAX_NAME 101
-#define MAX_DIR 206
+#define MAX_DIR 256
 #define MAX_FNAME 311
 
 typedef struct callbackBlockTag {
