@@ -1,4 +1,4 @@
-# CONFIG_SITE,v 1.2 2007/07/03 21:37:52 jba Exp
+# CONFIG_SITE
 
 # Make any extensions-specific changes to the EPICS build
 # configuration variables in this file.

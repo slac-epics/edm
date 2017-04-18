@@ -1,4 +1,4 @@
-# Makefile,v 1.1 2003/07/01 20:52:26 jba Exp
+# Makefile
 
 TOP=..
 
