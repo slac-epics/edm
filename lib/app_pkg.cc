@@ -2265,7 +2265,11 @@ void exec_config_load (
   }
   int i = 0;
   activeWindowListPtr cur;
+#ifdef NO_UNORDERED_MAP
+  map<string, string> sigs;
+#else
   unordered_map<string, string> sigs;
+#endif
   // if we switch configurations, remove existing files except the head
   // (in order not to get caught by eolc
   if (!apco->getScreenAdd() && !apco->getScreenAddAll()) apco->closeAllButHead();
@@ -7554,11 +7558,19 @@ Widget appContextClass::apptop ( void ) {
 
 }
 
+#ifdef NO_UNORDERED_MAP
+int appContextClass::screenAlreadyUp(map<string, string> &sigs, 
+  char *edlname, 
+  char **macros, 
+  char **values, 
+  int nmacros)
+#else
 int appContextClass::screenAlreadyUp(unordered_map<string, string> &sigs, 
   char *edlname, 
   char **macros, 
   char **values, 
   int nmacros)
+#endif
 {
   char signature[MAX_LINE];
   strcpy(signature, edlname);
@@ -7589,7 +7601,11 @@ void appContextClass::closeAllButHead()
     }
 }
 
+#ifdef NO_UNORDERED_MAP
+void appContextClass::getScreenSignatures(map<string, string> &sigs)
+#else
 void appContextClass::getScreenSignatures(unordered_map<string, string> &sigs)
+#endif
 {
   char signature[MAX_LINE];
   // move to end of node list and get signatures of existing screens
