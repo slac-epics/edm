@@ -1336,10 +1336,8 @@ int i, n;
 Arg args[4];
 
   strncpy( awo->defaultFontTag, awo->defaultFm.currentFontTag(), 127 );
-  strncpy( awo->defaultCtlFontTag, awo->defaultCtlFm.currentFontTag(),
-   127 );
-  strncpy( awo->defaultBtnFontTag, awo->defaultBtnFm.currentFontTag(),
-   127 );
+  strncpy( awo->defaultCtlFontTag, awo->defaultCtlFm.currentFontTag(), 127 );
+  strncpy( awo->defaultBtnFontTag, awo->defaultBtnFm.currentFontTag(), 127 );
 
   awo->defaultAlignment = awo->defaultFm.currentFontAlignment();
   awo->defaultCtlAlignment = awo->defaultCtlFm.currentFontAlignment();
@@ -1521,11 +1519,9 @@ int stat, success;
   if ( awo->allSelectedTopShadowColorFlag ) flag |= ACTGRF_TOPSHADOWCOLOR_MASK;
   if ( awo->allSelectedBotShadowColorFlag ) flag |= ACTGRF_BOTSHADOWCOLOR_MASK;
 
-  strncpy( awo->allSelectedFontTag, awo->defaultFm.currentFontTag(), 63 );
-  strncpy( awo->allSelectedCtlFontTag, awo->defaultCtlFm.currentFontTag(),
-   63 );
-  strncpy( awo->allSelectedBtnFontTag, awo->defaultBtnFm.currentFontTag(),
-   63 );
+  strncpy( awo->allSelectedFontTag, awo->defaultFm.currentFontTag(), 127 );
+  strncpy( awo->allSelectedCtlFontTag, awo->defaultCtlFm.currentFontTag(), 127 );
+  strncpy( awo->allSelectedBtnFontTag, awo->defaultBtnFm.currentFontTag(), 127 );
 
   awo->allSelectedAlignment = awo->defaultFm.currentFontAlignment();
   awo->allSelectedCtlAlignment = awo->defaultCtlFm.currentFontAlignment();
@@ -5622,7 +5618,7 @@ int efSetAccLargestH = 300;
         awo->savedState = awo->state;
         awo->state = AWC_WAITING;
         extractName( awo->fileName, name );
-	strncpy( awo->newPath, awo->appCtx->curPath, 255 );
+        strncpy( awo->newPath, awo->appCtx->curPath, 255 );
         awo->newPath[255] = 0;
         Strncat( awo->newPath, name, 255 );
         //Strncat( awo->newPath, ".edl", 255 );

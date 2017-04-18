@@ -60,7 +60,7 @@ class pathListClass;
 #define MAX_LINE 1001
 #define MAX_MACROS 101
 #define MAX_NAME 101
-#define MAX_DIR 206
+#define MAX_DIR 256
 #define MAX_FNAME 311
 
 typedef struct callbackBlockTag {
@@ -430,7 +430,7 @@ int firstOpen;
 THREAD_HANDLE threadHandle;
 
 char ctlPV[127+1];
-char userLib[127+1];
+char userLib[MAX_DIR+1];
 
 ProcessVariable *ctlPvId;
 int initialConnection;
@@ -461,9 +461,9 @@ displaySchemeClass displayScheme;
 
 int numPaths;
 char **dataFilePrefix;
-char curPath[127+1];
+char curPath[MAX_DIR+1];
 
-char colorPath[127+1];
+char colorPath[MAX_DIR+1];
 
 int viewXy;
 Widget viewXyB;
