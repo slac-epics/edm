@@ -408,7 +408,8 @@ libRecPtr head, tail, cur, prev, next;
   envPtr = getenv(environment_str3);
   if ( envPtr ) {
     strncpy( prefix, envPtr, 255 );
-    if ( prefix[strlen(prefix)-1] != '/' ) Strncat( prefix, "/", 255 );
+    if ( prefix[strlen(prefix)-1] != '/' )
+	  Strncat( prefix, "/", 255 );
   }
   else {
     strcpy( prefix, "/etc/edm/" );
@@ -1415,7 +1416,7 @@ appContextClass *apco = (appContextClass *) cbPtr->apco;
 
   //fprintf( stderr, "setPath_cb, item = [%s]\n", item );
 
-  strncpy( apco->curPath, item, 127 );
+  strncpy( apco->curPath, item, MAX_DIR );
 
 }
 
@@ -1661,7 +1662,7 @@ static int oneFileNum = 1;
 
 appContextClass *apco = (appContextClass *) client;
 activeWindowListPtr cur, next;
-char oneFileName[127+1];
+char oneFileName[MAX_DIR+1];
 
   // traverse list and delete nodes so marked
   cur = apco->head->flink;
@@ -1745,9 +1746,9 @@ appContextClass *apco = (appContextClass *) client;
 int n;
 Arg args[10];
 XmString xmStr = NULL;
-char prefix[127+1];
+char prefix[MAX_DIR+1];
 
-  strncpy( prefix, apco->curPath, 127 );
+  strncpy( prefix, apco->curPath, MAX_DIR );
 
   n = 0;
 
@@ -1805,9 +1806,9 @@ appContextClass *apco = (appContextClass *) client;
 int n;
 Arg args[10];
 XmString xmStr = NULL;
-char prefix[127+1];
+char prefix[MAX_DIR+1];
 
-  strncpy( prefix, apco->curPath, 127 );
+  strncpy( prefix, apco->curPath, MAX_DIR );
 
   n = 0;
 
@@ -1990,7 +1991,7 @@ void save_screen_config (
   Widget dialog;
   XmString t;
   Arg args[5];
-  char filter[MAX_DIR];
+  char filter[MAX_DIR+1];
   char msg[1001];
   void check_config_exists(Widget, XtPointer, XtPointer);
   void destroy_callback(Widget, XtPointer, XtPointer);
@@ -2044,7 +2045,7 @@ void check_config_exists(
   appContextClass *apco = (appContextClass *) client;
   
   if (strlen(xtext) >= MAX_NAME) {
-      sprintf(msg, appContextClass_str100, "name");  // string too long: %s
+      snprintf(msg, 1001, appContextClass_str100, "name");  // string too long: %s
       apco->postMessage(msg);
       XtFree(xtext);
       XtDestroyWidget ( XtParent (w));
@@ -2056,21 +2057,21 @@ void check_config_exists(
     XtFree(xtext);
   } else {
     if (ltext) {
-      sprintf(msg, appContextClass_str100, "file name");  // String too long: %s
+      snprintf(msg, 1001, appContextClass_str100, "file name");  // String too long: %s
     } else {
-      sprintf(msg, appContextClass_str101, "file name");  // String empty: %s
+      snprintf(msg, 1001, appContextClass_str101, "file name");  // String empty: %s
     }
     apco->postMessage(msg);
     return;
   }
   apco->checkCfgName(fname);
-//  sprintf(msg, "checking file %s\n", fname);
+//  snprintf(msg, 1001, "checking file %s\n", fname);
 //  printf(msg);
   FILE *fp = fopen(fname, "r");
   if (fp) {
     fclose(fp);
 //    printf("file exists\n");
-    sprintf(msg, appContextClass_str53, fname);          // File already exists:\n%s
+    snprintf(msg, 1001, appContextClass_str53, fname);          // File already exists:\n%s
     apco->setCfgName(fname);                     // remember fname for after confirm dialog
     XmString xms = XmStringCreateLocalized (msg);
     int n = 0;
@@ -2086,7 +2087,7 @@ void check_config_exists(
     XtDestroyWidget ( XtParent (w));
     int err = apco->writeConfig(fname); 
     if (err) {
-      sprintf(msg, appContextClass_str78, fname);   // Error writing file: %s
+      snprintf(msg, 1001, appContextClass_str78, fname);   // Error writing file: %s
       apco->postMessage(msg);
       return;
     }
@@ -2112,7 +2113,7 @@ void exec_config_save(
   fname = apco->getCfgName();
   int err = apco->writeConfig(fname); 
   if (err) {
-    sprintf(msg, appContextClass_str78, fname);   // Error writing file: %s
+    snprintf(msg, 1001, appContextClass_str78, fname);   // Error writing file: %s
     apco->postMessage(msg);
     return;
   }
@@ -2675,7 +2676,7 @@ appContextClass::appContextClass (
   haveGroupVisInfo = 0;
 
   int defaultPos = getFilePaths();
-  strncpy( curPath, dataFilePrefix[defaultPos], 127 );
+  strncpy( curPath, dataFilePrefix[defaultPos], MAX_DIR );
 
   buildSchemeList();
 
@@ -3040,7 +3041,7 @@ activeWindowListPtr cur;
 int appContextClass::getFilePaths ( void ) {
 
   int i, l, allocL, curLen, stat, defaultPos = 0;
-char *envPtr, *gotIt, *buf, save[127+1], path[127+1], msg[127+1], *tk,
+char *envPtr, *gotIt, *buf, save[MAX_DIR+1], path[MAX_DIR+1], msg[MAX_DIR+1], *tk,
  *useHttp;
 
   curLen = -1;
@@ -3064,22 +3065,22 @@ char *envPtr, *gotIt, *buf, save[127+1], path[127+1], msg[127+1], *tk,
     tk = strtok( buf, ":" );
     if ( tk ) {
 
-      strncpy( colorPath, tk, 127 );
+      strncpy( colorPath, tk, MAX_DIR );
       if ( colorPath[strlen(colorPath)-1] != '/' ) {
-        Strncat( colorPath, "/", 127 );
+        Strncat( colorPath, "/", MAX_DIR );
       }
 
     }
     else {
 
-      strncpy( colorPath, "./", 127 );
+      strncpy( colorPath, "./", MAX_DIR );
 
     }
 
   }
   else {
 
-    strncpy( colorPath, "./", 127 );
+    strncpy( colorPath, "./", MAX_DIR );
 
   }
 
@@ -3124,7 +3125,7 @@ char *envPtr, *gotIt, *buf, save[127+1], path[127+1], msg[127+1], *tk,
 
       strcpy( path, "." );
 
-      gotIt = getcwd( save, 127 );
+      gotIt = getcwd( save, MAX_DIR+1 );
       if ( !gotIt ) {
         fprintf( stderr, appContextClass_str118, __LINE__, __FILE__ );
         exit(0);
@@ -3132,14 +3133,14 @@ char *envPtr, *gotIt, *buf, save[127+1], path[127+1], msg[127+1], *tk,
 
       stat = chdir( path );
       if ( stat && !useHttp ) {
-        snprintf( msg, 127, appContextClass_str119, path );
+        snprintf( msg, MAX_DIR+1, appContextClass_str119, path );
         perror( msg );
       }
 
       chdir( save );
 
       if ( path[strlen(path)-1] != '/' )
-       Strncat( path, "/", 127 );
+       Strncat( path, "/", MAX_DIR );
 
       numPaths = 1;
       dataFilePrefix = new char *[1];
@@ -3162,12 +3163,12 @@ char *envPtr, *gotIt, *buf, save[127+1], path[127+1], msg[127+1], *tk,
     tk = strtok( buf, ":" );
     for ( i=0; i<numPaths; i++ ) {
 
-      strncpy( path, tk, 127 );
+      strncpy( path, tk, MAX_DIR );
       if ( path[strlen(path)-1] == '/' ) path[strlen(path)-1] = 0;
 
       undoFixupHttpPart( path );
 
-      gotIt = getcwd( save, 127 );
+      gotIt = getcwd( save, MAX_DIR+1 );
       if ( !gotIt ) {
         fprintf( stderr, appContextClass_str118, __LINE__, __FILE__ );
         exit(0);
@@ -3178,14 +3179,14 @@ char *envPtr, *gotIt, *buf, save[127+1], path[127+1], msg[127+1], *tk,
         if ( path[0] == '=' ) {
           stat = chdir( &path[1] );
           if ( stat && !useHttp ) {
-            snprintf( msg, 127, appContextClass_str119, &path[1] );
+            snprintf( msg, MAX_DIR+1, appContextClass_str119, &path[1] );
             perror( msg );
           }
         }
         else {
           stat = chdir( path );
           if ( stat && !useHttp ) {
-            snprintf( msg, 127, appContextClass_str119, path );
+            snprintf( msg, MAX_DIR+1, appContextClass_str119, path );
             perror( msg );
           }
         }
@@ -3195,7 +3196,7 @@ char *envPtr, *gotIt, *buf, save[127+1], path[127+1], msg[127+1], *tk,
       }
 
       if ( path[strlen(path)-1] != '/' )
-       Strncat( path, "/", 127 );
+       Strncat( path, "/", MAX_DIR );
 
       if ( path[0] == '=' ) { // = means use this a default
         dataFilePrefix[i] = new char[strlen(path)];
@@ -3214,10 +3215,10 @@ char *envPtr, *gotIt, *buf, save[127+1], path[127+1], msg[127+1], *tk,
   }
   else {
 
-    getcwd( path, 127 );
+    getcwd( path, MAX_DIR+1 );
 
     if ( path[strlen(path)-1] != '/' )
-     Strncat( path, "/", 127 );
+     Strncat( path, "/", MAX_DIR );
 
     numPaths = 1;
 
@@ -3426,7 +3427,7 @@ void appContextClass::buildSchemeList ( void )
 {
 
 char *envPtr, *ptr;
-char prefix[127+1], fName[127+1], buf[255+1], oName[127+1], sName[63+1],
+char prefix[MAX_DIR+1], fName[MAX_DIR+1], buf[255+1], oName[MAX_DIR+1], sName[63+1],
  line[255+1], *tk;
 schemeListPtr cur, curSet;
 FILE *f;
@@ -3458,15 +3459,16 @@ int stat, dup, state, i;
   // open scheme list file and build tree
   envPtr = getenv(environment_str2);
   if ( envPtr ) {
-    strncpy( prefix, envPtr, 127 );
-    if ( prefix[strlen(prefix)-1] != '/' ) Strncat( prefix, "/", 127 );
+    strncpy( prefix, envPtr, MAX_DIR );
+    if ( prefix[strlen(prefix)-1] != '/' )
+	  Strncat( prefix, "/", MAX_DIR );
   }
   else {
     strcpy( prefix, "/etc/edm/" );
   }
 
-  strncpy( fName, prefix, 127 );
-  Strncat( fName, "schemes.list", 127 );
+  strncpy( fName, prefix, MAX_DIR );
+  Strncat( fName, "schemes.list", MAX_DIR );
 
   f = fopen( fName, "r" );
   if ( !f ) {
@@ -3576,12 +3578,12 @@ int stat, dup, state, i;
           break;
 	}
 
-        strncpy( oName, tk, 127 );
+        strncpy( oName, tk, MAX_DIR );
 
         tk = strtok( NULL, " \t\n" );
         if ( tk ) {
 
-          strncpy( fName, tk, 127 );
+          strncpy( fName, tk, MAX_DIR );
 
           cur = new schemeListType;
           if ( !cur ) {
@@ -5130,7 +5132,7 @@ fileListPtr curFile;
         else if ( strcmp( argv[n], global_str22 ) == 0 ) {
           n++;
           if ( n >= argc ) return 2;
-          strncpy( userLib, argv[n], 127 );
+          strncpy( userLib, argv[n], MAX_DIR );
           userLibObject.openUserLibrary( userLib );
         }
         else if ( strcmp( argv[n], global_str21 ) == 0 ) {
@@ -5247,7 +5249,7 @@ int appContextClass::startApplication (
 int stat, opStat;
 activeWindowListPtr cur;
 char *name, *envPtr;
-char dspName[63+1], prefix[255+1], fname[255+1], msg[127+1];
+char dspName[63+1], prefix[MAX_DIR+1], fname[MAX_DIR+1], msg[MAX_DIR+1];
 fileListPtr curFile;
 expStringClass expStr;
 Atom wm_delete_window;
@@ -5315,7 +5317,7 @@ err_return:
       usingControlPV = 1;
     }
     else {
-      sprintf( msg, appContextClass_str99 );
+      snprintf( msg, MAX_DIR+1, appContextClass_str99 );
       postMessage( msg );
     }
 
@@ -5377,9 +5379,9 @@ err_return:
       if ( strcmp( args[i], "-display" ) == 0 ) {
         if ( i+1 < argCount ) {
           strncpy( dspName, args[i+1], 63 );
-	  dspName[63] = 0;
-	  break;
-	}
+          dspName[63] = 0;
+          break;
+        }
       }
     }
 
@@ -5532,8 +5534,9 @@ err_return:
 
   envPtr = getenv(environment_str2); // EDMFILES
   if ( envPtr ) {
-    strncpy( prefix, envPtr, 255 );
-    if ( prefix[strlen(prefix)-1] != '/' ) Strncat( prefix, "/", 255 );
+    strncpy( prefix, envPtr, MAX_DIR );
+    if ( prefix[strlen(prefix)-1] != '/' )
+      Strncat( prefix, "/", MAX_DIR );
   }
   else {
     strcpy( prefix, "/etc/edm/" );
@@ -5542,13 +5545,13 @@ err_return:
   envPtr = getenv(environment_str10); // EDMCOLORFILE
   if ( envPtr ) {
 
-    strncpy( fname, envPtr, 255 );
+    strncpy( fname, envPtr, MAX_DIR );
 
   }
   else {
 
-    strncpy( fname, prefix, 255 );
-    Strncat( fname, "colors.list", 255 );
+    strncpy( fname, prefix, MAX_NAME );
+    Strncat( fname, "colors.list", MAX_NAME );
 
   }
 
@@ -5589,13 +5592,13 @@ err_return:
   envPtr = getenv(environment_str11); // EDMFONTFILE
   if ( envPtr ) {
 
-    strncpy( fname, envPtr, 255 );
+    strncpy( fname, envPtr, MAX_DIR );
 
   }
   else {
 
-    strncpy( fname, prefix, 255 );
-    Strncat( fname, "fonts.list", 255 );
+    strncpy( fname, prefix, MAX_DIR );
+    Strncat( fname, "fonts.list", MAX_DIR );
 
   }
 
@@ -5687,7 +5690,7 @@ char *locMacros[MAX_LOC_MACROS], *locExpansions[MAX_LOC_MACROS];
 int state;
 char *macTk, *macBuf, macTmp[255+1];
 int stat;
-char name[127+1], prefix[127+1];
+char name[MAX_DIR+1], prefix[MAX_DIR+1];
 char filePart[255+1], winNam[WINNAME_MAX+1];
 int gotPosition, posx, posy;
 
@@ -5776,8 +5779,8 @@ int gotPosition, posx, posy;
             crc = updateCRC( crc, locExpansions[i], strlen(locExpansions[i]) );
           }
 
-          stat = getFileName( name, filePart, 127 );
-          stat = getFilePrefix( prefix, filePart, 127 );
+          stat = getFileName( name, filePart, MAX_DIR+1 );
+          stat = getFilePrefix( prefix, filePart, MAX_DIR+1 );
 
           if ( ( strcmp( name, cur->node.displayName ) == 0 ) &&
                ( strcmp( prefix, cur->node.prefix ) == 0 ) &&
@@ -5921,7 +5924,7 @@ char *locMacros[MAX_LOC_MACROS], *locExpansions[MAX_LOC_MACROS];
 int state;
 char *macTk, *macBuf, macTmp[255+1];
 int stat;
-char name[127+1], prefix[127+1];
+char name[MAX_DIR+1], prefix[MAX_DIR+1];
 char filePart[255+1], winNam[WINNAME_MAX+1];
 int gotPosition, posx, posy;
 char controlCmd[31+1];
@@ -6032,8 +6035,8 @@ char controlCmd[31+1];
             crc = updateCRC( crc, locExpansions[i], strlen(locExpansions[i]) );
           }
 
-          stat = getFileName( name, filePart, 127 );
-          stat = getFilePrefix( prefix, filePart, 127 );
+          stat = getFileName( name, filePart, MAX_DIR+1 );
+          stat = getFilePrefix( prefix, filePart, MAX_DIR+1 );
 
           next = cur->flink;
 
@@ -6182,7 +6185,7 @@ fileListPtr curFile;
 activeWindowListPtr cur;
 int i, doOpen;
 unsigned int crc;
-char tmpName[127+1], prefix[127+1];
+char tmpName[MAX_DIR+1], prefix[MAX_DIR+1];
 
   curFile = fileHead->flink;
   while ( curFile != fileHead ) {
@@ -6199,8 +6202,8 @@ char tmpName[127+1], prefix[127+1];
         crc = updateCRC( crc, expansions[i], strlen(expansions[i]) );
       }
 
-      getFileName( tmpName, curFile->file, 127 );
-      getFilePrefix( prefix, curFile->file, 127 );
+      getFileName( tmpName, curFile->file, MAX_DIR+1 );
+      getFilePrefix( prefix, curFile->file, MAX_DIR+1 );
 
       //fprintf( stderr, "crc = %-ud\n", crc );
       //fprintf( stderr, "cur->node.crc = %-ud\n", cur->node.crc );
@@ -6324,7 +6327,7 @@ void appContextClass::applicationLoop ( void ) {
 int stat, nodeCount, actionCount, iconNodeCount,
  iconActionCount, n;
 activeWindowListPtr cur, next;
-char msg[127+1];
+char msg[MAX_DIR+1];
 
   if ( epc.printEvent() ) {
 
@@ -6451,7 +6454,7 @@ char msg[127+1];
 	}
 
         if ( !( stat & 1 ) ) {
-          sprintf( msg, appContextClass_str108, cur->node.fileName );
+          snprintf( msg, MAX_DIR+1, appContextClass_str108, cur->node.fileName );
           postMessage( msg );
           cur->requestDelete = 1;
           cur->requestActivate = 0;
@@ -7618,34 +7621,29 @@ int appContextClass::screenConfigOk(FILE *fp) {
 }
 
 
+/* pfilter and pmsg must point to a buffers of size MAX_DIR+1 or greater */
 int appContextClass::getCfgDirectory(char *pfilter, char *pmsg) {
   char *home;
   
   home = getenv(environment_str39);     //EDMSCREENCFG
   if ( home ) {
-    if (strlen(home) >= MAX_DIR) {
-        sprintf(pmsg, appContextClass_str100, "EDMSCREENCFG");  // string too long: %s
+    const char * pattern = "/*.edmcfg";
+    if ( (strlen(home) + strlen(pattern)) > MAX_DIR) {
+        snprintf(pmsg, MAX_DIR+1, appContextClass_str100, "EDMSCREENCFG");  // string too long: %s
         return -1;
     }
-    int len = strlen(home);
-    if (*(home+len) != '/') {
-      strcpy(home+len, "/");
-    }
-    sprintf(pfilter, "%s*.edmcfg", home);
+    snprintf(pfilter, MAX_DIR+1, "%s%s", home, pattern);
 //    printf("using EDMSCREENCFG - filter %s\n", pfilter);
   } else {
     home = getenv("HOME");
     if ( home ) {
-      if (strlen(home) >= MAX_DIR) {
-          sprintf(pmsg, appContextClass_str100, "HOME");  // string too long: %s
+      const char * pattern = "/.edm/*.edmcfg";
+      if ( (strlen(home) + strlen(pattern)) > MAX_DIR) {
+          snprintf(pmsg, appContextClass_str100, "HOME");  // string too long: %s
           this->postMessage(pmsg);
           return -1;
       }
-      int len = strlen(home);
-      if (*(home+len) != '/') {
-        strcpy(home+len, "/");
-      }
-      sprintf(pfilter, "%s/.edm/*.edmcfg", home);
+      snprintf(pfilter, MAX_DIR+1, "%s%s", home, pattern);
     } else {
       sprintf(pfilter, "/tmp/*.edmcfg");
     }
