@@ -10,7 +10,7 @@
 #
 
 -include $(TOP)/configure/os/CONFIG_SITE.Common.Common
--include $(TOP)/CONFIG_SITE.c++98
+-include $(TOP)/configure/CONFIG_SITE.c++98
 
 #With the release of Fedora Core 5 the 
 #X11 and MOTIF libraries now live at /usr/lib64
