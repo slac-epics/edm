@@ -55,10 +55,17 @@ extern "C" {
 * function prototypes
 */
 
+/* for char string[10]; max must be <= 9 */
 char *Strncat(
   char *dest,
   char *src,
   int max );
+
+/* for char string[10]; max must be <= 9 */
+char *Strncpy(
+  char *dest,
+  const char *src,
+  size_t max );
 
 int sys_iniq (
   void *queue
