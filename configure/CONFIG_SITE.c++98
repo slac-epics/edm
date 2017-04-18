@@ -1,0 +1,7 @@
+#
+# CONFIG_SITE.c++98
+#
+# c++98 Configuration Information
+# Only the local epics system manager should modify this file
+
+USR_CXXFLAGS += -std=c++98 -fpermissive -Wno-write-strings -DNO_UNORDERED_MAP

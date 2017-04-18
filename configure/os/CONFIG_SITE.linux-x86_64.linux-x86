@@ -10,6 +10,7 @@
 #
 
 -include $(TOP)/configure/os/CONFIG_SITE.Common.Common
+-include $(TOP)/CONFIG_SITE.c++98
 
 ifeq ($(shell if [ -d /usr/X11R6/lib ]; then echo 1; fi),1)
 X11_MAIN_DIR=/usr/X11R6

@@ -10,4 +10,3 @@ else
   include $(EPICS)/config/RULES_ARCHS
 endif
 
-   USR_CXXFLAGS += -std=c++0x -fpermissive -Wno-narrowing -Wno-write-strings -Wno-unused-but-set-variable
