@@ -13,7 +13,8 @@ CONFIG=$(EPICS_BASE)/configure
 include $(CONFIG)/CONFIG
 
 # Override for definition in base
-INSTALL_LOCATION = $(TOP)
+#INSTALL_LOCATION = $(TOP)
+INSTALL_LOCATION = $(TOP)/build
 include $(TOP)/configure/CONFIG_SITE
 
 ifdef INSTALL_LOCATION_EXTENSIONS
