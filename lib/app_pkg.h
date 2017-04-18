@@ -24,7 +24,11 @@
 #include <Xm/FileSB.h>
 #include <Xm/SelectioB.h>
 #include <Xm/MessageB.h>
+#ifdef NO_UNORDERED_MAP
+#include <map>
+#else
 #include <unordered_map>
+#endif
 
 #include "color_pkg.h"
 #include "color_button.h"
@@ -60,7 +64,7 @@ class pathListClass;
 #define MAX_LINE 1001
 #define MAX_MACROS 101
 #define MAX_NAME 101
-#define MAX_DIR 256
+#define MAX_DIR 206
 #define MAX_FNAME 311
 
 typedef struct callbackBlockTag {
@@ -801,15 +805,24 @@ void showEnv ( void );
 
 Widget apptop ( void );
 
+#ifdef NO_UNORDERED_MAP
+int screenAlreadyUp(map<string, string>& sigs, 
+  char *edlname, 
+  char **macros, 
+  char **values, 
+  int nmacros);
+void getScreenSignatures(map<string, string> &sigs);
+#else
 int screenAlreadyUp(unordered_map<string, string>& sigs, 
   char *edlname, 
   char **macros, 
   char **values, 
   int nmacros);
+void getScreenSignatures(unordered_map<string, string> &sigs);
+#endif
   
 void closeAllButHead();
 int screenConfigOk(FILE *fp);
-void getScreenSignatures(unordered_map<string, string> &sigs);
 void setScreenAdd(int add) { screenAdd = add; }
 int getScreenAdd(void) { return screenAdd; }
 void setScreenAddAll(int add) { screenAddAll = add; }
