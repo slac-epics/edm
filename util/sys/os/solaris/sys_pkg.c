@@ -39,6 +39,23 @@ char *s;
 
 }
 
+char *Strncpy(
+  char *dest,
+  const char *src,
+  size_t max )
+{
+/*
+  // max must be no more than stringsize - 1
+  //
+  // for char string[10];       max must be <= 9
+*/
+  strncpy( dest, src, max );
+  dest[max] = 0;
+
+  return dest;
+
+}
+
 void sys_wait_seconds (
   float *seconds
 ) {
@@ -204,7 +221,7 @@ char *value;
   value = getenv( "USER" );
 
   if ( value )
-    strncpy( name, value, max_chars );
+    Strncpy( name, value, max_chars );
   else
     strcpy( name, "" );
 
@@ -232,7 +249,7 @@ SYS_TIME_TYPE tim;
 int stat;
 
   stat = sys_get_time( &tim );
-  strncpy( string, ctime( &tim.cal_time ), string_size );
+  Strncpy( string, ctime( &tim.cal_time ), string_size );
   string[strlen(string)-1] = 0;
 
   return 1;
@@ -245,7 +262,7 @@ int sys_cvt_string_to_time (
   SYS_TIME_PTR time
 ) {
 
-  strncpy( string, "Not Implemented", string_size );
+  Strncpy( string, "Not Implemented", string_size );
 
   return 1;
 
@@ -258,7 +275,7 @@ int sys_cvt_time_to_string (
 ) {
 
 
-  strncpy( string, ctime( &tim->cal_time ), string_size );
+  Strncpy( string, ctime( &tim->cal_time ), string_size );
   string[strlen(string)-1] = 0;
 
   return 1;
