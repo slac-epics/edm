@@ -1271,7 +1271,7 @@ int tagClass::loadR (
   char *oneDefault
 ) {
 
-  strncpy( destination, oneDefault, maxLen );
+  Strncpy( destination, oneDefault, maxLen );
   destination[maxLen] = 0;
 
   tagName[numTags] = tag;
@@ -1320,7 +1320,7 @@ int i;
 char *s = destination;
 
   for ( i=0; i<maxLen; i++ ) {
-    strncpy( s, oneDefault, strSize-1 );
+    Strncpy( s, oneDefault, strSize-1 );
     s[strSize-1] = 0;
     s += strSize;
   }
@@ -2444,7 +2444,7 @@ double smallDoubleArray[100];
 
     s = (char *) tagDestination[index];
 
-    strncpy( s, val, tagDestMaxSize[index] );
+    Strncpy( s, val, tagDestMaxSize[index] );
     s[tagDestMaxSize[index]] = 0;
 
     l = strlen( s );
@@ -2496,7 +2496,7 @@ double smallDoubleArray[100];
         strcpy( (char *) ( s + ofs ), "" );
       }
       else {
-        strncpy( (char *) ( s + ofs ), tk, enumNumChoices[index]-1 );
+        Strncpy( (char *) ( s + ofs ), tk, enumNumChoices[index]-1 );
         ((char *) ( s + ofs ))[enumNumChoices[index]] = 0;
       }
 
@@ -2805,7 +2805,7 @@ double smallDoubleArray[100];
       return 0;
     }
 
-    strncpy( tmp, val, MAXBUF );
+    Strncpy( tmp, val, MAXBUF );
     tmp[MAXBUF] = 0;
 
     // first, count tokens and allocate array (two tokens per value)
@@ -2848,7 +2848,7 @@ double smallDoubleArray[100];
 
       // not a small array, so copy val into tmp again and extract values
 
-      strncpy( tmp, val, MAXBUF );
+      Strncpy( tmp, val, MAXBUF );
       tmp[MAXBUF] = 0;
 
       n = 0;
@@ -2885,7 +2885,7 @@ double smallDoubleArray[100];
       return 0;
     }
 
-    strncpy( tmp, val, MAXBUF );
+    Strncpy( tmp, val, MAXBUF );
     tmp[MAXBUF] = 0;
 
     // first, count tokens and allocate array (two tokens per value)
@@ -2928,7 +2928,7 @@ double smallDoubleArray[100];
 
       // not a small array, so copy val into tmp again and extract values
 
-      strncpy( tmp, val, MAXBUF );
+      Strncpy( tmp, val, MAXBUF );
       tmp[MAXBUF] = 0;
 
       n = 0;

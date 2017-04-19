@@ -34,7 +34,7 @@ static void doFilter (
 
 colorListClass *clo = (colorListClass *) client;
 
-  strncpy( clo->filterString, "*", 63 );
+  Strncpy( clo->filterString, "*", 63 );
 
   XtUnmanageChild( clo->list );
   clo->clear();
@@ -381,7 +381,7 @@ void colorListClass::setFile (
   char *name )
 {
 
-  strncpy( fileName, name, 127 );
+  Strncpy( fileName, name, 127 );
 
 }
 
@@ -389,7 +389,7 @@ void colorListClass::setFilterString (
   char *string )
 {
 
-  strncpy( filterString, string, 63 );
+  Strncpy( filterString, string, 63 );
 
 }
 
@@ -440,7 +440,7 @@ char buf[127+1], *ptr;
     }
     else if ( begins ) {
 
-      strncpy( buf, pattern, 127 );
+      Strncpy( buf, pattern, 127 );
       buf[lp-1] = 0;                    // discard last char
       ptr = strstr( string, buf );
       if ( ptr == string )
@@ -451,7 +451,7 @@ char buf[127+1], *ptr;
     }
     else if ( ends ) {
 
-      strncpy( buf, &pattern[1], 127 ); // discard first char
+      Strncpy( buf, &pattern[1], 127 ); // discard first char
       start = ls - strlen(buf);
       if ( start < 0 ) return 0;
       ptr = strstr( &string[start], buf );

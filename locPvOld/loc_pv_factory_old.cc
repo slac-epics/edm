@@ -93,7 +93,7 @@ ProcessVariable *LOC_PV_Factory::create(const char *PV_name)
     LOC_ProcessVariable *pv;
     LocHashTableItem item;
 
-    strncpy( tmp, PV_name, PV_Factory::MAX_PV_NAME );
+    Strncpy( tmp, PV_name, PV_Factory::MAX_PV_NAME );
     tmp[PV_Factory::MAX_PV_NAME] = 0;
 
     ctx = NULL;
@@ -168,7 +168,7 @@ char tmp[PV_Factory::MAX_PV_NAME+1], *tk, *ctx;
 
     if ( &string[i] ) i++;
     if ( &string[i] ) {
-      strncpy( buf, &string[i], MAX_BUF_CHARS );
+      Strncpy( buf, &string[i], MAX_BUF_CHARS );
       buf[MAX_BUF_CHARS] = 0;
     }
     else {
@@ -185,7 +185,7 @@ char tmp[PV_Factory::MAX_PV_NAME+1], *tk, *ctx;
 
     if ( &string[i] ) i++;
     if ( &string[i] ) {
-      strncpy( buf, &string[i], MAX_BUF_CHARS );
+      Strncpy( buf, &string[i], MAX_BUF_CHARS );
       buf[MAX_BUF_CHARS] = 0;
     }
     else {
@@ -202,13 +202,13 @@ char tmp[PV_Factory::MAX_PV_NAME+1], *tk, *ctx;
     if ( &string[i] ) i++;
     if ( &string[i] ) {
 
-      strncpy( tmp, &string[i], MAX_BUF_CHARS );
+      Strncpy( tmp, &string[i], MAX_BUF_CHARS );
       tmp[MAX_BUF_CHARS] = 0;
 
       ctx = NULL;
       tk = strtok_r( tmp, ",;", &ctx );
       if ( tk ) {
-        strncpy( buf, tk, MAX_BUF_CHARS );
+        Strncpy( buf, tk, MAX_BUF_CHARS );
         buf[MAX_BUF_CHARS] = 0;
         bufLen = strlen( buf );
       }
@@ -261,7 +261,7 @@ char tmp[PV_Factory::MAX_PV_NAME+1], *tk, *ctx;
 
     if ( &string[i] ) i++;
     if ( &string[i] ) {
-      strncpy( buf, &string[i], MAX_BUF_CHARS );
+      Strncpy( buf, &string[i], MAX_BUF_CHARS );
       buf[MAX_BUF_CHARS] = 0;
     }
     else {
@@ -419,7 +419,7 @@ size_t LOC_ProcessVariable::get_string(char *strbuf, size_t len) const
 size_t l = bufLen;
 
   if ( len < l ) l = len;
-  strncpy( strbuf, buf, l );
+  Strncpy( strbuf, buf, l );
   strbuf[l] = 0;
 
   return l;
@@ -632,7 +632,7 @@ int l;
     l = strlen(value);
   }
 
-  strncpy( buf, value, l );
+  Strncpy( buf, value, l );
   buf[l] = 0;
   bufLen = strlen( buf );
   do_value_callbacks();
@@ -656,7 +656,7 @@ int l;
     l = strlen(value);
   }
 
-  strncpy( buf, value, l );
+  Strncpy( buf, value, l );
   buf[l] = 0;
   bufLen = strlen( buf );
   do_value_callbacks();
@@ -680,7 +680,7 @@ int l;
     l = strlen(value);
   }
 
-  strncpy( buf, value, l );
+  Strncpy( buf, value, l );
   buf[l] = 0;
   bufLen = strlen( buf );
   do_value_callbacks();

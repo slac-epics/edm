@@ -142,7 +142,7 @@ edmBoxClass *ebo = (edmBoxClass *) client;
     ebo->readMax = ebo->efReadMax.value();
   }
 
-  strncpy( ebo->fontTag, ebo->fm.currentFontTag(), 63 );
+  Strncpy( ebo->fontTag, ebo->fm.currentFontTag(), 63 );
   ebo->fontTag[63] = 0;
 
   ebo->actWin->fi->loadFontTag( ebo->fontTag );
@@ -151,7 +151,7 @@ edmBoxClass *ebo = (edmBoxClass *) client;
 
   ebo->fs = ebo->actWin->fi->getXFontStruct( ebo->fontTag );
 
-  strncpy( ebo->label, ebo->bufLabel, 63 );
+  Strncpy( ebo->label, ebo->bufLabel, 63 );
   ebo->label[63] = 0;
 
   ebo->stringLength = strlen( ebo->label );
@@ -307,9 +307,9 @@ activeGraphicClass *ago = (activeGraphicClass *) this;
   fill = source->fill;
   lineColorMode = source->lineColorMode;
   fillColorMode = source->fillColorMode;
-  strncpy( fontTag, source->fontTag, 63 );
+  Strncpy( fontTag, source->fontTag, 63 );
   fontTag[63] = 0;
-  strncpy( label, source->label, 63 );
+  Strncpy( label, source->label, 63 );
   label[63] = 0;
   fs = actWin->fi->getXFontStruct( fontTag );
   stringLength = source->stringLength;
@@ -398,9 +398,9 @@ char title[32], *ptr;
 
   ptr = actWin->obj.getNameFromClass( "2ed7d2e8_f439_11d2_8fed_00104b8742df" );
   if ( ptr )
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   else
-    strncpy( title, edmBoxComplete_str2, 31 );
+    Strncpy( title, edmBoxComplete_str2, 31 );
 
   Strncat( title, edmBoxComplete_str3, 31 );
 
@@ -420,14 +420,14 @@ char title[32], *ptr;
   bufLineStyle = lineStyle;
 
   if ( pvExpStr.getRaw() )
-    strncpy( bufPvName, pvExpStr.getRaw(), activeGraphicClass::MAX_PV_NAME );
+    Strncpy( bufPvName, pvExpStr.getRaw(), activeGraphicClass::MAX_PV_NAME );
   else
     strcpy( bufPvName, "" );
 
   bufEfReadMin = efReadMin;
   bufEfReadMax = efReadMax;
 
-  strncpy( bufLabel, label, 63 );
+  Strncpy( bufLabel, label, 63 );
   bufLabel[63] = 0;
 
   ef.create( actWin->top, actWin->appCtx->ci.getColorMap(),

@@ -94,15 +94,15 @@ activeButtonClass *bto = (activeButtonClass *) client;
   bto->controlPvName.setRaw( bto->eBuf->controlBufPvName );
   bto->readPvName.setRaw( bto->eBuf->readBufPvName );
 
-  strncpy( bto->onLabel, bto->eBuf->bufOnLabel, MAX_ENUM_STRING_SIZE );
-  strncpy( bto->offLabel, bto->eBuf->bufOffLabel, MAX_ENUM_STRING_SIZE );
+  Strncpy( bto->onLabel, bto->eBuf->bufOnLabel, MAX_ENUM_STRING_SIZE );
+  Strncpy( bto->offLabel, bto->eBuf->bufOffLabel, MAX_ENUM_STRING_SIZE );
 
   if ( strcmp( bto->labelTypeString, activeButtonClass_str3 ) == 0 )
     bto->labelType = BTC_K_PV_STATE;
   else
     bto->labelType = BTC_K_LITERAL;
 
-  strncpy( bto->fontTag, bto->fm.currentFontTag(), 63 );
+  Strncpy( bto->fontTag, bto->fm.currentFontTag(), 63 );
   bto->actWin->fi->loadFontTag( bto->fontTag );
   bto->fs = bto->actWin->fi->getXFontStruct( bto->fontTag );
 
@@ -125,7 +125,7 @@ activeButtonClass *bto = (activeButtonClass *) client;
   else
     bto->invisible = 0;
 
-  strncpy( bto->id, bto->bufId, 31 );
+  Strncpy( bto->id, bto->bufId, 31 );
   bto->downCallbackFlag = bto->eBuf->bufDownCallbackFlag;
   bto->upCallbackFlag = bto->eBuf->bufUpCallbackFlag;
   bto->activateCallbackFlag = bto->eBuf->bufActivateCallbackFlag;
@@ -134,8 +134,8 @@ activeButtonClass *bto = (activeButtonClass *) client;
    bto->activateCallbackFlag || bto->deactivateCallbackFlag;
 
   bto->visPvExpString.setRaw( bto->eBuf->bufVisPvName );
-  strncpy( bto->minVisString, bto->eBuf->bufMinVisString, 39 );
-  strncpy( bto->maxVisString, bto->eBuf->bufMaxVisString, 39 );
+  Strncpy( bto->minVisString, bto->eBuf->bufMinVisString, 39 );
+  Strncpy( bto->maxVisString, bto->eBuf->bufMaxVisString, 39 );
 
   if ( bto->eBuf->bufVisInverted )
     bto->visInverted = 0;
@@ -540,7 +540,7 @@ activeGraphicClass *bto = (activeGraphicClass *) this;
   activateCallback = NULL;
   deactivateCallback = NULL;
 
-  strncpy( fontTag, source->fontTag, 63 );
+  Strncpy( fontTag, source->fontTag, 63 );
 
   fs = actWin->fi->getXFontStruct( fontTag );
 
@@ -557,8 +557,8 @@ activeGraphicClass *bto = (activeGraphicClass *) this;
   visPvExpString.copy( source->visPvExpString );
   colorPvExpString.copy( source->colorPvExpString );
 
-  strncpy( onLabel, source->onLabel, MAX_ENUM_STRING_SIZE );
-  strncpy( offLabel, source->offLabel, MAX_ENUM_STRING_SIZE );
+  Strncpy( onLabel, source->onLabel, MAX_ENUM_STRING_SIZE );
+  Strncpy( offLabel, source->offLabel, MAX_ENUM_STRING_SIZE );
 
   labelType = source->labelType;
 
@@ -576,8 +576,8 @@ activeGraphicClass *bto = (activeGraphicClass *) this;
   visibility = 0;
   prevVisibility = -1;
   visInverted = source->visInverted;
-  strncpy( minVisString, source->minVisString, 39 );
-  strncpy( maxVisString, source->maxVisString, 39 );
+  Strncpy( minVisString, source->minVisString, 39 );
+  Strncpy( maxVisString, source->maxVisString, 39 );
   activeMode = 0;
   buttonIsDown = 0;
 
@@ -1425,7 +1425,7 @@ char *tk, *gotData, *context, buf[255+1];
         tk = strtok_r( NULL, "\"\n", &context );
 
         if ( tk ) {
-          strncpy( onLabel, tk, MAX_ENUM_STRING_SIZE );
+          Strncpy( onLabel, tk, MAX_ENUM_STRING_SIZE );
           onLabel[MAX_ENUM_STRING_SIZE] = 0;
 	}
 	else {
@@ -1439,7 +1439,7 @@ char *tk, *gotData, *context, buf[255+1];
         tk = strtok_r( NULL, "\"\n", &context );
 
         if ( tk ) {
-          strncpy( offLabel, tk, MAX_ENUM_STRING_SIZE );
+          Strncpy( offLabel, tk, MAX_ENUM_STRING_SIZE );
           offLabel[MAX_ENUM_STRING_SIZE] = 0;
 	}
 	else {
@@ -1456,7 +1456,7 @@ char *tk, *gotData, *context, buf[255+1];
           return 0;
         }
 
-        strncpy( fontTag, tk, 63 );
+        Strncpy( fontTag, tk, 63 );
 
       }
             
@@ -1549,13 +1549,13 @@ char title[32], *ptr;
 
   ptr = actWin->obj.getNameFromClass( "activeButtonClass" );
   if ( ptr )
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   else
-    strncpy( title, activeButtonClass_str7, 31 );
+    Strncpy( title, activeButtonClass_str7, 31 );
 
   Strncat( title, activeButtonClass_str8, 31 );
 
-  strncpy( bufId, id, 31 );
+  Strncpy( bufId, id, 31 );
 
   eBuf->bufX = x;
   eBuf->bufY = y;
@@ -1573,34 +1573,34 @@ char title[32], *ptr;
 
   eBuf->bufTopShadowColor = topShadowColor;
   eBuf->bufBotShadowColor = botShadowColor;
-  strncpy( eBuf->bufFontTag, fontTag, 63 );
+  Strncpy( eBuf->bufFontTag, fontTag, 63 );
 
   if ( controlPvName.getRaw() )
-    strncpy( eBuf->controlBufPvName, controlPvName.getRaw(),
+    Strncpy( eBuf->controlBufPvName, controlPvName.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->controlBufPvName, "" );
 
   if ( readPvName.getRaw() )
-    strncpy( eBuf->readBufPvName, readPvName.getRaw(),
+    Strncpy( eBuf->readBufPvName, readPvName.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->readBufPvName, "" );
 
   if ( visPvExpString.getRaw() )
-    strncpy( eBuf->bufVisPvName, visPvExpString.getRaw(),
+    Strncpy( eBuf->bufVisPvName, visPvExpString.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufVisPvName, "" );
 
   if ( colorPvExpString.getRaw() )
-    strncpy( eBuf->bufColorPvName, colorPvExpString.getRaw(),
+    Strncpy( eBuf->bufColorPvName, colorPvExpString.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufColorPvName, "" );
 
-  strncpy( eBuf->bufOnLabel, onLabel, MAX_ENUM_STRING_SIZE );
-  strncpy( eBuf->bufOffLabel, offLabel, MAX_ENUM_STRING_SIZE );
+  Strncpy( eBuf->bufOnLabel, onLabel, MAX_ENUM_STRING_SIZE );
+  Strncpy( eBuf->bufOffLabel, offLabel, MAX_ENUM_STRING_SIZE );
 
   eBuf->bufDownCallbackFlag = downCallbackFlag;
   eBuf->bufUpCallbackFlag = upCallbackFlag;
@@ -1632,8 +1632,8 @@ char title[32], *ptr;
   else
     eBuf->bufVisInverted = 1;
 
-  strncpy( eBuf->bufMinVisString, minVisString, 39 );
-  strncpy( eBuf->bufMaxVisString, maxVisString, 39 );
+  Strncpy( eBuf->bufMinVisString, minVisString, 39 );
+  Strncpy( eBuf->bufMaxVisString, maxVisString, 39 );
 
   eBuf->bufEfControlBitPos = efControlBitPos;
   eBuf->bufEfReadBitPos = efReadBitPos;
@@ -1977,15 +1977,15 @@ int blink = 0;
   if ( cV == 0 ) {
 
     if ( labelType == BTC_K_LITERAL ) {
-      strncpy( string, offLabel, MAX_ENUM_STRING_SIZE );
+      Strncpy( string, offLabel, MAX_ENUM_STRING_SIZE );
     }
     else {
       if ( stateStringPvId && stateStringPvId->get_enum_count() > 0 ) {
-        strncpy( string, (char *) stateStringPvId->get_enum( 0 ),
+        Strncpy( string, (char *) stateStringPvId->get_enum( 0 ),
          MAX_ENUM_STRING_SIZE );
       }
       else {
-        strncpy( string, "0", MAX_ENUM_STRING_SIZE );
+        Strncpy( string, "0", MAX_ENUM_STRING_SIZE );
       }
 
     }
@@ -2046,15 +2046,15 @@ int blink = 0;
   else {
 
     if ( labelType == BTC_K_LITERAL ) {
-      strncpy( string, onLabel, MAX_ENUM_STRING_SIZE );
+      Strncpy( string, onLabel, MAX_ENUM_STRING_SIZE );
     }
     else {
       if ( stateStringPvId && stateStringPvId->get_enum_count() > 1 ) {
-        strncpy( string, (char *) stateStringPvId->get_enum( 1 ),
+        Strncpy( string, (char *) stateStringPvId->get_enum( 1 ),
          MAX_ENUM_STRING_SIZE );
       }
       else {
-        strncpy( string, "1", MAX_ENUM_STRING_SIZE );
+        Strncpy( string, "1", MAX_ENUM_STRING_SIZE );
       }
     }
 
@@ -2215,28 +2215,28 @@ char callbackName[63+1];
       if ( anyCallbackFlag ) {
 
         if ( downCallbackFlag ) {
-          strncpy( callbackName, id, 63 );
+          Strncpy( callbackName, id, 63 );
           Strncat( callbackName, "Down", 63 );
           downCallback =
            actWin->appCtx->userLibObject.getFunc( callbackName );
 	}
 
         if ( upCallbackFlag ) {
-          strncpy( callbackName, id, 63 );
+          Strncpy( callbackName, id, 63 );
           Strncat( callbackName, "Up", 63 );
           upCallback =
            actWin->appCtx->userLibObject.getFunc( callbackName );
 	}
 
         if ( activateCallbackFlag ) {
-          strncpy( callbackName, id, 63 );
+          Strncpy( callbackName, id, 63 );
           Strncat( callbackName, "Activate", 63 );
           activateCallback =
            actWin->appCtx->userLibObject.getFunc( callbackName );
 	}
 
         if ( deactivateCallbackFlag ) {
-          strncpy( callbackName, id, 63 );
+          Strncpy( callbackName, id, 63 );
           Strncat( callbackName, "Deactivate", 63 );
           deactivateCallback =
            actWin->appCtx->userLibObject.getFunc( callbackName );
@@ -2720,7 +2720,7 @@ char msg[79+1];
     }
     else if ( controlPvId->get_type().type !=
      ProcessVariable::Type::enumerated ) {
-      strncpy( msg, actWin->obj.getNameFromClass( "activeButtonClass" ),
+      Strncpy( msg, actWin->obj.getNameFromClass( "activeButtonClass" ),
        79 );
       Strncat( msg, activeButtonClass_str51, 79 );
       actWin->appCtx->postMessage( msg );
@@ -2786,7 +2786,7 @@ char msg[79+1];
     }
     else if ( readPvId->get_type().type !=
      ProcessVariable::Type::enumerated ) {
-      strncpy( msg, actWin->obj.getNameFromClass( "activeButtonClass" ),
+      Strncpy( msg, actWin->obj.getNameFromClass( "activeButtonClass" ),
        79 );
       Strncat( msg, activeButtonClass_str54, 79 );
       actWin->appCtx->postMessage( msg );
@@ -3148,7 +3148,7 @@ void activeButtonClass::changeDisplayParams (
     botShadowColor = _botShadowColor;
 
   if ( _flag & ACTGRF_BTNFONTTAG_MASK ) {
-    strncpy( fontTag, _btnFontTag, 63 );
+    Strncpy( fontTag, _btnFontTag, 63 );
     fontTag[63] = 0;
     actWin->fi->loadFontTag( fontTag );
     fs = actWin->fi->getXFontStruct( fontTag );
@@ -3263,25 +3263,25 @@ void activeButtonClass::replaceString (
   else if ( i == 4 ) {
     int l = max;
     if ( 39 < max ) l = 39;
-    strncpy( minVisString, string, l );
+    Strncpy( minVisString, string, l );
     minVisString[l] = 0;
   }
   else if ( i == 5 ) {
     int l = max;
     if ( 39 < max ) l = 39;
-    strncpy( maxVisString, string, l );
+    Strncpy( maxVisString, string, l );
     maxVisString[l] = 0;
   }
   else if ( i == 6 ) {
     int l = max;
     if ( MAX_ENUM_STRING_SIZE < max ) l = MAX_ENUM_STRING_SIZE;
-    strncpy( onLabel, string, l );
+    Strncpy( onLabel, string, l );
     onLabel[l] = 0;
   }
   else if ( i == 7 ) {
     int l = max;
     if ( MAX_ENUM_STRING_SIZE < max ) l = MAX_ENUM_STRING_SIZE;
-    strncpy( offLabel, string, l );
+    Strncpy( offLabel, string, l );
     offLabel[l] = 0;
   }
 

@@ -9,6 +9,7 @@
 
 #include<alarm.h>
 #include<cvtFast.h>
+#include "sys_types.h"
 #include"proxy_pv_factory.h"
 #include "epicsVersion.h"
 
@@ -829,7 +830,7 @@ void PVValueInt::read_ctrlinfo(const void *buf)
     status = val->status;
     severity = val->severity;
     precision = 0;
-    strncpy(units, val->units, MAX_UNITS_SIZE);
+    Strncpy(units, val->units, MAX_UNITS_SIZE);
     units[MAX_UNITS_SIZE] = '\0';
     upper_disp_limit = val->upper_disp_limit;
     lower_disp_limit = val->lower_disp_limit;
@@ -910,7 +911,7 @@ void PVValueShort::read_ctrlinfo(const void *buf)
     status = val->status;
     severity = val->severity;
     precision = 0;
-    strncpy(units, val->units, MAX_UNITS_SIZE);
+    Strncpy(units, val->units, MAX_UNITS_SIZE);
     units[MAX_UNITS_SIZE] = '\0';
     upper_disp_limit = val->upper_disp_limit;
     lower_disp_limit = val->lower_disp_limit;
@@ -1005,7 +1006,7 @@ void PVValueDouble::read_ctrlinfo(const void *buf)
       status = fval->status;
       severity = fval->severity;
       precision = fval->precision;
-      strncpy(units, fval->units, MAX_UNITS_SIZE);
+      Strncpy(units, fval->units, MAX_UNITS_SIZE);
       units[MAX_UNITS_SIZE] = '\0';
       upper_disp_limit = fval->upper_disp_limit;
       lower_disp_limit = fval->lower_disp_limit;
@@ -1023,7 +1024,7 @@ void PVValueDouble::read_ctrlinfo(const void *buf)
       status = dval->status;
       severity = dval->severity;
       precision = dval->precision;
-      strncpy(units, dval->units, MAX_UNITS_SIZE);
+      Strncpy(units, dval->units, MAX_UNITS_SIZE);
       units[MAX_UNITS_SIZE] = '\0';
       upper_disp_limit = dval->upper_disp_limit;
       lower_disp_limit = dval->lower_disp_limit;
@@ -1115,7 +1116,7 @@ void PVValueEnum::read_ctrlinfo(const void *buf)
     severity = val->severity;
     enums = val->no_str;
     for (size_t i=0; i<enums; ++i)
-        strncpy(strs[i], val->strs[i], MAX_ENUM_STRING_SIZE);
+        Strncpy(strs[i], val->strs[i], MAX_ENUM_STRING_SIZE);
     value = val->value;
     upper_disp_limit = enums;
     upper_ctrl_limit = enums;
@@ -1165,7 +1166,7 @@ size_t PVValueString::get_string(char *strbuf, size_t buflen) const
     size_t len = strlen(value);
     if (buflen <= len)
         len = buflen-1;
-    strncpy(strbuf, value, len);
+    Strncpy(strbuf, value, len);
     strbuf[len] = '\0';
     
     return len;

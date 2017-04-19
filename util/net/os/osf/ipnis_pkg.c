@@ -23,7 +23,7 @@ int i;
     i = 0;
 
     strcpy( service_name, "5200" );
-    strncpy( node, "134.167.21.95", strlen("134.167.21.95") );
+    Strncpy( node, "134.167.21.95", strlen("134.167.21.95") );
     *mode = g_modes[i];
 
   }
@@ -33,7 +33,7 @@ int i;
     i = 0;
 
     strcpy( service_name, "5200" );
-    strncpy( node, "134.167.20.34", strlen("134.167.20.34") );
+    Strncpy( node, "134.167.20.34", strlen("134.167.20.34") );
     *mode = g_modes[i];
 
   }
@@ -44,7 +44,7 @@ int i;
     }
 
     i = 0;
-    strncpy( node, g_nodes[i], strlen(g_nodes[i]) );
+    Strncpy( node, g_nodes[i], strlen(g_nodes[i]) );
     *mode = g_modes[i];
 
   }

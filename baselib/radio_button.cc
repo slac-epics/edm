@@ -222,7 +222,7 @@ activeRadioButtonClass *rbto = (activeRadioButtonClass *) client;
   rbto->eraseSelectBoxCorners();
   rbto->erase();
 
-  strncpy( rbto->fontTag, rbto->fm.currentFontTag(), 63 );
+  Strncpy( rbto->fontTag, rbto->fm.currentFontTag(), 63 );
   rbto->actWin->fi->loadFontTag( rbto->fontTag );
   rbto->actWin->drawGc.setFontTag( rbto->fontTag, rbto->actWin->fi );
   rbto->actWin->fi->getTextFontList( rbto->fontTag, &rbto->fontList );
@@ -381,7 +381,7 @@ activeGraphicClass *rbto = (activeGraphicClass *) this;
     pb[i] = NULL;
   }
 
-  strncpy( fontTag, source->fontTag, 63 );
+  Strncpy( fontTag, source->fontTag, 63 );
   fs = actWin->fi->getXFontStruct( fontTag );
   actWin->fi->getTextFontList( fontTag, &fontList );
 
@@ -759,9 +759,9 @@ char title[32], *ptr;
 
   ptr = actWin->obj.getNameFromClass( "activeRadioButtonClass" );
   if ( ptr )
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   else
-    strncpy( title, activeRadioButtonClass_str2, 31 );
+    Strncpy( title, activeRadioButtonClass_str2, 31 );
 
   Strncat( title, activeRadioButtonClass_str3, 31 );
 
@@ -782,7 +782,7 @@ char title[32], *ptr;
   bufBgColorMode = bgColorMode;
 
   if ( controlPvExpStr.getRaw() )
-    strncpy( eBuf->bufControlPvName, controlPvExpStr.getRaw(),
+    Strncpy( eBuf->bufControlPvName, controlPvExpStr.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufControlPvName, "" );
@@ -1256,7 +1256,7 @@ char msg[79+1];
   if ( nc ) {
 
     if ( controlPvId->get_type().type != ProcessVariable::Type::enumerated ) {
-      strncpy( msg, actWin->obj.getNameFromClass( "activeRadioButtonClass" ),
+      Strncpy( msg, actWin->obj.getNameFromClass( "activeRadioButtonClass" ),
        79 );
       Strncat( msg, activeRadioButtonClass_str30, 79 );
       actWin->appCtx->postMessage( msg );

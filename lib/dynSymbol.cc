@@ -122,7 +122,7 @@ activeGraphicListPtr head, cur, next, sourceHead, curSource;
   dso->gateUpValue = _dso->gateUpValue;
   dso->gateDownValue = _dso->gateDownValue;
 
-  strncpy( dso->dynSymbolFileName, _dso->dynSymbolFileName, 127 );
+  Strncpy( dso->dynSymbolFileName, _dso->dynSymbolFileName, 127 );
 
   dso->numStates = _dso->numStates;
   for ( i=0; i<_dso->numStates; i++ ) {
@@ -419,7 +419,7 @@ int stat, resizeStat, saveW, saveH;
 
 // =============================================
 
-  strncpy( dso->id, dso->bufId, 31 );
+  Strncpy( dso->id, dso->bufId, 31 );
 
   dso->x = dso->bufX;
   dso->sboxX = dso->bufX;
@@ -429,7 +429,7 @@ int stat, resizeStat, saveW, saveH;
 
 //    dso->controlPvExpStr.setRaw( dso->eBuf->bufControlPvName );
 
-  strncpy( dso->dynSymbolFileName, dso->bufDynSymbolFileName, 127 );
+  Strncpy( dso->dynSymbolFileName, dso->bufDynSymbolFileName, 127 );
 
   dso->useOriginalSize = dso->bufUseOriginalSize;
 
@@ -728,7 +728,7 @@ int i;
   gateUpValue = source->gateUpValue;
   gateDownValue = source->gateDownValue;
 
-  strncpy( dynSymbolFileName, source->dynSymbolFileName, 127 );
+  Strncpy( dynSymbolFileName, source->dynSymbolFileName, 127 );
 
   numStates = source->numStates;
 
@@ -793,33 +793,33 @@ char title[32], *ptr;
 
   ptr = actWin->obj.getNameFromClass( "activeDynSymbolClass" );
   if ( ptr )
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   else
-    strncpy( title, activeDynSymbolClass_str5, 31 );
+    Strncpy( title, activeDynSymbolClass_str5, 31 );
 
   Strncat( title, activeDynSymbolClass_str6, 31 );
 
-  strncpy( bufId, id, 31 );
+  Strncpy( bufId, id, 31 );
 
   bufX = x;
   bufY = y;
 
-  strncpy( bufDynSymbolFileName, dynSymbolFileName, 127 );
+  Strncpy( bufDynSymbolFileName, dynSymbolFileName, 127 );
 
 //    if ( controlPvExpStr.getRaw() )
-//      strncpy( eBuf->bufControlPvName, controlPvExpStr.getRaw(),
+//      Strncpy( eBuf->bufControlPvName, controlPvExpStr.getRaw(),
 //       PV_Factory::MAX_PV_NAME );
 //    else
 //      strcpy( eBuf->bufControlPvName, "" );
 
   if ( gateUpPvExpStr.getRaw() )
-    strncpy( eBuf->bufGateUpPvName, gateUpPvExpStr.getRaw(),
+    Strncpy( eBuf->bufGateUpPvName, gateUpPvExpStr.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufGateUpPvName, "" );
 
   if ( gateDownPvExpStr.getRaw() )
-    strncpy( eBuf->bufGateDownPvName, gateDownPvExpStr.getRaw(),
+    Strncpy( eBuf->bufGateDownPvName, gateDownPvExpStr.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufGateDownPvName, "" );
@@ -841,7 +841,7 @@ char title[32], *ptr;
   bufInitialIndex = initialIndex;
 
   if ( colorPvExpStr.getRaw() )
-    strncpy( eBuf->bufColorPvName, colorPvExpStr.getRaw(),
+    Strncpy( eBuf->bufColorPvName, colorPvExpStr.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufColorPvName, "" );
@@ -4278,7 +4278,7 @@ int i;
   gateUpValue = ptr->dso->gateUpValue;
   gateDownValue = ptr->dso->gateDownValue;
 
-  strncpy( dynSymbolFileName, ptr->dso->dynSymbolFileName, 127 );
+  Strncpy( dynSymbolFileName, ptr->dso->dynSymbolFileName, 127 );
 
   numStates = ptr->dso->numStates;
   for ( i=0; i<ptr->dso->numStates; i++ ) {

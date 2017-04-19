@@ -67,7 +67,7 @@ unsigned int pixel;
 
   if ( appCtx ) {
 
-    strncpy( buf, appCtx->colorPath, 127 );
+    Strncpy( buf, appCtx->colorPath, 127 );
     Strncat( buf, "default.scheme", 127 );
     f = fopen( buf, "r" );
     if ( !f ) return 0;

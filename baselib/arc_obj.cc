@@ -132,8 +132,8 @@ activeArcClass *aao = (activeArcClass *) client;
   else
     aao->visInverted = 1;
 
-  strncpy( aao->minVisString, aao->eBuf->bufMinVisString, 39 );
-  strncpy( aao->maxVisString, aao->eBuf->bufMaxVisString, 39 );
+  Strncpy( aao->minVisString, aao->eBuf->bufMinVisString, 39 );
+  Strncpy( aao->maxVisString, aao->eBuf->bufMaxVisString, 39 );
 
   aao->efStartAngle = aao->eBuf->bufEfStartAngle;
   if ( aao->efStartAngle.isNull() ) {
@@ -396,8 +396,8 @@ activeGraphicClass *ago = (activeGraphicClass *) this;
   visPvExists = alarmPvExists = 0;
   activeMode = 0;
 
-  strncpy( minVisString, source->minVisString, 39 );
-  strncpy( maxVisString, source->maxVisString, 39 );
+  Strncpy( minVisString, source->minVisString, 39 );
+  Strncpy( maxVisString, source->maxVisString, 39 );
 
   lineWidth = source->lineWidth;
   lineStyle = source->lineStyle;
@@ -486,9 +486,9 @@ char title[32], *ptr;
 
   ptr = actWin->obj.getNameFromClass( "activeArcClass" );
   if ( ptr )
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   else
-    strncpy( title, activeArcClass_str4, 31 );
+    Strncpy( title, activeArcClass_str4, 31 );
 
   Strncat( title, activeArcClass_str5, 31 );
 
@@ -508,13 +508,13 @@ char title[32], *ptr;
   eBuf->bufLineStyle = lineStyle;
 
   if ( alarmPvExpStr.getRaw() )
-    strncpy( eBuf->bufAlarmPvName, alarmPvExpStr.getRaw(),
+    Strncpy( eBuf->bufAlarmPvName, alarmPvExpStr.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufAlarmPvName, "" );
 
   if ( visPvExpStr.getRaw() )
-    strncpy( eBuf->bufVisPvName, visPvExpStr.getRaw(),
+    Strncpy( eBuf->bufVisPvName, visPvExpStr.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufVisPvName, "" );
@@ -524,8 +524,8 @@ char title[32], *ptr;
   else
     eBuf->bufVisInverted = 1;
 
-  strncpy( eBuf->bufMinVisString, minVisString, 39 );
-  strncpy( eBuf->bufMaxVisString, maxVisString, 39 );
+  Strncpy( eBuf->bufMinVisString, minVisString, 39 );
+  Strncpy( eBuf->bufMaxVisString, maxVisString, 39 );
 
   eBuf->bufEfStartAngle = efStartAngle;
   eBuf->bufEfTotalAngle = efTotalAngle;
@@ -2213,13 +2213,13 @@ void activeArcClass::replaceString (
   else if ( i == 2 ) {
     int l = max;
     if ( 39 < max ) l = 39;
-    strncpy( minVisString, string, l );
+    Strncpy( minVisString, string, l );
     minVisString[l] = 0;
   }
   else if ( i == 3 ) {
     int l = max;
     if ( 39 < max ) l = 39;
-    strncpy( maxVisString, string, l );
+    Strncpy( maxVisString, string, l );
     maxVisString[l] = 0;
   }
 

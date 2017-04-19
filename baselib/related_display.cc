@@ -267,7 +267,7 @@ relatedDisplayClass *rdo = (relatedDisplayClass *) client;
     rdo->replaceSymbols[i] = 0;
   }
 
-  strncpy( rdo->fontTag, rdo->fm.currentFontTag(), 63 );
+  Strncpy( rdo->fontTag, rdo->fm.currentFontTag(), 63 );
   rdo->actWin->fi->loadFontTag( rdo->fontTag );
   rdo->actWin->drawGc.setFontTag( rdo->fontTag, rdo->actWin->fi );
   rdo->actWin->fi->getTextFontList( rdo->fontTag, &rdo->fontList );
@@ -497,7 +497,7 @@ activeGraphicClass *rdo = (activeGraphicClass *) this;
   name = new char[strlen("relatedDisplayClass")+1];
   strcpy( name, "relatedDisplayClass" );
 
-  strncpy( fontTag, source->fontTag, 63 );
+  Strncpy( fontTag, source->fontTag, 63 );
   fs = actWin->fi->getXFontStruct( fontTag );
   actWin->fi->getTextFontList( fontTag, &fontList );
 
@@ -581,7 +581,7 @@ int item;
 
   if ( !blank( helpCommandExpString.getExpanded() ) ) {
 
-    strncpy( buf, helpCommandExpString.getExpanded(), 255 );
+    Strncpy( buf, helpCommandExpString.getExpanded(), 255 );
     buf[255] = 0;
 
     ctx = NULL;
@@ -1531,7 +1531,7 @@ char *tk, *gotData, *context, buf[255+1];
           return 0;
         }
 
-        strncpy( fontTag, tk, 63 );
+        Strncpy( fontTag, tk, 63 );
 
       }
 
@@ -1652,9 +1652,9 @@ char title[32], *ptr;
 
   ptr = actWin->obj.getNameFromClass( "relatedDisplayClass" );
   if ( ptr )
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   else
-    strncpy( title, relatedDisplayClass_str17, 31 );
+    Strncpy( title, relatedDisplayClass_str17, 31 );
 
   Strncat( title, relatedDisplayClass_str3, 31 );
 
@@ -1663,7 +1663,7 @@ char title[32], *ptr;
   buf->bufW = w;
   buf->bufH = h;
 
-  strncpy( buf->bufFontTag, fontTag, 63 );
+  Strncpy( buf->bufFontTag, fontTag, 63 );
 
   buf->bufTopShadowColor = topShadowColor;
   buf->bufBotShadowColor = botShadowColor;
@@ -1685,14 +1685,14 @@ char title[32], *ptr;
   for ( i=0; i<maxDsps; i++ ) {
 
     if ( displayFileName[i].getRaw() )
-      strncpy( buf->bufDisplayFileName[i], displayFileName[i].getRaw(), 127 );
+      Strncpy( buf->bufDisplayFileName[i], displayFileName[i].getRaw(), 127 );
     else
-      strncpy( buf->bufDisplayFileName[i], "", 127 );
+      Strncpy( buf->bufDisplayFileName[i], "", 127 );
 
     if ( label[i].getRaw() )
-      strncpy( buf->bufLabel[i], label[i].getRaw(), 127 );
+      Strncpy( buf->bufLabel[i], label[i].getRaw(), 127 );
     else
-      strncpy( buf->bufLabel[i], "", 127 );
+      Strncpy( buf->bufLabel[i], "", 127 );
 
     buf->bufCloseAction[i] = closeAction[i];
 
@@ -1705,11 +1705,11 @@ char title[32], *ptr;
     buf->bufPropagateMacros[i] = propagateMacros[i];
 
     if ( symbolsExpStr[i].getRaw() ) {
-      strncpy( buf->bufSymbols[i], symbolsExpStr[i].getRaw(), maxSymbolLen );
+      Strncpy( buf->bufSymbols[i], symbolsExpStr[i].getRaw(), maxSymbolLen );
       buf->bufSymbols[i][maxSymbolLen] = 0;
     }
     else {
-      strncpy( buf->bufSymbols[i], "", maxSymbolLen );
+      Strncpy( buf->bufSymbols[i], "", maxSymbolLen );
     }
 
     buf->bufReplaceSymbols[i] = replaceSymbols[i];
@@ -1718,7 +1718,7 @@ char title[32], *ptr;
 
   for ( i=0; i<NUMPVS; i++ ) {
     if ( destPvExpString[i].getRaw() ) {
-      strncpy( buf->bufDestPvName[i], destPvExpString[i].getRaw(),
+      Strncpy( buf->bufDestPvName[i], destPvExpString[i].getRaw(),
        PV_Factory::MAX_PV_NAME );
       buf->bufDestPvName[i][PV_Factory::MAX_PV_NAME] = 0;
     }
@@ -1726,7 +1726,7 @@ char title[32], *ptr;
       strcpy( buf->bufDestPvName[i], "" );
     }
     if ( sourceExpString[i].getRaw() ) {
-      strncpy( buf->bufSource[i], sourceExpString[i].getRaw(), 39 );
+      Strncpy( buf->bufSource[i], sourceExpString[i].getRaw(), 39 );
       buf->bufSource[i][39] = 0;
     }
     else {
@@ -1735,7 +1735,7 @@ char title[32], *ptr;
   }
 
   if ( colorPvExpString.getRaw() ) {
-    strncpy( buf->bufColorPvName, colorPvExpString.getRaw(),
+    Strncpy( buf->bufColorPvName, colorPvExpString.getRaw(),
      PV_Factory::MAX_PV_NAME );
     buf->bufColorPvName[PV_Factory::MAX_PV_NAME] = 0;
   }
@@ -1744,11 +1744,11 @@ char title[32], *ptr;
   }
 
   if ( buttonLabel.getRaw() ) {
-    strncpy( buf->bufButtonLabel, buttonLabel.getRaw(), 127 );
+    Strncpy( buf->bufButtonLabel, buttonLabel.getRaw(), 127 );
     buf->bufButtonLabel[127] = 0;
   }
   else {
-    strncpy( buf->bufButtonLabel, "", 127 );
+    Strncpy( buf->bufButtonLabel, "", 127 );
   }
 
   buf->bufButton3Popup = button3Popup;
@@ -1758,9 +1758,9 @@ char title[32], *ptr;
   buf->bufSwapButtons = swapButtons;
 
   if ( helpCommandExpString.getRaw() )
-    strncpy( buf->bufHelpCommand, helpCommandExpString.getRaw(), 255 );
+    Strncpy( buf->bufHelpCommand, helpCommandExpString.getRaw(), 255 );
   else
-    strncpy( buf->bufHelpCommand, "", 255 );
+    Strncpy( buf->bufHelpCommand, "", 255 );
 
   ef.create( actWin->top, actWin->appCtx->ci.getColorMap(),
    &actWin->appCtx->entryFormX,
@@ -2171,9 +2171,9 @@ int blink = 0;
    actWin->executeGc.normGC(), x, y, w, h );
 
   if ( buttonLabel.getExpanded() )
-    strncpy( string, buttonLabel.getExpanded(), 39 );
+    Strncpy( string, buttonLabel.getExpanded(), 39 );
   else
-    strncpy( string, "", 39 );
+    Strncpy( string, "", 39 );
 
   actWin->executeGc.setFG( actWin->ci->pix(botShadowColor) );
 
@@ -2849,7 +2849,7 @@ activeWindowClass *aw0, *aw1;
   // allow the syntax: @filename s1=v1,s2=v2,...
   // which means read symbols from file and append list
   gotSymbolsFromFile = 0;
-  strncpy( buf, symbolsExpStr[index].getExpanded(), maxSymbolLen );
+  Strncpy( buf, symbolsExpStr[index].getExpanded(), maxSymbolLen );
   buf[maxSymbolLen] = 0;
   context = NULL;
   tk = strtok_r( buf, " \t\n", &context );
@@ -2895,7 +2895,7 @@ activeWindowClass *aw0, *aw1;
       // append inline list to file contents
       tk = strtok_r( NULL, "\n", &context );
       if ( tk ) {
-        strncpy( fileBuf, symbolsFromFile.getRaw(), maxSymbolLen );
+        Strncpy( fileBuf, symbolsFromFile.getRaw(), maxSymbolLen );
         fileBuf[maxSymbolLen] = 0;
         if ( blank(fileBuf) ) {
           strcpy( fileBuf, "" );
@@ -2940,7 +2940,7 @@ activeWindowClass *aw0, *aw1;
         break;
 
       case ProcessVariable::Type::text:
-        strncpy( destV.str, sourceExpString[i].getExpanded(), 39 );
+        Strncpy( destV.str, sourceExpString[i].getExpanded(), 39 );
         destV.str[39] = 0;
         destPvId[i]->putText(
          XDisplayName(actWin->appCtx->displayName), destV.str );
@@ -3557,7 +3557,7 @@ void relatedDisplayClass::changeDisplayParams (
     botShadowColor = _botShadowColor;
 
   if ( _flag & ACTGRF_BTNFONTTAG_MASK ) {
-    strncpy( fontTag, _btnFontTag, 63 );
+    Strncpy( fontTag, _btnFontTag, 63 );
     fontTag[63] = 0;
     actWin->fi->loadFontTag( fontTag );
     fs = actWin->fi->getXFontStruct( fontTag );

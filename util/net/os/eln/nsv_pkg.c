@@ -301,7 +301,7 @@ VARYING_STRING(16) vs_con_data;
 
   if ( optional_data ) {
 
-    strncpy( vs_con_data.data, optional_data, 15 );
+    Strncpy( vs_con_data.data, optional_data, 15 );
     vs_con_data.data[15] = 0;
     vs_con_data.count = strlen(vs_con_data.data);
 

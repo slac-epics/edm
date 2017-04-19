@@ -37,14 +37,14 @@ FILE *f;
 
     envPtr = getenv(environment_str3);
     if ( envPtr ) {
-      strncpy( prefix, envPtr, 127 );
+      Strncpy( prefix, envPtr, 127 );
       if ( prefix[strlen(prefix)-1] != '/' ) Strncat( prefix, "/", 127 );
     }
     else {
       strcpy( prefix, "/etc/edm/" );
     }
 
-    strncpy( fname, prefix, 127 );
+    Strncpy( fname, prefix, 127 );
     Strncat( fname, "edmObjects", 127 );
 
     f = fopen( fname, "r" );
@@ -116,7 +116,7 @@ FILE *f;
 
         expandEnvVars( rawLine, 255, line );
 
-        strncpy( buf, line, 255 );
+        Strncpy( buf, line, 255 );
 
         comment = 0;
         c2 = NULL;
@@ -146,7 +146,7 @@ FILE *f;
             // allow a paramter string (no white space) to be supplied
             // in the form object:param
 
-            strncpy( buf1, tk, 255 );
+            Strncpy( buf1, tk, 255 );
 
             c3 = NULL;
             tk1 = strtok_r( buf1, ":", &c3 );
@@ -492,7 +492,7 @@ char name[127+1], *error, buf[127+1], *tk;
 
     if ( strcmp( oneClassName, classNames[i] ) == 0 ) {
 
-      strncpy( buf, oneClassName, 127 );
+      Strncpy( buf, oneClassName, 127 );
       tk = strtok( buf, ":" );
 
       strcpy( name, "create_" );
@@ -679,7 +679,7 @@ char name[127+1], *error, buf[127+1], *tk;
 
     if ( strcmp( oneClassName, classNames[i] ) == 0 ) {
 
-      strncpy( buf, oneClassName, 127 );
+      Strncpy( buf, oneClassName, 127 );
       tk = strtok( buf, ":" );
 
       strcpy( name, "clone_" );

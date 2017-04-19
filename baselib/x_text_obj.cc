@@ -72,7 +72,7 @@ activeXTextClass *axto = (activeXTextClass *) client;
   axto->eraseSelectBoxCorners();
   axto->erase();
 
-  strncpy( axto->id, axto->bufId, 31 );
+  Strncpy( axto->id, axto->bufId, 31 );
 
   axto->fgColorMode = axto->eBuf->bufFgColorMode;
   if ( axto->fgColorMode == AXTC_K_COLORMODE_ALARM )
@@ -97,14 +97,14 @@ activeXTextClass *axto = (activeXTextClass *) client;
   else
     axto->visInverted = 1;
 
-  strncpy( axto->minVisString, axto->eBuf->bufMinVisString, 39 );
-  strncpy( axto->maxVisString, axto->eBuf->bufMaxVisString, 39 );
+  Strncpy( axto->minVisString, axto->eBuf->bufMinVisString, 39 );
+  Strncpy( axto->maxVisString, axto->eBuf->bufMaxVisString, 39 );
 
   if ( axto->bufValue ) {
     axto->value.setRaw( axto->bufValue );
   }
 
-  strncpy( axto->fontTag, axto->fm.currentFontTag(), 63 );
+  Strncpy( axto->fontTag, axto->fm.currentFontTag(), 63 );
   axto->actWin->fi->loadFontTag( axto->fontTag );
   axto->actWin->drawGc.setFontTag( axto->fontTag, axto->actWin->fi );
 
@@ -402,10 +402,10 @@ activeGraphicClass *ago = (activeGraphicClass *) this;
   visPvExists = alarmPvExists = 0;
   activeMode = 0;
 
-  strncpy( minVisString, source->minVisString, 39 );
-  strncpy( maxVisString, source->maxVisString, 39 );
+  Strncpy( minVisString, source->minVisString, 39 );
+  Strncpy( maxVisString, source->maxVisString, 39 );
 
-  strncpy( id, source->id, 31 );
+  Strncpy( id, source->id, 31 );
 
   useDisplayBg = source->useDisplayBg;
 
@@ -414,7 +414,7 @@ activeGraphicClass *ago = (activeGraphicClass *) this;
   border = source->border;
   lineThk = source->lineThk;
 
-  strncpy( fontTag, source->fontTag, 63 );
+  Strncpy( fontTag, source->fontTag, 63 );
 
   fs = actWin->fi->getXFontStruct( fontTag );
 
@@ -538,13 +538,13 @@ char title[32], *ptr;
 
   ptr = actWin->obj.getNameFromClass( "activeXTextClass" );
   if ( ptr )
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   else
-    strncpy( title, activeXTextClass_str4, 31 );
+    Strncpy( title, activeXTextClass_str4, 31 );
 
   Strncat( title, activeXTextClass_str5, 31 );
 
-  strncpy( bufId, id, 31 );
+  Strncpy( bufId, id, 31 );
 
   eBuf->bufX = x;
   eBuf->bufY = y;
@@ -558,12 +558,12 @@ char title[32], *ptr;
   eBuf->bufBgColorMode = bgColorMode;
 
   if ( alarmPvExpStr.getRaw() )
-    strncpy( eBuf->bufAlarmPvName, alarmPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
+    Strncpy( eBuf->bufAlarmPvName, alarmPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufAlarmPvName, "" );
 
   if ( visPvExpStr.getRaw() )
-    strncpy( eBuf->bufVisPvName, visPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
+    Strncpy( eBuf->bufVisPvName, visPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufVisPvName, "" );
 
@@ -572,19 +572,19 @@ char title[32], *ptr;
   else
     eBuf->bufVisInverted = 1;
 
-  strncpy( eBuf->bufMinVisString, minVisString, 39 );
-  strncpy( eBuf->bufMaxVisString, maxVisString, 39 );
+  Strncpy( eBuf->bufMinVisString, minVisString, 39 );
+  Strncpy( eBuf->bufMaxVisString, maxVisString, 39 );
 
-  strncpy( eBuf->bufFontTag, fontTag, 63 );
+  Strncpy( eBuf->bufFontTag, fontTag, 63 );
   eBuf->bufUseDisplayBg = useDisplayBg;
   eBuf->bufAutoSize = autoSize;
   eBuf->bufBorder = border;
   eBuf->bufLineThk = lineThk;
 
   if ( value.getRaw() )
-    strncpy( bufValue, value.getRaw(), activeXTextClass::MAX_TEXT_LEN );
+    Strncpy( bufValue, value.getRaw(), activeXTextClass::MAX_TEXT_LEN );
   else
-    strncpy( bufValue, "", activeXTextClass::MAX_TEXT_LEN );
+    Strncpy( bufValue, "", activeXTextClass::MAX_TEXT_LEN );
 
   ef.create( actWin->top, actWin->appCtx->ci.getColorMap(),
    &actWin->appCtx->entryFormX,
@@ -1080,7 +1080,7 @@ char *tk, *gotData, *context,
           return 0;
         }
 
-        strncpy( oneValue, tk, activeXTextClass::MAX_TEXT_LEN );
+        Strncpy( oneValue, tk, activeXTextClass::MAX_TEXT_LEN );
         oneValue[activeXTextClass::MAX_TEXT_LEN] = 0;
 
       }
@@ -1093,7 +1093,7 @@ char *tk, *gotData, *context,
           return 0;
         }
 
-        strncpy( fontTag, tk, 63 );
+        Strncpy( fontTag, tk, 63 );
 
       }
             
@@ -2219,7 +2219,7 @@ int activeXTextClass::setProperty (
 
   if ( strcmp( prop, activeXTextClass_str33 ) == 0 ) {
 
-    strncpy( bufValue, _value, activeXTextClass::MAX_TEXT_LEN );
+    Strncpy( bufValue, _value, activeXTextClass::MAX_TEXT_LEN );
 
     actWin->appCtx->proc->lock();
     actWin->addDefExeNode( aglPtr );
@@ -2558,13 +2558,13 @@ void activeXTextClass::replaceString (
   else if ( i == 3 ) {
     int l = max;
     if ( 39 < max ) l = 39;
-    strncpy( minVisString, string, l );
+    Strncpy( minVisString, string, l );
     minVisString[l] = 0;
   }
   else if ( i == 4 ) {
     int l = max;
     if ( 39 < max ) l = 39;
-    strncpy( maxVisString, string, l );
+    Strncpy( maxVisString, string, l );
     maxVisString[l] = 0;
   }
 

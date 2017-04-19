@@ -86,7 +86,7 @@ colorButtonClass::colorButtonClass (
   ci = source.ci;
   if ( source.colorPvName ) {
     colorPvName = new char[128];
-    strncpy( colorPvName, source.colorPvName, 127 );
+    Strncpy( colorPvName, source.colorPvName, 127 );
     colorPvName[127] = 0;
   }
   else {
@@ -107,7 +107,7 @@ colorButtonClass colorButtonClass::operator = (
   ci = source.ci;
   if ( source.colorPvName ) {
     colorPvName = new char[128];
-    strncpy( colorPvName, source.colorPvName, 127 );
+    Strncpy( colorPvName, source.colorPvName, 127 );
     colorPvName[127] = 0;
   }
   else {
@@ -280,7 +280,7 @@ Widget colorButtonClass::createWithText(
   if ( !colorPvName ) colorPvName = new char[128];
 
   if ( pvName ) {
-    strncpy( colorPvName, pvName, 127 );
+    Strncpy( colorPvName, pvName, 127 );
     colorPvName[127] = 0;
   }
   else {
@@ -344,7 +344,7 @@ Widget colorButtonClass::createWithRule(
   if ( !colorPvName ) colorPvName = new char[128];
 
   if ( pvName ) {
-    strncpy( colorPvName, pvName, 127 );
+    Strncpy( colorPvName, pvName, 127 );
     colorPvName[127] = 0;
   }
   else {
@@ -544,7 +544,7 @@ void colorButtonClass::setPv (
   char *name )
 {
 
-  strncpy( colorPvName, name, 127 );
+  Strncpy( colorPvName, name, 127 );
   colorPvName[127] = 0;
 
 }

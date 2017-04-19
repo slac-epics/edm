@@ -398,7 +398,7 @@ void setValue (
   char *string )
 {
 
-  strncpy( privData, string, 40 );
+  Strncpy( privData, string, 40 );
   undefined = 0;
 
 }

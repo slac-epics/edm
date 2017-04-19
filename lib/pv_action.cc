@@ -17,7 +17,7 @@ FILE *f;
   ptr = getenv( environment_str15 );
   if ( !ptr ) return;
 
-  strncpy( file, ptr, 255 );
+  Strncpy( file, ptr, 255 );
   file[255] = 0;
 
   l = strlen(ptr);
@@ -225,11 +225,11 @@ char mArray[3][255+1], vArray[3][255+1];
 char *macros[3], *values[3];
 
   strcpy( mArray[0], "pv" );
-  strncpy( vArray[0], pvName, 255 );
+  Strncpy( vArray[0], pvName, 255 );
   vArray[0][255] = 0;
 
   strcpy( mArray[1], "display" );
-  strncpy( vArray[1], displayName, 255 );
+  Strncpy( vArray[1], displayName, 255 );
   vArray[1][255] = 0;
 
   for ( i=0; i<2; i++ ) {

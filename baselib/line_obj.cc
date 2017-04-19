@@ -151,8 +151,8 @@ activeLineClass *alo = (activeLineClass *) client;
   else
     alo->visInverted = 1;
 
-  strncpy( alo->minVisString, alo->eBuf->bufMinVisString, 39 );
-  strncpy( alo->maxVisString, alo->eBuf->bufMaxVisString, 39 );
+  Strncpy( alo->minVisString, alo->eBuf->bufMinVisString, 39 );
+  Strncpy( alo->maxVisString, alo->eBuf->bufMaxVisString, 39 );
 
   alo->closePolygon = alo->eBuf->bufClosePolygon;
 
@@ -522,8 +522,8 @@ int i;
   visPvExists = alarmPvExists = 0;
   activeMode = 0;
 
-  strncpy( minVisString, source->minVisString, 39 );
-  strncpy( maxVisString, source->maxVisString, 39 );
+  Strncpy( minVisString, source->minVisString, 39 );
+  Strncpy( maxVisString, source->maxVisString, 39 );
 
   head = new pointType;
   head->flink = head;
@@ -603,9 +603,9 @@ char title[32], *ptr;
 
   ptr = actWin->obj.getNameFromClass( "activeLineClass" );
   if ( ptr )
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   else
-    strncpy( title, activeLineClass_str4, 31 );
+    Strncpy( title, activeLineClass_str4, 31 );
 
   Strncat( title, activeLineClass_str5, 31 );
 
@@ -630,12 +630,12 @@ char title[32], *ptr;
     eBuf->bufLineStyle = 1;
 
   if ( alarmPvExpStr.getRaw() )
-    strncpy( eBuf->bufAlarmPvName, alarmPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
+    Strncpy( eBuf->bufAlarmPvName, alarmPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufAlarmPvName, "" );
 
   if ( visPvExpStr.getRaw() )
-    strncpy( eBuf->bufVisPvName, visPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
+    Strncpy( eBuf->bufVisPvName, visPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufVisPvName, "" );
 
@@ -644,8 +644,8 @@ char title[32], *ptr;
   else
     eBuf->bufVisInverted = 1;
 
-  strncpy( eBuf->bufMinVisString, minVisString, 39 );
-  strncpy( eBuf->bufMaxVisString, maxVisString, 39 );
+  Strncpy( eBuf->bufMinVisString, minVisString, 39 );
+  Strncpy( eBuf->bufMaxVisString, maxVisString, 39 );
 
   eBuf->bufArrows = arrows;
   eBuf->bufClosePolygon = closePolygon;
@@ -4003,13 +4003,13 @@ void activeLineClass::replaceString (
   else if ( i == 2 ) {
     int l = max;
     if ( 39 < max ) l = 39;
-    strncpy( minVisString, string, l );
+    Strncpy( minVisString, string, l );
     minVisString[l] = 0;
   }
   else if ( i == 3 ) {
     int l = max;
     if ( 39 < max ) l = 39;
-    strncpy( maxVisString, string, l );
+    Strncpy( maxVisString, string, l );
     maxVisString[l] = 0;
   }
 

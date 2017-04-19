@@ -65,7 +65,7 @@ edmStripClass::edmStripClass(const edmStripClass *rhs)
     bgColor = rhs->bgColor;
     textColor = rhs->textColor;
     fgColor = rhs->fgColor;
-    strncpy(font_tag, rhs->font_tag, 63);
+    Strncpy(font_tag, rhs->font_tag, 63);
     font_tag[63] = 0;
     fs = actWin->fi->getXFontStruct(font_tag);
     fontAscent = rhs->fontAscent;
@@ -486,15 +486,15 @@ int edmStripClass::genericEdit() // create Property Dialog
     // required
     ptr = actWin->obj.getNameFromClass(STRIP_CLASSNAME);
     if (ptr)
-        strncpy(title, ptr, 31);
+        Strncpy(title, ptr, 31);
     else
-        strncpy(title, "Unknown object Properties", 31 );
+        Strncpy(title, "Unknown object Properties", 31 );
    
     // Copy data member contents into edit buffers
     bufX = x; bufY = y; bufW = w; bufH = h;
     for (i=0; i<num_pvs; ++i)
     {
-        strncpy(buf_pv_name[i], PVName(i), PV_Factory::MAX_PV_NAME);
+        Strncpy(buf_pv_name[i], PVName(i), PV_Factory::MAX_PV_NAME);
         buf_pv_color[i] = pv_color[i];
         buf_use_pv_time[i] = use_pv_time[i] ? 1 : 0;
     }
@@ -637,7 +637,7 @@ void edmStripClass::edit_update(Widget w, XtPointer client,XtPointer call)
     me->textColor = me->buf_textColor;
     me->fgColor = me->buf_fgColor;
 
-    strncpy(me->font_tag, me->fm.currentFontTag(), 63);
+    Strncpy(me->font_tag, me->fm.currentFontTag(), 63);
     me->font_tag[63] = 0;
     me->actWin->fi->loadFontTag(me->font_tag);
     me->fs = me->actWin->fi->getXFontStruct(me->font_tag);

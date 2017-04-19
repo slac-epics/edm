@@ -536,9 +536,9 @@ char title[32], *ptr;
 
   ptr = actWin->obj.getNameFromClass( "2d80926b_bf54_4096_ab21_af7d725f15a2" );
   if ( ptr )
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   else
-    strncpy( title, archivePlot_str2, 31 );
+    Strncpy( title, archivePlot_str2, 31 );
 
   Strncat( title, archivePlot_str3, 31 );
 
@@ -552,73 +552,73 @@ char title[32], *ptr;
   eBuf->bufBgColor = bgColor.pixelIndex();
 
   if ( xMinPvExpStr.getRaw() )
-    strncpy( eBuf->xMinBufPvName, xMinPvExpStr.getRaw(),
+    Strncpy( eBuf->xMinBufPvName, xMinPvExpStr.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->xMinBufPvName, "" );
 
  if ( xMaxPvExpStr.getRaw() )
-   strncpy( eBuf->xMaxBufPvName, xMaxPvExpStr.getRaw(),
+   Strncpy( eBuf->xMaxBufPvName, xMaxPvExpStr.getRaw(),
     PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->xMaxBufPvName, "" );
 
  if ( xModePvExpStr.getRaw() )
-   strncpy( eBuf->xModeBufPvName, xModePvExpStr.getRaw(),
+   Strncpy( eBuf->xModeBufPvName, xModePvExpStr.getRaw(),
     PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->xModeBufPvName, "" );
 
   if ( yMinPvExpStr.getRaw() )
-    strncpy( eBuf->yMinBufPvName, yMinPvExpStr.getRaw(),
+    Strncpy( eBuf->yMinBufPvName, yMinPvExpStr.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->yMinBufPvName, "" );
 
  if ( yMaxPvExpStr.getRaw() )
-   strncpy( eBuf->yMaxBufPvName, yMaxPvExpStr.getRaw(),
+   Strncpy( eBuf->yMaxBufPvName, yMaxPvExpStr.getRaw(),
     PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->yMaxBufPvName, "" );
 
  if ( yModePvExpStr.getRaw() )
-   strncpy( eBuf->yModeBufPvName, yModePvExpStr.getRaw(),
+   Strncpy( eBuf->yModeBufPvName, yModePvExpStr.getRaw(),
     PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->yModeBufPvName, "" );
 
  if ( colorPvExpStr.getRaw() )
-   strncpy( eBuf->colorBufPvName, colorPvExpStr.getRaw(),
+   Strncpy( eBuf->colorBufPvName, colorPvExpStr.getRaw(),
     PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->colorBufPvName, "" );
 
  if ( filePvExpStr.getRaw() )
-   strncpy( eBuf->fileBufPvName, filePvExpStr.getRaw(),
+   Strncpy( eBuf->fileBufPvName, filePvExpStr.getRaw(),
     PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->fileBufPvName, "" );
 
  if ( updatePvExpStr.getRaw() )
-   strncpy( eBuf->updateBufPvName, updatePvExpStr.getRaw(),
+   Strncpy( eBuf->updateBufPvName, updatePvExpStr.getRaw(),
     PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->updateBufPvName, "" );
 
   if ( archivePvExpStr.getRaw() )
-    strncpy( eBuf->archiveBufPvName, archivePvExpStr.getRaw(),
+    Strncpy( eBuf->archiveBufPvName, archivePvExpStr.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->archiveBufPvName, "" );
 
   if ( startTimePvExpStr.getRaw() )
-    strncpy( eBuf->startTimeBufPvName, startTimePvExpStr.getRaw(),
+    Strncpy( eBuf->startTimeBufPvName, startTimePvExpStr.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->startTimeBufPvName, "" );
 
   if ( endTimePvExpStr.getRaw() )
-    strncpy( eBuf->endTimeBufPvName, endTimePvExpStr.getRaw(),
+    Strncpy( eBuf->endTimeBufPvName, endTimePvExpStr.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->endTimeBufPvName, "" );

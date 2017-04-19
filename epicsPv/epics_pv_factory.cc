@@ -9,6 +9,7 @@
 
 #include<alarm.h>
 #include<cvtFast.h>
+#include "sys_types.h"
 #include"epics_pv_factory.h"
 #include "epicsVersion.h"
 
@@ -561,7 +562,7 @@ int PVValue::get_int() const
 size_t PVValue::get_string(char *strbuf, size_t len) const
 {
     if (get_enum_count() > 0)
-        strncpy( strbuf, get_enum(get_int()), len );
+        Strncpy( strbuf, get_enum(get_int()), len );
     else
     {
         // TODO: Handle arrays?
@@ -674,7 +675,7 @@ void PVValueInt::read_ctrlinfo(const void *buf)
     status = val->status;
     severity = val->severity;
     precision = 0;
-    strncpy(units, val->units, MAX_UNITS_SIZE);
+    Strncpy(units, val->units, MAX_UNITS_SIZE);
     units[MAX_UNITS_SIZE] = '\0';
     upper_disp_limit = val->upper_disp_limit;
     lower_disp_limit = val->lower_disp_limit;
@@ -755,7 +756,7 @@ void PVValueShort::read_ctrlinfo(const void *buf)
     status = val->status;
     severity = val->severity;
     precision = 0;
-    strncpy(units, val->units, MAX_UNITS_SIZE);
+    Strncpy(units, val->units, MAX_UNITS_SIZE);
     units[MAX_UNITS_SIZE] = '\0';
     upper_disp_limit = val->upper_disp_limit;
     lower_disp_limit = val->lower_disp_limit;
@@ -850,7 +851,7 @@ void PVValueDouble::read_ctrlinfo(const void *buf)
       status = fval->status;
       severity = fval->severity;
       precision = fval->precision;
-      strncpy(units, fval->units, MAX_UNITS_SIZE);
+      Strncpy(units, fval->units, MAX_UNITS_SIZE);
       units[MAX_UNITS_SIZE] = '\0';
       upper_disp_limit = fval->upper_disp_limit;
       lower_disp_limit = fval->lower_disp_limit;
@@ -868,7 +869,7 @@ void PVValueDouble::read_ctrlinfo(const void *buf)
       status = dval->status;
       severity = dval->severity;
       precision = dval->precision;
-      strncpy(units, dval->units, MAX_UNITS_SIZE);
+      Strncpy(units, dval->units, MAX_UNITS_SIZE);
       units[MAX_UNITS_SIZE] = '\0';
       upper_disp_limit = dval->upper_disp_limit;
       lower_disp_limit = dval->lower_disp_limit;
@@ -959,7 +960,7 @@ void PVValueEnum::read_ctrlinfo(const void *buf)
     severity = val->severity;
     enums = val->no_str;
     for (size_t i=0; i<enums; ++i)
-        strncpy(strs[i], val->strs[i], MAX_ENUM_STRING_SIZE);
+        Strncpy(strs[i], val->strs[i], MAX_ENUM_STRING_SIZE);
     value = val->value;
     upper_disp_limit = enums;
     upper_ctrl_limit = enums;
@@ -1009,7 +1010,7 @@ size_t PVValueString::get_string(char *strbuf, size_t buflen) const
     size_t len = strlen(value);
     if (buflen <= len)
         len = buflen-1;
-    strncpy(strbuf, value, len);
+    Strncpy(strbuf, value, len);
     strbuf[len] = '\0';
     
     return len;
@@ -1020,7 +1021,7 @@ void PVValueString::read_ctrlinfo(const void *buf)
     const struct dbr_sts_string *val = (const dbr_sts_string *)buf;
     status = val->status;
     severity = val->severity;
-    strncpy(value, val->value, MAX_STRING_SIZE );
+    Strncpy(value, val->value, MAX_STRING_SIZE );
 }
     
 void PVValueString::read_value(const event_handler_args args)
@@ -1031,7 +1032,7 @@ void PVValueString::read_value(const event_handler_args args)
     nano = val->stamp.nsec;
     status = val->status;
     severity = val->severity;
-    strncpy(value, val->value, MAX_STRING_SIZE );
+    Strncpy(value, val->value, MAX_STRING_SIZE );
 }
 
 // ---------------------- PVValueChar -------------------------------

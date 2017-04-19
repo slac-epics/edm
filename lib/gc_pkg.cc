@@ -513,7 +513,7 @@ XFontStruct *fs;
   XSetFont( display, erase, fs->fid );
   XSetFont( display, invert, fs->fid );
 
-  strncpy( curFontTag, fontTag, 127 );
+  Strncpy( curFontTag, fontTag, 127 );
 
   return GC_SUCCESS;
 
@@ -542,7 +542,7 @@ XFontStruct *fs;
   XSetFont( display, erase, fs->fid );
   XSetFont( display, invert, fs->fid );
 
-  strncpy( curFontTag, fontName, 127 );
+  Strncpy( curFontTag, fontName, 127 );
 
   return GC_SUCCESS;
 

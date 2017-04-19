@@ -315,7 +315,7 @@ activeMenuButtonClass *mbto = (activeMenuButtonClass *) client;
   mbto->eraseSelectBoxCorners();
   mbto->erase();
 
-  strncpy( mbto->fontTag, mbto->fm.currentFontTag(), 63 );
+  Strncpy( mbto->fontTag, mbto->fm.currentFontTag(), 63 );
   mbto->actWin->fi->loadFontTag( mbto->fontTag );
   mbto->actWin->drawGc.setFontTag( mbto->fontTag, mbto->actWin->fi );
   mbto->actWin->fi->getTextFontList( mbto->fontTag, &mbto->fontList );
@@ -342,8 +342,8 @@ activeMenuButtonClass *mbto = (activeMenuButtonClass *) client;
    mbto->actWin->ci );
 
   mbto->visPvExpStr.setRaw( mbto->eBuf->bufVisPvName );
-  strncpy( mbto->minVisString, mbto->bufMinVisString, 39 );
-  strncpy( mbto->maxVisString, mbto->bufMaxVisString, 39 );
+  Strncpy( mbto->minVisString, mbto->bufMinVisString, 39 );
+  Strncpy( mbto->maxVisString, mbto->bufMaxVisString, 39 );
 
   if ( mbto->bufVisInverted )
     mbto->visInverted = 0;
@@ -495,7 +495,7 @@ int i;
     pb[i] = NULL;
   }
 
-  strncpy( fontTag, source->fontTag, 63 );
+  Strncpy( fontTag, source->fontTag, 63 );
   fs = actWin->fi->getXFontStruct( fontTag );
   actWin->fi->getTextFontList( fontTag, &fontList );
 
@@ -534,8 +534,8 @@ int i;
   visibility = 0;
   prevVisibility = -1;
   visInverted = source->visInverted;
-  strncpy( minVisString, source->minVisString, 39 );
-  strncpy( maxVisString, source->maxVisString, 39 );
+  Strncpy( minVisString, source->minVisString, 39 );
+  Strncpy( maxVisString, source->maxVisString, 39 );
 
   eBuf = NULL;
 
@@ -1007,9 +1007,9 @@ char title[32], *ptr;
 
   ptr = actWin->obj.getNameFromClass( "activeMenuButtonClass" );
   if ( ptr )
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   else
-    strncpy( title, activeMenuButtonClass_str2, 31 );
+    Strncpy( title, activeMenuButtonClass_str2, 31 );
 
   Strncat( title, activeMenuButtonClass_str3, 31 );
 
@@ -1018,7 +1018,7 @@ char title[32], *ptr;
   bufW = w;
   bufH = h;
 
-  strncpy( bufFontTag, fontTag, 63 );
+  Strncpy( bufFontTag, fontTag, 63 );
 
   bufTopShadowColor = topShadowColor;
   bufBotShadowColor = botShadowColor;
@@ -1032,19 +1032,19 @@ char title[32], *ptr;
   bufInconsistentColor = inconsistentColor.pixelIndex();
 
   if ( controlPvExpStr.getRaw() )
-    strncpy( eBuf->bufControlPvName, controlPvExpStr.getRaw(),
+    Strncpy( eBuf->bufControlPvName, controlPvExpStr.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufControlPvName, "" );
 
   if ( readPvExpStr.getRaw() )
-    strncpy( eBuf->bufReadPvName, readPvExpStr.getRaw(),
+    Strncpy( eBuf->bufReadPvName, readPvExpStr.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufReadPvName, "" );
 
   if ( visPvExpStr.getRaw() )
-    strncpy( eBuf->bufVisPvName, visPvExpStr.getRaw(),
+    Strncpy( eBuf->bufVisPvName, visPvExpStr.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufVisPvName, "" );
@@ -1055,13 +1055,13 @@ char title[32], *ptr;
     bufVisInverted = 1;
 
   if ( colorPvExpStr.getRaw() )
-    strncpy( eBuf->bufColorPvName, colorPvExpStr.getRaw(),
+    Strncpy( eBuf->bufColorPvName, colorPvExpStr.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufColorPvName, "" );
 
-  strncpy( bufMinVisString, minVisString, 39 );
-  strncpy( bufMaxVisString, maxVisString, 39 );
+  Strncpy( bufMinVisString, minVisString, 39 );
+  Strncpy( bufMaxVisString, maxVisString, 39 );
 
   ef.create( actWin->top, actWin->appCtx->ci.getColorMap(),
    &actWin->appCtx->entryFormX,
@@ -2011,7 +2011,7 @@ char msg[79+1];
   if ( nc ) {
 
     if ( controlPvId->get_type().type != ProcessVariable::Type::enumerated ) {
-      strncpy( msg, actWin->obj.getNameFromClass( "activeMenuButtonClass" ),
+      Strncpy( msg, actWin->obj.getNameFromClass( "activeMenuButtonClass" ),
        79 );
       Strncat( msg, activeMenuButtonClass_str35, 79 );
       actWin->appCtx->postMessage( msg );
@@ -2489,13 +2489,13 @@ void activeMenuButtonClass::replaceString (
   else if ( i == 4 ) {
     int l = max;
     if ( 39 < max ) l = 39;
-    strncpy( minVisString, string, l );
+    Strncpy( minVisString, string, l );
     minVisString[l] = 0;
   }
   else if ( i == 5 ) {
     int l = max;
     if ( 39 < max ) l = 39;
-    strncpy( maxVisString, string, l );
+    Strncpy( maxVisString, string, l );
     maxVisString[l] = 0;
   }
 

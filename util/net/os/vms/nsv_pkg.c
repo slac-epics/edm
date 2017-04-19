@@ -165,7 +165,7 @@ int i, start, count;
       i++;
       start = i;
 
-      strncpy( optional_data, &port->client_data[start], count );
+      Strncpy( optional_data, &port->client_data[start], count );
       optional_data[count] = 0;
       return;
 

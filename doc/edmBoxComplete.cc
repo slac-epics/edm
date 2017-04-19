@@ -75,9 +75,9 @@ activeGraphicClass *ago = (activeGraphicClass *) this;
   fill = source->fill;
   lineColorMode = source->lineColorMode;
   fillColorMode = source->fillColorMode;
-  strncpy( fontTag, source->fontTag, 63 );
+  Strncpy( fontTag, source->fontTag, 63 );
   fontTag[63] = 0;
-  strncpy( label, source->label, 63 );
+  Strncpy( label, source->label, 63 );
   label[63] = 0;
   fs = actWin->fi->getXFontStruct( fontTag );
   stringLength = source->stringLength;
@@ -250,9 +250,9 @@ char title[32], *ptr;
   // Get the widget nickname from the component name
   ptr = actWin->obj.getNameFromClass( "2ed7d2e8_f439_11d2_8fed_00104b8742df" );
   if ( ptr )
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   else
-    strncpy( title, edmBoxComplete_str2, 31 );
+    Strncpy( title, edmBoxComplete_str2, 31 );
 
   Strncat( title, edmBoxComplete_str3, 31 );
 
@@ -275,7 +275,7 @@ char title[32], *ptr;
   editBuf->bufLineStyle = lineStyle;
 
   if ( pvExpStr.getRaw() )
-    strncpy( editBuf->bufPvName, pvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
+    Strncpy( editBuf->bufPvName, pvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( editBuf->bufPvName, "" );
 
@@ -283,7 +283,7 @@ char title[32], *ptr;
   editBuf->bufEfReadMax = efReadMax;
   editBuf->bufEfPrecision = efPrecision;
 
-  strncpy( editBuf->bufLabel, label, 63 );
+  Strncpy( editBuf->bufLabel, label, 63 );
   editBuf->bufLabel[63] = 0;
 
   // Create the property dialog data entry form
@@ -393,7 +393,7 @@ edmBoxClass *ebo = (edmBoxClass *) client;
     ebo->precision = ebo->efPrecision.value();
   }
 
-  strncpy( ebo->fontTag, ebo->fm.currentFontTag(), 63 );
+  Strncpy( ebo->fontTag, ebo->fm.currentFontTag(), 63 );
   ebo->fontTag[63] = 0;
 
   ebo->actWin->fi->loadFontTag( ebo->fontTag );
@@ -402,7 +402,7 @@ edmBoxClass *ebo = (edmBoxClass *) client;
 
   ebo->fs = ebo->actWin->fi->getXFontStruct( ebo->fontTag );
 
-  strncpy( ebo->label, ebo->editBuf->bufLabel, 63 );
+  Strncpy( ebo->label, ebo->editBuf->bufLabel, 63 );
   ebo->label[63] = 0;
 
   ebo->stringLength = strlen( ebo->label );

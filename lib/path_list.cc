@@ -43,7 +43,7 @@ pathListClass *plo = (pathListClass *) client;
 
       plo->index = i;
 
-      strncpy( plo->apco->curPath, plo->pathName[i], 127 );
+      Strncpy( plo->apco->curPath, plo->pathName[i], 127 );
 
       break;
 
@@ -220,7 +220,7 @@ char *pTitle;
 
   XtRealizeWidget( shell );
 
-  strncpy( title, pathListClass_str8, 31 );
+  Strncpy( title, pathListClass_str8, 31 );
   title[31] = 0;
 
   pTitle = title;

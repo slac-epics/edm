@@ -84,7 +84,7 @@ int status;
   apngo->y = apngo->bufY;
   apngo->sboxY = apngo->bufY;
 
-  strncpy( apngo->pngFileName, apngo->bufPngFileName, 127 );
+  Strncpy( apngo->pngFileName, apngo->bufPngFileName, 127 );
 
   apngo->uniformSize = apngo->bufUniformSize;
   apngo->refreshRate = apngo->bufRefreshRate;
@@ -338,7 +338,7 @@ activeGraphicClass *ago = (activeGraphicClass *) this;
   name = new char[strlen("activePngClass")+1];
   strcpy( name, "activePngClass" );
 
-  strncpy( pngFileName, source->pngFileName, 127 );
+  Strncpy( pngFileName, source->pngFileName, 127 );
 
   activeMode = 0;
   active = 0;
@@ -644,16 +644,16 @@ char title[32], *ptr;
 
   ptr = actWin->obj.getNameFromClass( "activePngClass" );
   if ( ptr )
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   else
-    strncpy( title, activePngClass_str2, 31 );
+    Strncpy( title, activePngClass_str2, 31 );
 
   Strncat( title, activePngClass_str3, 31 );
 
   bufX = x;
   bufY = y;
 
-  strncpy( bufPngFileName, pngFileName, 127 );
+  Strncpy( bufPngFileName, pngFileName, 127 );
 
   bufUniformSize = uniformSize;
   bufRefreshRate = refreshRate;
@@ -1969,7 +1969,7 @@ int l = 127;
 
   if ( i == 0 ) {
 
-    strncpy( pngFileName, string, l );
+    Strncpy( pngFileName, string, l );
     pngFileName[l] = 0;
 
     status = readPngFile();

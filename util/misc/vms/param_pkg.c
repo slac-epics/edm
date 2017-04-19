@@ -29,12 +29,12 @@ int i, l;
   for ( i=1; i<g_num_args; i++ ) {	/* disgard surrounding quotes */
     l = strlen( argv[i] ) - 1;
     if ( argv[i][0] == '\"' && argv[i][l] == '\"' ) {
-      strncpy( g_arg[i+2], &argv[i][1], MAX );
+      Strncpy( g_arg[i+2], &argv[i][1], MAX );
       l = strlen( g_arg[i+2] ) - 1;
       g_arg[i+2][l] = 0;
     }
     else {
-      strncpy( g_arg[i+2], argv[i], MAX );
+      Strncpy( g_arg[i+2], argv[i], MAX );
     }
   }
 

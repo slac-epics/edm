@@ -120,7 +120,7 @@ activeGraphicListPtr head, cur, next, sourceHead, curSource;
     strcpy( anso->cAndMask[i], "0" );
   }
 
-  strncpy( anso->symbolFileName, _anso->symbolFileName, 127 );
+  Strncpy( anso->symbolFileName, _anso->symbolFileName, 127 );
 
   anso->numStates = _anso->numStates;
   for ( i=0; i<_anso->numStates; i++ ) {
@@ -535,7 +535,7 @@ int stat, resizeStat, i, saveW, saveH, saveX, saveY;
 
 // =============================================
 
-  strncpy( anso->id, anso->bufId, 31 );
+  Strncpy( anso->id, anso->bufId, 31 );
 
   anso->x = anso->eBuf->bufX;
   anso->sboxX = anso->eBuf->bufX;
@@ -546,8 +546,8 @@ int stat, resizeStat, i, saveW, saveH, saveX, saveY;
   anso->numPvs = 0;
   for ( i=0; i<ASYMBOL_K_MAX_PVS; i++ ) {
     anso->shiftCount[i] = anso->eBuf->bufShiftCount[i];
-    strncpy( anso->cXorMask[i], anso->eBuf->bufXorMask[i], 9 );
-    strncpy( anso->cAndMask[i], anso->eBuf->bufAndMask[i], 9 );
+    Strncpy( anso->cXorMask[i], anso->eBuf->bufXorMask[i], 9 );
+    Strncpy( anso->cAndMask[i], anso->eBuf->bufAndMask[i], 9 );
     anso->controlPvExpStr[i].setRaw( anso->eBuf->bufControlPvName[i] );
     if ( !blank( anso->eBuf->bufControlPvName[i] ) )
       (anso->numPvs)++;
@@ -563,7 +563,7 @@ int stat, resizeStat, i, saveW, saveH, saveX, saveY;
 
   anso->anglePvExpStr.setRaw( anso->eBuf->bufAnglePvName );
 
-  strncpy( anso->symbolFileName, anso->eBuf->bufSymbolFileName, 127 );
+  Strncpy( anso->symbolFileName, anso->eBuf->bufSymbolFileName, 127 );
 
   anso->numStates = anso->ef.numItems;
 
@@ -912,13 +912,13 @@ int i;
   for ( i=0; i<ASYMBOL_K_MAX_PVS; i++ ) {
     controlVals[i] = 0.0;
     controlPvExpStr[i].setRaw( source->controlPvExpStr[i].rawString );
-    strncpy( cXorMask[i], source->cXorMask[i], 9 );
-    strncpy( cAndMask[i], source->cAndMask[i], 9 );
+    Strncpy( cXorMask[i], source->cXorMask[i], 9 );
+    Strncpy( cAndMask[i], source->cAndMask[i], 9 );
     shiftCount[i] = source->shiftCount[i];
   }
   iValue = 0;
 
-  strncpy( symbolFileName, source->symbolFileName, 127 );
+  Strncpy( symbolFileName, source->symbolFileName, 127 );
 
   numStates = source->numStates;
   for ( i=0; i<numStates; i++ ) {
@@ -998,51 +998,51 @@ char title[32], *ptr;
 
   ptr = actWin->obj.getNameFromClass( "aniSymbolClass" );
   if ( ptr )
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   else
-    strncpy( title, aniSymbolClass_str9, 31 );
+    Strncpy( title, aniSymbolClass_str9, 31 );
 
   Strncat( title, aniSymbolClass_str10, 31 );
 
-  strncpy( bufId, id, 31 );
+  Strncpy( bufId, id, 31 );
 
   eBuf->bufX = x;
   eBuf->bufY = y;
 
-  strncpy( eBuf->bufSymbolFileName, symbolFileName, 127 );
+  Strncpy( eBuf->bufSymbolFileName, symbolFileName, 127 );
 
   if ( colorPvExpStr.getRaw() )
-    strncpy( eBuf->bufColorPvName, colorPvExpStr.getRaw(),
+    Strncpy( eBuf->bufColorPvName, colorPvExpStr.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufColorPvName, "" );
 
   if ( xPvExpStr.getRaw() )
-    strncpy( eBuf->bufXPvName, xPvExpStr.getRaw(),
+    Strncpy( eBuf->bufXPvName, xPvExpStr.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufXPvName, "" );
 
   if ( yPvExpStr.getRaw() )
-    strncpy( eBuf->bufYPvName, yPvExpStr.getRaw(),
+    Strncpy( eBuf->bufYPvName, yPvExpStr.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufYPvName, "" );
 
   if ( anglePvExpStr.getRaw() )
-    strncpy( eBuf->bufAnglePvName, anglePvExpStr.getRaw(),
+    Strncpy( eBuf->bufAnglePvName, anglePvExpStr.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufAnglePvName, "" );
 
   for ( i=0; i<ASYMBOL_K_MAX_PVS; i++ ) {
     if ( controlPvExpStr[i].getRaw() )
-      strncpy( eBuf->bufControlPvName[i], controlPvExpStr[i].getRaw(),
+      Strncpy( eBuf->bufControlPvName[i], controlPvExpStr[i].getRaw(),
        PV_Factory::MAX_PV_NAME );
     else
       strcpy( eBuf->bufControlPvName[i], "" );
-    strncpy( eBuf->bufXorMask[i], cXorMask[i], 9 );
-    strncpy( eBuf->bufAndMask[i], cAndMask[i], 9 );
+    Strncpy( eBuf->bufXorMask[i], cXorMask[i], 9 );
+    Strncpy( eBuf->bufAndMask[i], cAndMask[i], 9 );
     eBuf->bufShiftCount[i] = shiftCount[i];
   }
 
@@ -4723,14 +4723,14 @@ int i;
   for ( i=0; i<ASYMBOL_K_MAX_PVS; i++ ) {
     controlVals[i] = 0.0;
     controlPvExpStr[i].setRaw( ptr->anso->controlPvExpStr[i].rawString );
-    strncpy( cAndMask[i], ptr->anso->cAndMask[i], 9 );
-    strncpy( cXorMask[i], ptr->anso->cXorMask[i], 9 );
+    Strncpy( cAndMask[i], ptr->anso->cAndMask[i], 9 );
+    Strncpy( cXorMask[i], ptr->anso->cXorMask[i], 9 );
     shiftCount[i] = ptr->anso->shiftCount[i];
   }
 
   // restore remaining attributes
 
-  strncpy( symbolFileName, ptr->anso->symbolFileName, 127 );
+  Strncpy( symbolFileName, ptr->anso->symbolFileName, 127 );
 
   numStates = ptr->anso->numStates;
   for ( i=0; i<numStates; i++ ) {

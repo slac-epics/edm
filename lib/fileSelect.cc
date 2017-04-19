@@ -42,7 +42,7 @@ char *fName;
     goto done;
   }
 
-  strncpy( fso->selection, fName, 255 );
+  Strncpy( fso->selection, fName, 255 );
   fso->selection[255] = 0;
 
   XtFree( fName );
@@ -199,7 +199,7 @@ char *fselectClass::getSelection (
   int maxLen
 ) {
 
-  strncpy( str, selection, maxLen );
+  Strncpy( str, selection, maxLen );
   str[maxLen] = 0;
 
   return selection;

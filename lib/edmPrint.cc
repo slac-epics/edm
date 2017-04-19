@@ -93,7 +93,7 @@ edmPrintClass *epo = (edmPrintClass *) client;
 int i, ii, opt;
 
   for ( i=0; i<epo->numOptions; i++ ) {
-    strncpy( epo->option[i], epo->optionDefault[i],
+    Strncpy( epo->option[i], epo->optionDefault[i],
      edmPrintClass::MAX_OPTION_CHARS );
     epo->option[i][edmPrintClass::MAX_OPTION_CHARS] = 0;
   }
@@ -110,7 +110,7 @@ int i, ii, opt;
          edmPrintClass::MAX_OPTION_CHARS );
       }
       else {
-        strncpy( epo->option[opt], epo->action[i][0],
+        Strncpy( epo->option[opt], epo->action[i][0],
          edmPrintClass::MAX_OPTION_CHARS );
       }
       Strncat( epo->option[opt], epo->optionStringValue[i],
@@ -127,7 +127,7 @@ int i, ii, opt;
            edmPrintClass::MAX_OPTION_CHARS );
 	}
 	else {
-          strncpy( epo->option[opt], epo->action[i][ii],
+          Strncpy( epo->option[opt], epo->action[i][ii],
            edmPrintClass::MAX_OPTION_CHARS );
 	}
         Strncat( epo->option[opt], " ", edmPrintClass::MAX_OPTION_CHARS );
@@ -299,7 +299,7 @@ void edmPrintClass::setErrorMsg (
     errMsg = new char[ERR_MSG_SIZE+1];
   }
 
-  strncpy( errMsg, msg, ERR_MSG_SIZE );
+  Strncpy( errMsg, msg, ERR_MSG_SIZE );
   errMsg[ERR_MSG_SIZE] = 0;
 
 }
@@ -425,7 +425,7 @@ int i;
 
   sprintf( xwinIdBuf, "%u", (unsigned int) XtWindow(top) );
 
-  strncpy( displayName, XDisplayName(_displayName), 63 );
+  Strncpy( displayName, XDisplayName(_displayName), 63 );
 
   // this is alway the "print to file" file name
   strcpy( option[MAX_OPTIONS-1], "" );
@@ -504,7 +504,7 @@ THREAD_HANDLE thread;
 
     }
 
-    strncpy( buf, printToFileCmd, 1023 );
+    Strncpy( buf, printToFileCmd, 1023 );
     buf[1023] = 0;
 
   }
@@ -523,7 +523,7 @@ THREAD_HANDLE thread;
 
     }
 
-    strncpy( buf, printCmd, 1023 );
+    Strncpy( buf, printCmd, 1023 );
     buf[1023] = 0;
 
   }
@@ -603,7 +603,7 @@ THREAD_HANDLE thread;
   // one more pass to translate <WINID> & <DSPNAME> which may have been
   // in an option
 
-  strncpy( buf, newCmd, 1023 );
+  Strncpy( buf, newCmd, 1023 );
   buf[1023] = 0;
 
   strcpy( newCmd, "" );
@@ -1077,7 +1077,7 @@ char *tk, tmp[31+1];
         setErrorMsg( edmPrint_str5, lineNo );
         goto syntaxError;
       }
-      strncpy( tmp, &tk[3], 10 );
+      Strncpy( tmp, &tk[3], 10 );
       tmp[10] = 0;
       if ( !posInt( tmp ) ) {
         setErrorMsg( edmPrint_str5, lineNo );
@@ -1570,7 +1570,7 @@ char *tk, tmp[31+1];
       }
 
       //fprintf( stderr, "default = [%s]\n", tk );
-      strncpy( optionStringValue[numFields], tk, 31 );
+      Strncpy( optionStringValue[numFields], tk, 31 );
       optionStringValue[numFields][31] = 0;
 
       state = GET_TEXT_VALUE;
@@ -1665,7 +1665,7 @@ char *tk, tmp[31+1];
   optionType[numFields] = STRING_TYPE;
   fieldType[numFields] = FIELD_TYPE_TEXT;
   label[numFields] = strdup( "File Name" );
-  strncpy( optionStringValue[numFields], "", 31 );
+  Strncpy( optionStringValue[numFields], "", 31 );
   optionStringValue[numFields][31] = 0;
   numActions[numFields] = 1;
   action[numFields][0] = strdup( "" );
@@ -1784,7 +1784,7 @@ char buf[127+1];
   envPtr = getenv( environment_str7 );
   if ( envPtr ) {
 
-    strncpy( buf, envPtr, 127 );
+    Strncpy( buf, envPtr, 127 );
     buf[127] = 0;
 
   }
@@ -1794,7 +1794,7 @@ char buf[127+1];
     envPtr = getenv( environment_str2 );
     if ( envPtr ) {
 
-      strncpy( buf, envPtr, 127 );
+      Strncpy( buf, envPtr, 127 );
       buf[127] = 0;
 
       if ( buf[strlen(buf)-1] != '/' ) {

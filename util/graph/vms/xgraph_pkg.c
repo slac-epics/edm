@@ -52,7 +52,7 @@ char *ptr, buf[127+1];
 
   if ( strstr( partial_font_name, " " ) ) {
 
-    strncpy( buf, partial_font_name, 127 );
+    Strncpy( buf, partial_font_name, 127 );
 
     strcpy( full_font_name, "-*-" );
 
@@ -511,7 +511,7 @@ char full_font[127+1];
   if ( stat != XGRAPH_SUCCESS ) attr_ptr->fg_color.pixel = g_foreground;
 
   stat = xgraph___full_font_name( title_font, full_font );
-  if ( stat != XGRAPH_SUCCESS ) strncpy( full_font, title_font, 127 );
+  if ( stat != XGRAPH_SUCCESS ) Strncpy( full_font, title_font, 127 );
 
   attr_ptr->title_fontstruct = XLoadQueryFont( g_display, full_font );
   if ( attr_ptr->title_fontstruct )
@@ -524,7 +524,7 @@ char full_font[127+1];
   }
 
   stat = xgraph___full_font_name( label_font, full_font );
-  if ( stat != XGRAPH_SUCCESS ) strncpy( full_font, label_font, 127 );
+  if ( stat != XGRAPH_SUCCESS ) Strncpy( full_font, label_font, 127 );
 
   attr_ptr->label_fontstruct = XLoadQueryFont( g_display, full_font );
   if ( attr_ptr->label_fontstruct )
@@ -1003,7 +1003,7 @@ int stat;
   if ( !ptr ) return XGRAPH_BAD_OBJ;
   if ( !ptr->id_type ) return XGRAPH_BAD_OBJ;
 
-  strncpy( ptr->attr->title, title, TITLE_MAX_CHARS );
+  Strncpy( ptr->attr->title, title, TITLE_MAX_CHARS );
   ptr->attr->title[TITLE_MAX_CHARS] = 0;
 
   stat = xgraph_draw_title( id );
@@ -1599,7 +1599,7 @@ int stat;
   if ( !ptr ) return XGRAPH_BAD_OBJ;
   if ( !ptr->id_type ) return XGRAPH_BAD_OBJ;
 
-  strncpy( ptr->attr->xformat, format, FORMAT_MAX_CHARS );
+  Strncpy( ptr->attr->xformat, format, FORMAT_MAX_CHARS );
   ptr->attr->xformat[FORMAT_MAX_CHARS] = 0;
 
   stat = xgraph_draw_x_annotation( id );
@@ -1660,7 +1660,7 @@ int stat;
   if ( !ptr ) return XGRAPH_BAD_OBJ;
   if ( !ptr->id_type ) return XGRAPH_BAD_OBJ;
 
-  strncpy( ptr->attr->xlabel, label, LABEL_MAX_CHARS );
+  Strncpy( ptr->attr->xlabel, label, LABEL_MAX_CHARS );
   ptr->attr->xlabel[LABEL_MAX_CHARS] = 0;
 
   stat = xgraph_draw_x_label( id );
@@ -2265,7 +2265,7 @@ int stat;
   if ( !ptr ) return XGRAPH_BAD_OBJ;
   if ( !ptr->id_type ) return XGRAPH_BAD_OBJ;
 
-  strncpy( ptr->attr->yformat, format, FORMAT_MAX_CHARS );
+  Strncpy( ptr->attr->yformat, format, FORMAT_MAX_CHARS );
   ptr->attr->yformat[FORMAT_MAX_CHARS] = 0;
 
 
@@ -2414,7 +2414,7 @@ char chr[2];
   if ( !ptr->id_type ) return XGRAPH_BAD_OBJ;
 
   ptr->attr->ylabel_orientation = GRAPH_K_VERTICAL;
-  strncpy( ptr->attr->ylabel, label, LABEL_MAX_CHARS );
+  Strncpy( ptr->attr->ylabel, label, LABEL_MAX_CHARS );
   ptr->attr->ylabel[LABEL_MAX_CHARS] = 0;
 
   stat = xgraph_draw_y_label( id );
@@ -2440,7 +2440,7 @@ char chr[2];
   if ( !ptr->id_type ) return XGRAPH_BAD_OBJ;
 
   ptr->attr->ylabel_orientation = GRAPH_K_HORIZONTAL;
-  strncpy( ptr->attr->ylabel, label, LABEL_MAX_CHARS );
+  Strncpy( ptr->attr->ylabel, label, LABEL_MAX_CHARS );
   ptr->attr->ylabel[LABEL_MAX_CHARS] = 0;
 
   stat = xgraph_draw_y_label( id );
@@ -3354,7 +3354,7 @@ char full_font[127+1];
   if ( stat != XGRAPH_SUCCESS ) text_ptr->color.pixel = g_foreground;
 
   stat = xgraph___full_font_name( font, full_font );
-  if ( stat != XGRAPH_SUCCESS ) strncpy( full_font, font, 127 );
+  if ( stat != XGRAPH_SUCCESS ) Strncpy( full_font, font, 127 );
 
   text_ptr->fontstruct = XLoadQueryFont( g_display, full_font );
   if ( text_ptr->fontstruct ) {
@@ -3423,7 +3423,7 @@ char first[2];
 
   if ( text_ptr->parent_id->id_type == GRAPH_K_AREA_ID ) {
 
-    strncpy( first, text_ptr->text, 1 );
+    Strncpy( first, text_ptr->text, 1 );
     len_1st = XTextWidth( text_ptr->fontstruct, first, 1 );
 
     posx = text_ptr->x * 0.01 * text_ptr->plotwin_width-1 + len_1st;
@@ -3446,7 +3446,7 @@ char first[2];
   }
   else if ( text_ptr->parent_id->id_type == GRAPH_K_GWIN_ID ) {
 
-    strncpy( first, text_ptr->text, 1 );
+    Strncpy( first, text_ptr->text, 1 );
     len_1st = XTextWidth( text_ptr->fontstruct, first, 1 );
 
     posx = text_ptr->x * 0.01 * text_ptr->win_width-1 + len_1st;
@@ -3547,7 +3547,7 @@ GWIN_PRIV_PTR gwin_ptr;
 
     area_ptr = (AREA_PRIV_PTR) text_ptr->parent_id;
 
-    strncpy( first, text_ptr->text, 1 );
+    Strncpy( first, text_ptr->text, 1 );
     len_1st = XTextWidth( text_ptr->fontstruct, first, 1 );
 
     posx = text_ptr->x * 0.01 * text_ptr->plotwin_width-1 + len_1st;
@@ -3589,7 +3589,7 @@ GWIN_PRIV_PTR gwin_ptr;
 
     gwin_ptr = (GWIN_PRIV_PTR) text_ptr->parent_id;
 
-    strncpy( first, text_ptr->text, 1 );
+    Strncpy( first, text_ptr->text, 1 );
     len_1st = XTextWidth( text_ptr->fontstruct, first, 1 );
 
     posx = text_ptr->x * 0.01 * text_ptr->win_width-1 + len_1st;
@@ -3853,7 +3853,7 @@ int stat, ret_stat;
 
   if ( format ) {
     if ( format[0] ) {
-      strncpy( ptr->attr->xformat, format, FORMAT_MAX_CHARS );
+      Strncpy( ptr->attr->xformat, format, FORMAT_MAX_CHARS );
       ptr->attr->xformat[FORMAT_MAX_CHARS] = 0;
     }
   }
@@ -3924,7 +3924,7 @@ int stat, ret_stat;
 
   if ( format ) {
     if ( format[0] ) {
-      strncpy( ptr->attr->yformat, format, FORMAT_MAX_CHARS );
+      Strncpy( ptr->attr->yformat, format, FORMAT_MAX_CHARS );
       ptr->attr->yformat[FORMAT_MAX_CHARS] = 0;
     }
   }

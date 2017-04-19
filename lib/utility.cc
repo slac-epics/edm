@@ -419,7 +419,7 @@ char *re = "\\$\\(([-]?[0-9]+\\*)*(#)(([+-])([0-9]+))*\\)";
         }
 
         if ( len > 31 ) len = 31;
-        strncpy( symbols[arrayi], &text[offset], len+1 );
+        Strncpy( symbols[arrayi], &text[offset], len+1 );
         symbols[arrayi][31] = 0;
 
         eo = pmatch[0].rm_eo + index;
@@ -522,7 +522,7 @@ void doAccSubs (
       tmp.setRaw( s );
       tmp.expand1st( n, (char **) syms1, (char **) vals1 );
 
-      strncpy( s, tmp.getExpanded(), maxlen-1 );
+      Strncpy( s, tmp.getExpanded(), maxlen-1 );
       s[maxlen-1] = 0;
 
     }
@@ -622,13 +622,13 @@ mode_t curMode;
 
     envPtr = getenv( environment_str8 );
     if ( envPtr ) {
-      strncpy( g_diagFileName, envPtr, 255 );
+      Strncpy( g_diagFileName, envPtr, 255 );
       if ( envPtr[strlen(envPtr)] != '/' ) {
         Strncat( g_diagFileName, "/", 255 );
       }
     }
     else {
-      strncpy( g_diagFileName, "/tmp/", 255 );
+      Strncpy( g_diagFileName, "/tmp/", 255 );
     }
 
     Strncat( g_diagFileName, "edmStdErr", 255 );
@@ -655,13 +655,13 @@ mode_t curMode;
 
     envPtr = getenv( environment_str8 );
     if ( envPtr ) {
-      strncpy( g_diagFileName, envPtr, 255 );
+      Strncpy( g_diagFileName, envPtr, 255 );
       if ( envPtr[strlen(envPtr)] != '/' ) {
         Strncat( g_diagFileName, "/", 255 );
       }
     }
     else {
-      strncpy( g_diagFileName, "/tmp/", 255 );
+      Strncpy( g_diagFileName, "/tmp/", 255 );
     }
 
     Strncat( g_diagFileName, "edmDiag", 255 );
@@ -741,7 +741,7 @@ static char *var = NULL;
 
   if ( !getenv(name) ) return NULL;
 
-  strncpy( buf, getenv(name), 255 );
+  Strncpy( buf, getenv(name), 255 );
   buf[255] = 0;
 
   //fprintf( stderr, "name = [%s]\n", buf );
@@ -753,7 +753,7 @@ static char *var = NULL;
   if ( tk[0] != '@' ) return getenv( name );
 
   // else name translates to file from which values are read
-  strncpy( buf, getenv(name), 255 );
+  Strncpy( buf, getenv(name), 255 );
   buf[255] = 0;
 
   context = NULL;
@@ -1278,7 +1278,7 @@ int isLegalInteger (
 char buf[127+1];
 int i, l, legal, state, hex;
 
-  strncpy( buf, str, 127 );
+  Strncpy( buf, str, 127 );
   trimWhiteSpace( buf );
   l = strlen(buf);
   if ( l < 1 ) return 0;
@@ -1369,7 +1369,7 @@ int isLegalFloat (
 char buf[127+1];
 int i, l, legal, state;
 
-  strncpy( buf, str, 127 );
+  Strncpy( buf, str, 127 );
   trimWhiteSpace( buf );
   l = strlen(buf);
   if ( l < 1 ) return 0;
@@ -1680,7 +1680,7 @@ unsigned int ii;
     {
       char buf[300+1];
 
-      strncpy( buf, str, 300 );
+      Strncpy( buf, str, 300 );
       for ( i=0, ii=11; ii<strlen(str); i++, ii++ ) {
         str[i] = buf[ii];
       }
@@ -2252,10 +2252,10 @@ char *gotOne;
     gotOne = strstr( inName, "/" );
 
   if ( gotOne ) {
-    strncpy( expandedName, inName, maxSize );
+    Strncpy( expandedName, inName, maxSize );
   }
   else {
-    strncpy( expandedName, prefix, maxSize );
+    Strncpy( expandedName, prefix, maxSize );
     Strncat( expandedName, inName, maxSize );
   }
 
@@ -2436,7 +2436,7 @@ char *gotOne, *tk, *context, buf[255+1];
     gotOne = fgets( str, max, f );
     if ( !gotOne ) return NULL;
 
-    strncpy( buf, str, 255 );
+    Strncpy( buf, str, 255 );
 
     context = NULL;
     tk = strtok_r( buf, " \t\n", &context );
@@ -2806,7 +2806,7 @@ void XDrawStrings (
 
 char buf[255+1], *tk, *context;
 
-  strncpy( buf, str, 255 );
+  Strncpy( buf, str, 255 );
 
   context = NULL;
   tk = strtok_r( buf, "\001", &context );
@@ -2835,7 +2835,7 @@ void XDrawImageStrings (
 
 char buf[255+1], *tk, *context;
 
-  strncpy( buf, str, 255 );
+  Strncpy( buf, str, 255 );
 
   context = NULL;
   tk = strtok_r( buf, "\001", &context );
@@ -2867,7 +2867,7 @@ char *context, *tk, buf[511+1];
 
   if ( !string ) return 100; // fail
 
-  strncpy( buf, string, 511 );
+  Strncpy( buf, string, 511 );
   buf[511] = 0;
 
   *maxLen = 0;
@@ -2910,7 +2910,7 @@ char *context, *tk, buf[10000+1];
 
   l = strlen(string);
   if ( l > 10000 ) l = 10000;
-  strncpy( buf, string, l );
+  Strncpy( buf, string, l );
   buf[l] = 0;
 
   *numFound = 0;
@@ -2980,7 +2980,7 @@ char *context, *tk, buf[10000+1];
 
   l = strlen(string);
   if ( l > 10000 ) l = 10000;
-  strncpy( buf, string, l );
+  Strncpy( buf, string, l );
   buf[l] = 0;
 
   *numFound = 0;
@@ -2990,7 +2990,7 @@ char *context, *tk, buf[10000+1];
   while ( tk && ( *numFound < max ) ) {
 
     l = strlen(tk) + 1;
-    strncpy( symbols[*numFound], tk, maxLen );
+    Strncpy( symbols[*numFound], tk, maxLen );
     symbols[*numFound][maxLen] = 0;
     trimWhiteSpace( symbols[*numFound] );
 
@@ -3401,7 +3401,7 @@ char buf[128];
     buf[127] = 0;
   }
 
-  strncpy( string, buf, len );
+  Strncpy( string, buf, len );
 
   return 1;
 
@@ -3426,7 +3426,7 @@ char buf[128];
   snprintf( buf, 127, fmt, value );
   buf[127] = 0;
 
-  strncpy( string, buf, len );
+  Strncpy( string, buf, len );
 
   return 1;
 

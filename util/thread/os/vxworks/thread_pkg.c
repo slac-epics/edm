@@ -240,7 +240,7 @@ int ret_stat, l;
   if ( l > 255 ) l = 255;
   priv_handle->name = (char *) calloc( 1, l+1 );
 
-  strncpy( priv_handle->name, name, l );
+  Strncpy( priv_handle->name, name, l );
 
   return THR_SUCCESS;
 

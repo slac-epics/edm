@@ -71,7 +71,7 @@ activeMessageBoxClass *messageboxo = (activeMessageBoxClass *) client;
 
   messageboxo->readPvExpStr.setRaw( messageboxo->eBuf->bufReadPvName );
 
-  strncpy( messageboxo->fontTag, messageboxo->fm.currentFontTag(), 63 );
+  Strncpy( messageboxo->fontTag, messageboxo->fm.currentFontTag(), 63 );
   messageboxo->actWin->fi->loadFontTag( messageboxo->fontTag );
   messageboxo->fs =
    messageboxo->actWin->fi->getXFontStruct( messageboxo->fontTag );
@@ -253,7 +253,7 @@ activeGraphicClass *messageboxo = (activeGraphicClass *) this;
   topCb = source->topCb;
   botCb = source->botCb;
 
-  strncpy( fontTag, source->fontTag, 63 );
+  Strncpy( fontTag, source->fontTag, 63 );
   fs = actWin->fi->getXFontStruct( fontTag );
 
   fgColor.copy( source->fgColor );
@@ -291,7 +291,7 @@ int stat;
 
   if ( logFileExists ) {
 
-    strncpy( newName, logFileName.getExpanded(), 255 );
+    Strncpy( newName, logFileName.getExpanded(), 255 );
     Strncat( newName, "_2", 255 );
 
     //fprintf( stderr, "unlink %s\n", newName );
@@ -684,9 +684,9 @@ char title[32], *ptr;
 
   ptr = actWin->obj.getNameFromClass( "activeMessageBoxClass" );
   if ( ptr )
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   else
-    strncpy( title, activeMessageBoxClass_str4, 31 );
+    Strncpy( title, activeMessageBoxClass_str4, 31 );
 
   Strncat( title, activeMessageBoxClass_str5, 31 );
 
@@ -702,7 +702,7 @@ char title[32], *ptr;
   bufBotShadowColor = botShadowColor.pixelIndex();
 
   if ( readPvExpStr.getRaw() )
-    strncpy( eBuf->bufReadPvName, readPvExpStr.getRaw(),
+    Strncpy( eBuf->bufReadPvName, readPvExpStr.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufReadPvName, "" );
@@ -713,7 +713,7 @@ char title[32], *ptr;
   bufFlushTimerValue = flushTimerValue;
 
   if ( logFileName.getRaw() )
-    strncpy( eBuf->bufLogFileName, logFileName.getRaw(), 127 );
+    Strncpy( eBuf->bufLogFileName, logFileName.getRaw(), 127 );
   else
     strcpy( eBuf->bufLogFileName, "" );
 
@@ -1299,7 +1299,7 @@ int nc, nu, nd, l;
   nc = needConnectInit; needConnectInit = 0;
   nu = needUpdate; needUpdate = 0;
   nd = needDraw; needDraw = 0;
-  strncpy( v, curReadV, 39 );
+  Strncpy( v, curReadV, 39 );
   actWin->remDefExeNode( aglPtr );
   actWin->appCtx->proc->unlock();
 
@@ -1328,7 +1328,7 @@ int nc, nu, nd, l;
 
   if ( nu ) {
 
-    strncpy( readV, v, 39 );
+    Strncpy( readV, v, 39 );
 
     if ( readV ) scrolledText.addTextNoNL( readV );
 
@@ -1362,7 +1362,7 @@ int nc, nu, nd, l;
 //----------------------------------------------------------------------------
 
   if ( nd ) {
-    strncpy( readV, v, 39 );
+    Strncpy( readV, v, 39 );
     drawActive();
   }
 

@@ -189,12 +189,12 @@ static void removeExt(
 char *sptr, *dptr;
 
   if ( !fileName ) {
-    strncpy( name, "<null name>", max );
+    Strncpy( name, "<null name>", max );
     name[max] = 0;
     return;
   }
 
-  strncpy( name, fileName, max );
+  Strncpy( name, fileName, max );
   name[max] = 0;
 
   // remove .edl extension
@@ -274,7 +274,7 @@ char *s, *v, *saveSym, *saveVal;
 
     // count tokens in macro string
     context = NULL;
-    strncpy( buf, macros, 1023 );
+    Strncpy( buf, macros, 1023 );
     buf[1023] = 0;
     tk = strtok_r( buf, ",", &context );
     while ( tk ) {
@@ -333,7 +333,7 @@ char *s, *v, *saveSym, *saveVal;
 
     // add tokens in macro string
     context = NULL;
-    strncpy( buf, macros, 1023 );
+    Strncpy( buf, macros, 1023 );
     buf[1023] = 0;
     tk = strtok_r( buf, ",", &context );
     while ( tk ) {
@@ -746,7 +746,7 @@ char pvName[1023+1];
 
   if ( !node ) return;
 
-  strncpy( pvName, node->pvAndFileName, node->startOfFileName );
+  Strncpy( pvName, node->pvAndFileName, node->startOfFileName );
   pvName[node->startOfFileName] = 0;
 
   printf( "displayCrawler: file=\"%s\",pv=\"%s\"\n",
@@ -1150,7 +1150,7 @@ char pvName[1023+1];
   status = avl_get_first( pvAndFileNameTree, (void **) &node );
   while ( node ) {
 
-    strncpy( pvName, node->pvAndFileName, node->startOfFileName );
+    Strncpy( pvName, node->pvAndFileName, node->startOfFileName );
     pvName[node->startOfFileName] = 0;
 
     printf( "displayCrawler: file=\"%s\",pv=\"%s\"\n",

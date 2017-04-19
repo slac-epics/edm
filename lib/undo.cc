@@ -290,7 +290,7 @@ void undoClass::startNewUndoList (
     if ( head >= max ) head = 0;
   }
 
-  strncpy( undoButtonText[tail], undoText, 15 );
+  Strncpy( undoButtonText[tail], undoText, 15 );
   undoButtonText[tail][15] = 0;
 
 }

@@ -28,7 +28,7 @@ void edmRegTextupdateClass::clone(const edmRegTextupdateClass *rhs,
                                   const char *classname)
 {
     edmTextupdateClass::clone(rhs, classname);
-    strncpy( regExpStr, rhs->regExpStr, PV_Factory::MAX_PV_NAME);
+    Strncpy( regExpStr, rhs->regExpStr, PV_Factory::MAX_PV_NAME);
     re_valid = false;
 }
 
@@ -137,9 +137,9 @@ int edmRegTextupdateClass::genericEdit() // create Property Dialog
     edmTextupdateClass::genericEdit();
     // add dialog box entry field for regular expression
     if (regExpStr)
-    	strncpy(bufRegExp, regExpStr, PV_Factory::MAX_PV_NAME);
+    	Strncpy(bufRegExp, regExpStr, PV_Factory::MAX_PV_NAME);
     else
-    	strncpy(bufRegExp, "", PV_Factory::MAX_PV_NAME);
+    	Strncpy(bufRegExp, "", PV_Factory::MAX_PV_NAME);
     ef.addTextField("Reg. Exp", 30, bufRegExp, PV_Factory::MAX_PV_NAME);
 
     return 1;
@@ -151,7 +151,7 @@ void edmRegTextupdateClass::edit_update(Widget w, XtPointer client,
 {
     edmRegTextupdateClass *me = (edmRegTextupdateClass *) client;
     edmTextupdateClass::edit_update(w, client, call);
-    strncpy(me->regExpStr, me->bufRegExp, PV_Factory::MAX_PV_NAME);
+    Strncpy(me->regExpStr, me->bufRegExp, PV_Factory::MAX_PV_NAME);
 }
 
 void edmRegTextupdateClass::edit_ok(Widget w, XtPointer client, XtPointer call)
@@ -280,7 +280,7 @@ void edmRegTextupdateClass::replaceString (
   else if ( i == 2 ) {
     int l = max;
     if ( PV_Factory::MAX_PV_NAME < max ) l = PV_Factory::MAX_PV_NAME;
-    strncpy( regExpStr, string, l );
+    Strncpy( regExpStr, string, l );
     regExpStr[l] = 0;
   }
 

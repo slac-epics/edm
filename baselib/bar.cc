@@ -80,7 +80,7 @@ int l;
 
   baro->labelType = baro->bufLabelType;
 
-  strncpy( baro->fontTag, baro->fm.currentFontTag(), 63 );
+  Strncpy( baro->fontTag, baro->fm.currentFontTag(), 63 );
   baro->actWin->fi->loadFontTag( baro->fontTag );
   baro->fs = baro->actWin->fi->getXFontStruct( baro->fontTag );
   baro->actWin->drawGc.setFontTag( baro->fontTag, baro->actWin->fi );
@@ -91,7 +91,7 @@ int l;
 
   baro->border = baro->bufBorder;
 
-  strncpy( baro->scaleFormat, baro->bufScaleFormat, 15 );
+  Strncpy( baro->scaleFormat, baro->bufScaleFormat, 15 );
   baro->showScale = baro->bufShowScale;
 
   baro->labelTicksExpStr.setRaw( baro->bufLabelTicks );
@@ -405,7 +405,7 @@ activeGraphicClass *baro = (activeGraphicClass *) this;
   fgCb = source->fgCb;
   bgCb = source->bgCb;
 
-  strncpy( fontTag, source->fontTag, 63 );
+  Strncpy( fontTag, source->fontTag, 63 );
   fs = actWin->fi->getXFontStruct( fontTag );
 
   barColor.copy( source->barColor );
@@ -448,7 +448,7 @@ activeGraphicClass *baro = (activeGraphicClass *) this;
   precisionExpStr.copy( source->precisionExpStr );
   precision = source->precision;
 
-  strncpy( scaleFormat, source->scaleFormat, 15 );
+  Strncpy( scaleFormat, source->scaleFormat, 15 );
 
   horizontal = source->horizontal;
 
@@ -1005,7 +1005,7 @@ efDouble efD;
     readMaxExpStr.setRaw( oneName );
 
     readStringFromFile( oneName, PV_Factory::MAX_PV_NAME+1, f ); actWin->incLine();
-    strncpy( scaleFormat, oneName, 15 );
+    Strncpy( scaleFormat, oneName, 15 );
 
   }
   else {
@@ -1111,25 +1111,25 @@ char title[32], *ptr;
 
   bufBgColor = bgColor.pixelIndex();
 
-  strncpy( bufFontTag, fontTag, 63 );
+  Strncpy( bufFontTag, fontTag, 63 );
 
   if ( readPvExpStr.getRaw() )
-    strncpy( eBuf->bufReadPvName, readPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
+    Strncpy( eBuf->bufReadPvName, readPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufReadPvName, "" );
 
   if ( controlPvExpStr.getRaw() )
-    strncpy( eBuf->bufControlPvName, controlPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
+    Strncpy( eBuf->bufControlPvName, controlPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufControlPvName, "" );
 
   if ( nullPvExpStr.getRaw() )
-    strncpy( eBuf->bufNullPvName, nullPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
+    Strncpy( eBuf->bufNullPvName, nullPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufNullPvName, "" );
 
   if ( label.getRaw() )
-    strncpy( eBuf->bufLabel, label.getRaw(), PV_Factory::MAX_PV_NAME );
+    Strncpy( eBuf->bufLabel, label.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufLabel, "" );
 
@@ -1140,7 +1140,7 @@ char title[32], *ptr;
   bufShowScale = showScale;
 
   if ( labelTicksExpStr.getRaw() ) {
-    strncpy( bufLabelTicks, labelTicksExpStr.getRaw(), 15 );
+    Strncpy( bufLabelTicks, labelTicksExpStr.getRaw(), 15 );
     bufLabelTicks[15] = 0;
   }
   else {
@@ -1148,7 +1148,7 @@ char title[32], *ptr;
   }
 
   if ( majorTicksExpStr.getRaw() ) {
-    strncpy( bufMajorTicks, majorTicksExpStr.getRaw(), 15 );
+    Strncpy( bufMajorTicks, majorTicksExpStr.getRaw(), 15 );
     bufMajorTicks[15] = 0;
   }
   else {
@@ -1156,7 +1156,7 @@ char title[32], *ptr;
   }
 
   if ( minorTicksExpStr.getRaw() ) {
-    strncpy( bufMinorTicks, minorTicksExpStr.getRaw(), 15 );
+    Strncpy( bufMinorTicks, minorTicksExpStr.getRaw(), 15 );
     bufMinorTicks[15] = 0;
   }
   else {
@@ -1164,7 +1164,7 @@ char title[32], *ptr;
   }
 
   if ( barOriginValExpStr.getRaw() ) {
-    strncpy( bufBarOriginX, barOriginValExpStr.getRaw(), 15 );
+    Strncpy( bufBarOriginX, barOriginValExpStr.getRaw(), 15 );
     bufBarOriginX[15] = 0;
   }
   else {
@@ -1174,7 +1174,7 @@ char title[32], *ptr;
   bufLimitsFromDb = limitsFromDb;
 
   if ( precisionExpStr.getRaw() ) {
-    strncpy( bufPrecision, precisionExpStr.getRaw(), 15 );
+    Strncpy( bufPrecision, precisionExpStr.getRaw(), 15 );
     bufPrecision[15] = 0;
   }
   else {
@@ -1182,7 +1182,7 @@ char title[32], *ptr;
   }
 
   if ( readMinExpStr.getRaw() ) {
-    strncpy( bufReadMin, readMinExpStr.getRaw(), 15 );
+    Strncpy( bufReadMin, readMinExpStr.getRaw(), 15 );
     bufReadMin[15] = 0;
   }
   else {
@@ -1190,14 +1190,14 @@ char title[32], *ptr;
   }
 
   if ( readMaxExpStr.getRaw() ) {
-    strncpy( bufReadMax, readMaxExpStr.getRaw(), 15 );
+    Strncpy( bufReadMax, readMaxExpStr.getRaw(), 15 );
     bufReadMax[15] = 0;
   }
   else {
     strcpy( bufReadMax, "" );
   }
 
-  strncpy( bufScaleFormat, scaleFormat, 15 );
+  Strncpy( bufScaleFormat, scaleFormat, 15 );
   bufHorizontal = horizontal;
 
   ef.create( actWin->top, actWin->appCtx->ci.getColorMap(),
@@ -1587,9 +1587,9 @@ int clipStat = 0;
     }
 
     if ( labelType == BARC_K_PV_NAME )
-      strncpy( str, readPvId->get_name(), PV_Factory::MAX_PV_NAME );
+      Strncpy( str, readPvId->get_name(), PV_Factory::MAX_PV_NAME );
     else
-      strncpy( str, label.getExpanded(), PV_Factory::MAX_PV_NAME );
+      Strncpy( str, label.getExpanded(), PV_Factory::MAX_PV_NAME );
 
     if ( horizontal ) {
 

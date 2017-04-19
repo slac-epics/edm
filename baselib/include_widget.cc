@@ -194,7 +194,7 @@ static void iw_edit_update (
   iwo->erase();
 
   trimWhiteSpace( iwo->buf->bufIncludeFileName );
-  strncpy( iwo->includeFileName, iwo->buf->bufIncludeFileName, 127 );
+  Strncpy( iwo->includeFileName, iwo->buf->bufIncludeFileName, 127 );
   iwo->drawFrame = iwo->buf->bufDrawFrame;
   iwo->symbolsExpStr.setRaw( iwo->buf->bufSymbols );
   ii = 1;
@@ -556,7 +556,7 @@ int item;
 
   if ( !blank( helpCommandExpString.getExpanded() ) ) {
 
-    strncpy( buf, helpCommandExpString.getExpanded(), 255 );
+    Strncpy( buf, helpCommandExpString.getExpanded(), 255 );
     buf[255] = 0;
 
     ctx = NULL;
@@ -864,9 +864,9 @@ char title[32], *ptr;
   }
   ptr = actWin->obj.getNameFromClass( (char *) "includeWidgetClass" );
   if ( ptr )
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   else
-    strncpy( title, includeWidgetClass_str17, 31 );
+    Strncpy( title, includeWidgetClass_str17, 31 );
 
   Strncat( title, includeWidgetClass_str3, 31 );
 
@@ -877,24 +877,24 @@ char title[32], *ptr;
 
   buf->bufFgColor = fgColor.pixelIndex();
 
-  strncpy( buf->bufIncludeFileName, includeFileName, 127 );
+  Strncpy( buf->bufIncludeFileName, includeFileName, 127 );
 
   buf->bufDrawFrame = drawFrame;
 
   if ( symbolsExpStr.getRaw() ) {
-    strncpy( buf->bufSymbols, symbolsExpStr.getRaw(), maxSymbolLen );
+    Strncpy( buf->bufSymbols, symbolsExpStr.getRaw(), maxSymbolLen );
     buf->bufSymbols[maxSymbolLen] = 0;
   }
   else {
-    strncpy( buf->bufSymbols, "", maxSymbolLen );
+    Strncpy( buf->bufSymbols, "", maxSymbolLen );
   }
 
   if (debugm) fprintf( stderr, "buf->bufSymbols = [%s]\n", buf->bufSymbols );
 
   if ( helpCommandExpString.getRaw() )
-    strncpy( buf->bufHelpCommand, helpCommandExpString.getRaw(), 255 );
+    Strncpy( buf->bufHelpCommand, helpCommandExpString.getRaw(), 255 );
   else
-    strncpy( buf->bufHelpCommand, "", 255 );
+    Strncpy( buf->bufHelpCommand, "", 255 );
 
   ef.create( actWin->top, actWin->appCtx->ci.getColorMap(),
    &actWin->appCtx->entryFormX,

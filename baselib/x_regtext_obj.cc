@@ -37,7 +37,7 @@ void activeXRegTextClass::edit_update (
   me->eraseSelectBoxCorners();
   me->erase();
 
-  strncpy( me->id, me->bufId, 31 );
+  Strncpy( me->id, me->bufId, 31 );
 
   me->fgColorMode = me->bufFgColorMode;
   if ( me->fgColorMode == AXTC_K_COLORMODE_ALARM )
@@ -62,12 +62,12 @@ void activeXRegTextClass::edit_update (
   else
     me->visInverted = 1;
 
-  strncpy( me->minVisString, me->bufMinVisString, 39 );
-  strncpy( me->maxVisString, me->bufMaxVisString, 39 );
+  Strncpy( me->minVisString, me->bufMinVisString, 39 );
+  Strncpy( me->maxVisString, me->bufMaxVisString, 39 );
 
   me->value.setRaw( me->bufValue );
 
-  strncpy( me->fontTag, me->fm.currentFontTag(), 63 );
+  Strncpy( me->fontTag, me->fm.currentFontTag(), 63 );
   me->actWin->fi->loadFontTag( me->fontTag );
   me->actWin->drawGc.setFontTag( me->fontTag, me->actWin->fi );
 
@@ -115,7 +115,7 @@ void activeXRegTextClass::edit_update (
    me->stringBoxHeight/2;
 
 //-----------------------------------
-  strncpy( me->regExpStr, me->bufRegExp, 39 );
+  Strncpy( me->regExpStr, me->bufRegExp, 39 );
 //-----------------------------------
 
 }
@@ -345,16 +345,16 @@ activeGraphicClass *ago = (activeGraphicClass *) this;
   visPvExists = alarmPvExists = 0;
   activeMode = 0;
 
-  strncpy( minVisString, source->minVisString, 39 );
-  strncpy( maxVisString, source->maxVisString, 39 );
+  Strncpy( minVisString, source->minVisString, 39 );
+  Strncpy( maxVisString, source->maxVisString, 39 );
 
-  strncpy( id, source->id, 31 );
+  Strncpy( id, source->id, 31 );
 
   useDisplayBg = source->useDisplayBg;
 
   autoSize = source->autoSize;
 
-  strncpy( fontTag, source->fontTag, 63 );
+  Strncpy( fontTag, source->fontTag, 63 );
 
   fs = actWin->fi->getXFontStruct( fontTag );
 
@@ -374,8 +374,8 @@ activeGraphicClass *ago = (activeGraphicClass *) this;
 
   connection.setMaxPvs( 2 );
 //-------------------------------------
-  strncpy( regExpStr, source->regExpStr, 39 );
-  strncpy( bufRegExp, source->bufRegExp, 39 );
+  Strncpy( regExpStr, source->regExpStr, 39 );
+  Strncpy( bufRegExp, source->bufRegExp, 39 );
 //-------------------------------------
 
   doAccSubs( alarmPvExpStr );
@@ -444,13 +444,13 @@ char title[32], *ptr;
 
   ptr = actWin->obj.getNameFromClass( "activeXRegTextClass" );
   if ( ptr )
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   else
-    strncpy( title, activeXTextClass_str4, 31 );
+    Strncpy( title, activeXTextClass_str4, 31 );
 
   Strncat( title, activeXTextClass_str5, 31 );
 
-  strncpy( bufId, id, 31 );
+  Strncpy( bufId, id, 31 );
 
   bufX = x;
   bufY = y;
@@ -464,12 +464,12 @@ char title[32], *ptr;
   bufBgColorMode = bgColorMode;
 
   if ( alarmPvExpStr.getRaw() )
-    strncpy( bufAlarmPvName, alarmPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
+    Strncpy( bufAlarmPvName, alarmPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( bufAlarmPvName, "" );
 
   if ( visPvExpStr.getRaw() )
-    strncpy( bufVisPvName, visPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
+    Strncpy( bufVisPvName, visPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( bufVisPvName, "" );
 
@@ -478,24 +478,24 @@ char title[32], *ptr;
   else
     bufVisInverted = 1;
 
-  strncpy( bufMinVisString, minVisString, 39 );
-  strncpy( bufMaxVisString, maxVisString, 39 );
+  Strncpy( bufMinVisString, minVisString, 39 );
+  Strncpy( bufMaxVisString, maxVisString, 39 );
 
   bufUseDisplayBg = useDisplayBg;
   bufAutoSize = autoSize;
 
   if ( value.getRaw() )
-    strncpy( bufValue, value.getRaw(), 255 );
+    Strncpy( bufValue, value.getRaw(), 255 );
   else
-    strncpy( bufValue, "", 255 );
+    Strncpy( bufValue, "", 255 );
 
 //----------------------------------------
   // add dialog box entry field for regular expression
   if (regExpStr)
-    	strncpy(bufRegExp, regExpStr, 39);
+    	Strncpy(bufRegExp, regExpStr, 39);
   else
-    	strncpy(bufRegExp, "", 39);
- strncpy( bufRegExp, regExpStr, 39);
+    	Strncpy(bufRegExp, "", 39);
+ Strncpy( bufRegExp, regExpStr, 39);
 //----------------------------------------
 
   ef.create( actWin->top, actWin->appCtx->ci.getColorMap(),
@@ -979,7 +979,7 @@ char *tk, *gotData, *context, oneValue[255+1], buf[255+1];
           return 0;
         }
 
-        strncpy( oneValue, tk, 255 );
+        Strncpy( oneValue, tk, 255 );
         oneValue[255] = 0;
 
       }
@@ -992,7 +992,7 @@ char *tk, *gotData, *context, oneValue[255+1], buf[255+1];
           return 0;
         }
 
-        strncpy( fontTag, tk, 63 );
+        Strncpy( fontTag, tk, 63 );
 
       }
             
@@ -1298,7 +1298,7 @@ int clipStat;
 char * activeXRegTextClass::getProcessedText(char *text) {
     size_t len = 80;
 //    fprintf( stderr,"in getProcessedText\n");
-    strncpy( text, value.getExpanded(), 79 );
+    Strncpy( text, value.getExpanded(), 79 );
     if (re_valid)
     {
         regmatch_t pmatch[2];
@@ -2038,7 +2038,7 @@ int activeXRegTextClass::setProperty (
 
   if ( strcmp( prop, activeXTextClass_str33 ) == 0 ) {
 
-    strncpy( bufValue, _value, 255 );
+    Strncpy( bufValue, _value, 255 );
 
     actWin->appCtx->proc->lock();
     actWin->addDefExeNode( aglPtr );
@@ -2327,19 +2327,19 @@ void activeXRegTextClass::replaceString (
   else if ( i == 3 ) {
     int l = max;
     if ( 39 < max ) l = 39;
-    strncpy( minVisString, string, l );
+    Strncpy( minVisString, string, l );
     minVisString[l] = 0;
   }
   else if ( i == 4 ) {
     int l = max;
     if ( 39 < max ) l = 39;
-    strncpy( maxVisString, string, l );
+    Strncpy( maxVisString, string, l );
     maxVisString[l] = 0;
   }
   else if ( i == 5 ) {
     int l = max;
     if ( 39 < max ) l = 39;
-    strncpy( regExpStr, string, l );
+    Strncpy( regExpStr, string, l );
     regExpStr[l] = 0;
   }
 

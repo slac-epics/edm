@@ -127,7 +127,7 @@ activeMessageButtonClass *msgbto = (activeMessageButtonClass *) client;
   msgbto->onLabel.setRaw( msgbto->eBuf->bufOnLabel );
   msgbto->offLabel.setRaw( msgbto->eBuf->bufOffLabel );
 
-  strncpy( msgbto->fontTag, msgbto->fm.currentFontTag(), 63 );
+  Strncpy( msgbto->fontTag, msgbto->fm.currentFontTag(), 63 );
   msgbto->actWin->fi->loadFontTag( msgbto->fontTag );
   msgbto->fs = msgbto->actWin->fi->getXFontStruct( msgbto->fontTag );
 
@@ -187,8 +187,8 @@ activeMessageButtonClass *msgbto = (activeMessageButtonClass *) client;
   msgbto->lock = msgbto->eBuf->bufLock;
 
   msgbto->visPvExpString.setRaw( msgbto->eBuf->bufVisPvName );
-  strncpy( msgbto->minVisString, msgbto->eBuf->bufMinVisString, 39 );
-  strncpy( msgbto->maxVisString, msgbto->eBuf->bufMaxVisString, 39 );
+  Strncpy( msgbto->minVisString, msgbto->eBuf->bufMinVisString, 39 );
+  Strncpy( msgbto->maxVisString, msgbto->eBuf->bufMaxVisString, 39 );
 
   if ( msgbto->eBuf->bufVisInverted )
     msgbto->visInverted = 0;
@@ -425,7 +425,7 @@ activeGraphicClass *msgbto = (activeGraphicClass *) this;
   topShadowCb = source->topShadowCb;
   botShadowCb = source->botShadowCb;
 
-  strncpy( fontTag, source->fontTag, 63 );
+  Strncpy( fontTag, source->fontTag, 63 );
 
   fs = actWin->fi->getXFontStruct( fontTag );
 
@@ -459,8 +459,8 @@ activeGraphicClass *msgbto = (activeGraphicClass *) this;
   visibility = 0;
   prevVisibility = -1;
   visInverted = source->visInverted;
-  strncpy( minVisString, source->minVisString, 39 );
-  strncpy( maxVisString, source->maxVisString, 39 );
+  Strncpy( minVisString, source->minVisString, 39 );
+  Strncpy( maxVisString, source->maxVisString, 39 );
   useEnumNumeric = source->useEnumNumeric;
 
   activeMode = 0;
@@ -1206,7 +1206,7 @@ char tmpDestPvName[PV_Factory::MAX_PV_NAME+1], tmpSourcePressPvName[PV_Factory::
           return 0;
         }
 
-        strncpy( fontTag, tk, 63 );
+        Strncpy( fontTag, tk, 63 );
 
       }
 
@@ -1214,7 +1214,7 @@ char tmpDestPvName[PV_Factory::MAX_PV_NAME+1], tmpSourcePressPvName[PV_Factory::
 
         tk = strtok_r( NULL, "\"\n \t", &context );
         if ( tk ) {
-          strncpy( tmpSourcePressPvName, tk, PV_Factory::MAX_PV_NAME );
+          Strncpy( tmpSourcePressPvName, tk, PV_Factory::MAX_PV_NAME );
           tmpSourcePressPvName[PV_Factory::MAX_PV_NAME] = 0;
           sourcePressPvExpString.setRaw( tmpSourcePressPvName );
 	}
@@ -1225,7 +1225,7 @@ char tmpDestPvName[PV_Factory::MAX_PV_NAME+1], tmpSourcePressPvName[PV_Factory::
 
         tk = strtok_r( NULL, "\"\n \t", &context );
         if ( tk ) {
-          strncpy( tmpDestPvName, tk, PV_Factory::MAX_PV_NAME );
+          Strncpy( tmpDestPvName, tk, PV_Factory::MAX_PV_NAME );
           tmpDestPvName[PV_Factory::MAX_PV_NAME] = 0;
           destPvExpString.setRaw( tmpDestPvName );
 	}
@@ -1237,7 +1237,7 @@ char tmpDestPvName[PV_Factory::MAX_PV_NAME+1], tmpSourcePressPvName[PV_Factory::
         tk = strtok_r( NULL, "\"\n \t", &context );
         if ( tk ) {
           onLabel.setRaw( tk );
-          // strncpy( onLabel, tk, MAX_ENUM_STRING_SIZE );
+          // Strncpy( onLabel, tk, MAX_ENUM_STRING_SIZE );
           // onLabel[MAX_ENUM_STRING_SIZE] = 0;
 	}
 
@@ -1248,7 +1248,7 @@ char tmpDestPvName[PV_Factory::MAX_PV_NAME+1], tmpSourcePressPvName[PV_Factory::
         tk = strtok_r( NULL, "\"\n \t", &context );
         if ( tk ) {
           offLabel.setRaw( tk );
-          // strncpy( offLabel, tk, MAX_ENUM_STRING_SIZE );
+          // Strncpy( offLabel, tk, MAX_ENUM_STRING_SIZE );
           // offLabel[MAX_ENUM_STRING_SIZE] = 0;
 	}
 
@@ -1300,9 +1300,9 @@ char title[32], *ptr, *envPtr, saveLock = 0;
 
   ptr = actWin->obj.getNameFromClass( "activeMessageButtonClass" );
   if ( ptr )
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   else
-    strncpy( title, activeMessageButtonClass_str2, 31 );
+    Strncpy( title, activeMessageButtonClass_str2, 31 );
 
   Strncat( title, activeMessageButtonClass_str3, 31 );
 
@@ -1321,39 +1321,39 @@ char title[32], *ptr, *envPtr, saveLock = 0;
   eBuf->bufBotShadowColor = botShadowColor;
 
   if ( destPvExpString.getRaw() )
-    strncpy( eBuf->bufDestPvName, destPvExpString.getRaw(),
+    Strncpy( eBuf->bufDestPvName, destPvExpString.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufDestPvName, "" );
 
   if ( sourcePressPvExpString.getRaw() )
-    strncpy( eBuf->bufSourcePressPvName, sourcePressPvExpString.getRaw(), PV_Factory::MAX_PV_NAME );
+    Strncpy( eBuf->bufSourcePressPvName, sourcePressPvExpString.getRaw(), PV_Factory::MAX_PV_NAME );
   else
-    strncpy( eBuf->bufSourcePressPvName, "", PV_Factory::MAX_PV_NAME );
+    Strncpy( eBuf->bufSourcePressPvName, "", PV_Factory::MAX_PV_NAME );
 
   if ( sourceReleasePvExpString.getRaw() )
-    strncpy( eBuf->bufSourceReleasePvName, sourceReleasePvExpString.getRaw(), PV_Factory::MAX_PV_NAME );
+    Strncpy( eBuf->bufSourceReleasePvName, sourceReleasePvExpString.getRaw(), PV_Factory::MAX_PV_NAME );
   else
-    strncpy( eBuf->bufSourceReleasePvName, "", PV_Factory::MAX_PV_NAME );
+    Strncpy( eBuf->bufSourceReleasePvName, "", PV_Factory::MAX_PV_NAME );
 
   if ( onLabel.getRaw() )
-    strncpy( eBuf->bufOnLabel, onLabel.getRaw(), MAX_ENUM_STRING_SIZE );
+    Strncpy( eBuf->bufOnLabel, onLabel.getRaw(), MAX_ENUM_STRING_SIZE );
   else
-    strncpy( eBuf->bufOnLabel, "", MAX_ENUM_STRING_SIZE );
+    Strncpy( eBuf->bufOnLabel, "", MAX_ENUM_STRING_SIZE );
 
   if ( offLabel.getRaw() )
-    strncpy( eBuf->bufOffLabel, offLabel.getRaw(), MAX_ENUM_STRING_SIZE );
+    Strncpy( eBuf->bufOffLabel, offLabel.getRaw(), MAX_ENUM_STRING_SIZE );
   else
-    strncpy( eBuf->bufOffLabel, "", MAX_ENUM_STRING_SIZE );
+    Strncpy( eBuf->bufOffLabel, "", MAX_ENUM_STRING_SIZE );
 
   if ( visPvExpString.getRaw() )
-    strncpy( eBuf->bufVisPvName, visPvExpString.getRaw(),
+    Strncpy( eBuf->bufVisPvName, visPvExpString.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufVisPvName, "" );
 
   if ( colorPvExpString.getRaw() )
-    strncpy( eBuf->bufColorPvName, colorPvExpString.getRaw(),
+    Strncpy( eBuf->bufColorPvName, colorPvExpString.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufColorPvName, "" );
@@ -1381,8 +1381,8 @@ char title[32], *ptr, *envPtr, saveLock = 0;
   else
     eBuf->bufVisInverted = 1;
 
-  strncpy( eBuf->bufMinVisString, minVisString, 39 );
-  strncpy( eBuf->bufMaxVisString, maxVisString, 39 );
+  Strncpy( eBuf->bufMinVisString, minVisString, 39 );
+  Strncpy( eBuf->bufMaxVisString, maxVisString, 39 );
 
   eBuf->bufUseEnumNumeric = useEnumNumeric;
 
@@ -1723,11 +1723,11 @@ int blink = 0;
   if ( !buttonPressed ) {
 
     if ( offLabel.getExpanded() )
-      strncpy( string, offLabel.getExpanded(), MAX_ENUM_STRING_SIZE );
+      Strncpy( string, offLabel.getExpanded(), MAX_ENUM_STRING_SIZE );
     else
-      strncpy( string, "", MAX_ENUM_STRING_SIZE );
+      Strncpy( string, "", MAX_ENUM_STRING_SIZE );
 
-    // strncpy( string, offLabel, MAX_ENUM_STRING_SIZE );
+    // Strncpy( string, offLabel, MAX_ENUM_STRING_SIZE );
 
     if ( _3D ) {
 
@@ -1785,11 +1785,11 @@ int blink = 0;
   else {
 
     if ( onLabel.getExpanded() )
-      strncpy( string, onLabel.getExpanded(), MAX_ENUM_STRING_SIZE );
+      Strncpy( string, onLabel.getExpanded(), MAX_ENUM_STRING_SIZE );
     else
-      strncpy( string, "", MAX_ENUM_STRING_SIZE );
+      Strncpy( string, "", MAX_ENUM_STRING_SIZE );
 
-    // strncpy( string, onLabel, MAX_ENUM_STRING_SIZE );
+    // Strncpy( string, onLabel, MAX_ENUM_STRING_SIZE );
 
     if ( _3D ) {
 
@@ -1935,7 +1935,7 @@ char tmpPvName[PV_Factory::MAX_PV_NAME+1];
 
       if ( destExists ) {
 
-        strncpy( tmpPvName, destPvExpString.getExpanded(),
+        Strncpy( tmpPvName, destPvExpString.getExpanded(),
          PV_Factory::MAX_PV_NAME );
 
         l = strlen(tmpPvName);
@@ -2125,7 +2125,7 @@ char tmpBuf[PV_Factory::MAX_PV_NAME+1];
       break;
 
     case ProcessVariable::Type::text:
-      strncpy( destV.str, tmpBuf, 39 );
+      Strncpy( destV.str, tmpBuf, 39 );
       destV.str[39] = 0;
       destPvId->put( XDisplayName(actWin->appCtx->displayName), destV.str );
       break;
@@ -2249,7 +2249,7 @@ char labelValue[PV_Factory::MAX_PV_NAME+1];
       break;
 
     case ProcessVariable::Type::text:
-      strncpy( destV.str, labelValue, 39 );
+      Strncpy( destV.str, labelValue, 39 );
       destPvId->put( XDisplayName(actWin->appCtx->displayName), destV.str );
       break;
 
@@ -2860,7 +2860,7 @@ void activeMessageButtonClass::changeDisplayParams (
     botShadowColor = _botShadowColor;
 
   if ( _flag & ACTGRF_BTNFONTTAG_MASK ) {
-    strncpy( fontTag, _btnFontTag, 63 );
+    Strncpy( fontTag, _btnFontTag, 63 );
     fontTag[63] = 0;
     actWin->fi->loadFontTag( fontTag );
     fs = actWin->fi->getXFontStruct( fontTag );
@@ -2984,13 +2984,13 @@ void activeMessageButtonClass::replaceString (
   else if ( i == 5 ) {
     int l = max;
     if ( 39 < max ) l = 39;
-    strncpy( minVisString, string, l );
+    Strncpy( minVisString, string, l );
     minVisString[l] = 0;
   }
   else if ( i == 6 ) {
     int l = max;
     if ( 39 < max ) l = 39;
-    strncpy( maxVisString, string, l );
+    Strncpy( maxVisString, string, l );
     maxVisString[l] = 0;
   }
 

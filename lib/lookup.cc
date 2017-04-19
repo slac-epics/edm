@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <glob.h>
 #include "lookup.h"
+#include "sys_types.h"
 
 static int g_allocated = 0;
 static unsigned int g_index = 0;
@@ -192,7 +193,7 @@ int st;
 
     *found = 1;
 
-    strncpy( name, g_glob.gl_pathv[g_index], maxName );
+    Strncpy( name, g_glob.gl_pathv[g_index], maxName );
     g_index++;
 
   }
@@ -220,7 +221,7 @@ void getNextFile (
 
   *found = 1;
 
-  strncpy( name, g_glob.gl_pathv[g_index], maxName );
+  Strncpy( name, g_glob.gl_pathv[g_index], maxName );
   g_index++;
 
 }

@@ -73,7 +73,7 @@ activeCoefTableClass *coefTableo = (activeCoefTableClass *) client;
 
   coefTableo->formatExpStr.setRaw( coefTableo->eBuf->bufFormat );
 
-  strncpy( coefTableo->fontTag, coefTableo->fm.currentFontTag(), 63 );
+  Strncpy( coefTableo->fontTag, coefTableo->fm.currentFontTag(), 63 );
   coefTableo->fontTag[63] = 0;
   coefTableo->actWin->fi->loadFontTag( coefTableo->fontTag );
   coefTableo->fs =
@@ -235,7 +235,7 @@ activeGraphicClass *coefTableo = (activeGraphicClass *) this;
   name = new char[strlen("activeCoefTableClass")+1];
   strcpy( name, "activeCoefTableClass" );
 
-  strncpy( fontTag, source->fontTag, 63 );
+  Strncpy( fontTag, source->fontTag, 63 );
   fontTag[63] = 0;
   fs = actWin->fi->getXFontStruct( fontTag );
 
@@ -446,11 +446,11 @@ char title[32], *ptr;
 
   ptr = actWin->obj.getNameFromClass( "activeCoefTableClass" );
   if ( ptr ) {
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
     title[31] = 0;
   }
   else {
-    strncpy( title, activeCoefTableClass_str4, 31 );
+    Strncpy( title, activeCoefTableClass_str4, 31 );
     title[31] = 0;
   }
 
@@ -469,7 +469,7 @@ char title[32], *ptr;
   eBuf->bufBotShadowColor = botShadowColor.pixelIndex();
 
   if ( readPvExpStr.getRaw() ) {
-    strncpy( eBuf->bufReadPvName, readPvExpStr.getRaw(),
+    Strncpy( eBuf->bufReadPvName, readPvExpStr.getRaw(),
      PV_Factory::MAX_PV_NAME );
     eBuf->bufReadPvName[PV_Factory::MAX_PV_NAME] = 0;
   }
@@ -477,7 +477,7 @@ char title[32], *ptr;
     strcpy( eBuf->bufReadPvName, "" );
 
   if ( labelsExpStr.getRaw() ) {
-    strncpy( eBuf->bufLabels, labelsExpStr.getRaw(),
+    Strncpy( eBuf->bufLabels, labelsExpStr.getRaw(),
      MaxLabelSize );
     eBuf->bufLabels[MaxLabelSize] = 0;
   }
@@ -488,7 +488,7 @@ char title[32], *ptr;
   eBuf->bufEfNumEle = efNumEle;
 
   if ( formatExpStr.getRaw() ) {
-    strncpy( eBuf->bufFormat, formatExpStr.getRaw(), 15 );
+    Strncpy( eBuf->bufFormat, formatExpStr.getRaw(), 15 );
     eBuf->bufFormat[15] = 0;
   }
   else
@@ -973,7 +973,7 @@ const char *carray;
 
     // count num labels
     numLabels = 0;
-    strncpy( buf, labelsExpStr.getExpanded(), MaxLabelSize );
+    Strncpy( buf, labelsExpStr.getExpanded(), MaxLabelSize );
     buf[MaxLabelSize] = 0;
     ctx = NULL;
     tk = strtok_r( buf, ",", &ctx );
@@ -982,7 +982,7 @@ const char *carray;
       tk = strtok_r( NULL, ",", &ctx );
     }
 
-    strncpy( buf, labelsExpStr.getExpanded(), MaxLabelSize );
+    Strncpy( buf, labelsExpStr.getExpanded(), MaxLabelSize );
     buf[MaxLabelSize] = 0;
     ctx = NULL;
     tk = strtok_r( buf, ",", &ctx );

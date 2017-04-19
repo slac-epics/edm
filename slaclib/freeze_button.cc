@@ -53,14 +53,14 @@ activeFreezeButtonClass *fbto = (activeFreezeButtonClass *) client;
   fbto->topShadowColor = fbto->bufTopShadowColor;
   fbto->botShadowColor = fbto->bufBotShadowColor;
 
-  strncpy( fbto->fontTag, fbto->fm.currentFontTag(), 63 );
+  Strncpy( fbto->fontTag, fbto->fm.currentFontTag(), 63 );
   fbto->actWin->fi->loadFontTag( fbto->fontTag );
   fbto->fs = fbto->actWin->fi->getXFontStruct( fbto->fontTag );
 
   fbto->_3D = fbto->buf3D;
 
-  strncpy( fbto->label, fbto->bufLabel, 31 );
-  strncpy( fbto->frozenLabel, fbto->bufFrozenLabel, 31 );
+  Strncpy( fbto->label, fbto->bufLabel, 31 );
+  Strncpy( fbto->frozenLabel, fbto->bufFrozenLabel, 31 );
 
   fbto->x = fbto->bufX;
   fbto->sboxX = fbto->bufX;
@@ -163,7 +163,7 @@ activeGraphicClass *fbto = (activeGraphicClass *) this;
   topShadowCb = source->topShadowCb;
   botShadowCb = source->botShadowCb;
 
-  strncpy( fontTag, source->fontTag, 63 );
+  Strncpy( fontTag, source->fontTag, 63 );
 
   fs = actWin->fi->getXFontStruct( fontTag );
 
@@ -174,8 +174,8 @@ activeGraphicClass *fbto = (activeGraphicClass *) this;
   botShadowColor = source->botShadowColor;
 
   _3D = source->_3D;
-  strncpy( label, source->label, 31 );
-  strncpy( frozenLabel, source->frozenLabel, 31 );
+  Strncpy( label, source->label, 31 );
+  Strncpy( frozenLabel, source->frozenLabel, 31 );
 
   doAccSubs( label, 31 );
   doAccSubs( frozenLabel, 31 );
@@ -222,8 +222,8 @@ int activeFreezeButtonClass::createInteractive (
   updateDimensions();
 
   _3D = 1;
-  strncpy( label, activeFreezeButtonClass_str0, 31 );
-  strncpy( frozenLabel, activeFreezeButtonClass_str1, 31 );
+  Strncpy( label, activeFreezeButtonClass_str0, 31 );
+  Strncpy( frozenLabel, activeFreezeButtonClass_str1, 31 );
 
   this->draw();
 
@@ -344,9 +344,9 @@ char title[32], *ptr;
 
   ptr = actWin->obj.getNameFromClass( "activeFreezeButtonClass" );
   if ( ptr )
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   else
-    strncpy( title, activeFreezeButtonClass_str2, 31 );
+    Strncpy( title, activeFreezeButtonClass_str2, 31 );
 
   Strncat( title, activeFreezeButtonClass_str3, 31 );
 
@@ -360,10 +360,10 @@ char title[32], *ptr;
   bufFrozenBgColor = frozenBgColor;
   bufTopShadowColor = topShadowColor;
   bufBotShadowColor = botShadowColor;
-  strncpy( bufFontTag, fontTag, 63 );
+  Strncpy( bufFontTag, fontTag, 63 );
   buf3D = _3D;
-  strncpy( bufLabel, label, 31 );
-  strncpy( bufFrozenLabel, frozenLabel, 31 );
+  Strncpy( bufLabel, label, 31 );
+  Strncpy( bufFrozenLabel, frozenLabel, 31 );
 
   ef.create( actWin->top, actWin->appCtx->ci.getColorMap(),
    &actWin->appCtx->entryFormX,
@@ -795,13 +795,13 @@ void activeFreezeButtonClass::replaceString (
   if ( i == 0 ) {
     int l = max;
     if ( 31 < max ) l = 31;
-    strncpy( label, string, l );
+    Strncpy( label, string, l );
     label[l] = 0;
   }
   else if ( i == 1 ) {
     int l = max;
     if ( 31 < max ) l = 31;
-    strncpy( frozenLabel, string, l );
+    Strncpy( frozenLabel, string, l );
     frozenLabel[l] = 0;
   }
 

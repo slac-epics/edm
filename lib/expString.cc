@@ -337,7 +337,7 @@ int state, foundOne, i, ii, nOut, nIn, nMacro,
     *outStringLen = nOut;
 //    strcpy( *outString, buf );
 
-    strncpy( *outString, buf, nOut );
+    Strncpy( *outString, buf, nOut );
     *((*outString)+nOut) = 0;
 
   }
@@ -427,7 +427,7 @@ void expStringClass::copy ( const expStringClass &source )
 //      strcpy( rawString, source.rawString );
 //      rawStringLen = strlen(rawString);
 
-    strncpy( rawString, source.rawString, rawStringSize-1 );
+    Strncpy( rawString, source.rawString, rawStringSize-1 );
     rawString[rawStringSize-1] = 0;
     rawStringLen = strlen(rawString);
 
@@ -447,7 +447,7 @@ void expStringClass::copy ( const expStringClass &source )
 //      strcpy( expandedString1, source.expandedString1 );
 //      expandedString1Len = strlen(expandedString1);
 
-    strncpy( expandedString1, source.expandedString1, expandedString1Size-1 );
+    Strncpy( expandedString1, source.expandedString1, expandedString1Size-1 );
     expandedString1[expandedString1Size-1] = 0;
     expandedString1Len = strlen(expandedString1);
 
@@ -467,7 +467,7 @@ void expStringClass::copy ( const expStringClass &source )
 //      strcpy( expandedString, source.expandedString );
 //      expandedStringLen = strlen(expandedString);
 
-    strncpy( expandedString, source.expandedString, expandedStringSize-1 );
+    Strncpy( expandedString, source.expandedString, expandedStringSize-1 );
     expandedString[expandedStringSize-1] = 0;
     expandedStringLen = strlen(expandedString);
 
@@ -487,7 +487,7 @@ void expStringClass::copy ( const expStringClass &source )
 //      strcpy( expandedString2, source.expandedString2 );
 //      expandedString2Len = strlen(expandedString2);
 
-    strncpy( expandedString2, source.expandedString2, expandedString2Size-1 );
+    Strncpy( expandedString2, source.expandedString2, expandedString2Size-1 );
     expandedString2[expandedString2Size-1] = 0;
     expandedString2Len = strlen(expandedString2);
 
@@ -557,7 +557,7 @@ char *subStr;
     rawString = new char[rawStringSize];
   }
 
-  strncpy( rawString, str, rawStringSize-1 );
+  Strncpy( rawString, str, rawStringSize-1 );
   rawString[rawStringSize-1] = 0;
   rawStringLen = strlen(rawString);
 
@@ -631,7 +631,7 @@ int numSymbolsFound;
     }
 
     if ( expandedString1Size > 0 ) {
-      strncpy( expandedString, expandedString1, expandedString1Len );
+      Strncpy( expandedString, expandedString1, expandedString1Len );
       expandedString[expandedString1Len] = 0;
       expandedStringLen = expandedString1Len;
     }
@@ -657,7 +657,7 @@ void expStringClass::reset ( void ) {
   }
 
   if ( expandedString1Size > 0 ) {
-    strncpy( expandedString, expandedString1, expandedString1Len );
+    Strncpy( expandedString, expandedString1, expandedString1Len );
     expandedString[expandedString1Len] = 0;
     expandedStringLen = expandedString1Len;
   }
@@ -695,7 +695,7 @@ int numSymbolsFound;
       }
 
       if ( expandedString2Size > 0 ) {
-        strncpy( expandedString, expandedString2, expandedString2Len );
+        Strncpy( expandedString, expandedString2, expandedString2Len );
         expandedString[expandedString2Len] = 0;
         expandedStringLen = expandedString2Len;
       }

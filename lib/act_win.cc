@@ -101,7 +101,7 @@ ProcessVariable *pvId = NULL;
 
       if ( len ) {
         val = new char[len+1];
-        strncpy( val, buf, len );
+        Strncpy( val, buf, len );
         val[len] = 0;
       }
 
@@ -431,7 +431,7 @@ char *gotOne;
   gotOne = strstr( fileName, "/" );
   if ( !gotOne ) {
 
-    strncpy( name, fileName, 255 );
+    Strncpy( name, fileName, 255 );
 
     // remove extension if .edl (default one)
     l = strlen( name );
@@ -465,7 +465,7 @@ char *gotOne;
 
     if ( fileName[i] == '/' ) {
 
-      strncpy( name, &fileName[i+1], 255 );
+      Strncpy( name, &fileName[i+1], 255 );
       break;
 
     }
@@ -617,18 +617,18 @@ activeWindowClass *awo = (activeWindowClass *) client;
 
   awo->changeSinceAutoSave = 0;
 
-  strncpy( oldName, awo->autosaveName, 255 );
+  Strncpy( oldName, awo->autosaveName, 255 );
   oldName[255] = 0;
 
   envPtr = getenv( environment_str8 );
   if ( envPtr ) {
-    strncpy( awo->autosaveName, envPtr, 255 );
+    Strncpy( awo->autosaveName, envPtr, 255 );
     if ( envPtr[strlen(envPtr)] != '/' ) {
       Strncat( awo->autosaveName, "/", 255 );
     }
   }
   else {
-    strncpy( awo->autosaveName, "/tmp/", 255 );
+    Strncpy( awo->autosaveName, "/tmp/", 255 );
   }
 
   Strncat( awo->autosaveName, activeWindowClass_str1, 255 );
@@ -735,7 +735,7 @@ static void awc_do_save_new_path_cb (
 activeWindowClass *awo = (activeWindowClass *) client;
 
   awo->confirm1.popdown();
-  strncpy( awo->fileName, awo->newPath, 255 );
+  Strncpy( awo->fileName, awo->newPath, 255 );
   awo->fileName[255] = 0;
   awo->save( awo->fileName );
   awo->setTitle();
@@ -975,7 +975,7 @@ int status;
 
         //fprintf( stderr, "index = %-d, got [%s]\n", awo->curReplaceIndex, str );
         if ( awo->replaceOld ) {
-          strncpy( awo->replaceOld, str, 10000 );
+          Strncpy( awo->replaceOld, str, 10000 );
           awo->replaceOld[10000] = 0;
 	}
 
@@ -1335,9 +1335,9 @@ activeWindowClass *awo = (activeWindowClass *) client;
 int i, n;
 Arg args[4];
 
-  strncpy( awo->defaultFontTag, awo->defaultFm.currentFontTag(), 127 );
-  strncpy( awo->defaultCtlFontTag, awo->defaultCtlFm.currentFontTag(), 127 );
-  strncpy( awo->defaultBtnFontTag, awo->defaultBtnFm.currentFontTag(), 127 );
+  Strncpy( awo->defaultFontTag, awo->defaultFm.currentFontTag(), 127 );
+  Strncpy( awo->defaultCtlFontTag, awo->defaultCtlFm.currentFontTag(), 127 );
+  Strncpy( awo->defaultBtnFontTag, awo->defaultBtnFm.currentFontTag(), 127 );
 
   awo->defaultAlignment = awo->defaultFm.currentFontAlignment();
   awo->defaultCtlAlignment = awo->defaultCtlFm.currentFontAlignment();
@@ -1358,17 +1358,17 @@ Arg args[4];
   awo->cursor.setColor( awo->ci->pix(awo->fgColor),
    awo->ci->pix(awo->bgColor) );
 
-  strncpy( awo->id, awo->bufId, 31 );
+  Strncpy( awo->id, awo->bufId, 31 );
 
   awo->x = awo->bufX;
   awo->y = awo->bufY;
   awo->w = awo->bufW;
   awo->h = awo->bufH;
 
-  strncpy( awo->title, awo->bufTitle, 127 );
+  Strncpy( awo->title, awo->bufTitle, 127 );
   awo->expStrTitle.setRaw( awo->title );
 
-  strncpy( awo->defaultPvType, awo->bufDefaultPvType, 15 );
+  Strncpy( awo->defaultPvType, awo->bufDefaultPvType, 15 );
 
   awo->gridSpacing = awo->bufGridSpacing;
 
@@ -1519,9 +1519,9 @@ int stat, success;
   if ( awo->allSelectedTopShadowColorFlag ) flag |= ACTGRF_TOPSHADOWCOLOR_MASK;
   if ( awo->allSelectedBotShadowColorFlag ) flag |= ACTGRF_BOTSHADOWCOLOR_MASK;
 
-  strncpy( awo->allSelectedFontTag, awo->defaultFm.currentFontTag(), 127 );
-  strncpy( awo->allSelectedCtlFontTag, awo->defaultCtlFm.currentFontTag(), 127 );
-  strncpy( awo->allSelectedBtnFontTag, awo->defaultBtnFm.currentFontTag(), 127 );
+  Strncpy( awo->allSelectedFontTag, awo->defaultFm.currentFontTag(), 127 );
+  Strncpy( awo->allSelectedCtlFontTag, awo->defaultCtlFm.currentFontTag(), 127 );
+  Strncpy( awo->allSelectedBtnFontTag, awo->defaultBtnFm.currentFontTag(), 127 );
 
   awo->allSelectedAlignment = awo->defaultFm.currentFontAlignment();
   awo->allSelectedCtlAlignment = awo->defaultCtlFm.currentFontAlignment();
@@ -1765,7 +1765,7 @@ activeGraphicListPtr curSel;
     goto done;
   }
 
-  strncpy( awo->fileNameForSym, fName, 255 );
+  Strncpy( awo->fileNameForSym, fName, 255 );
   awo->fileNameForSym[255] = 0;
 
   awo->numTemplateMacros = 0;
@@ -1964,7 +1964,7 @@ unsigned int mask;
     goto done;
   }
 
-  strncpy( awo->fileName, fName, sizeof(awo->fileName)-1 );
+  Strncpy( awo->fileName, fName, sizeof(awo->fileName)-1 );
   XtFree( fName );
   XtUnmanageChild( w );
 
@@ -2093,7 +2093,7 @@ char fileName[127+1];
     goto done;
   }
 
-  strncpy( fileName, fName, 127 );
+  Strncpy( fileName, fName, 127 );
   XtFree( fName );
   XtUnmanageChild( w );
 
@@ -2170,7 +2170,7 @@ char fileName[127+1];
     goto done;
   }
 
-  strncpy( fileName, fName, 127 );
+  Strncpy( fileName, fName, 127 );
   XtFree( fName );
   XtUnmanageChild( w );
 
@@ -2307,7 +2307,7 @@ int fileOpened = 0;
     goto done;
   }
 
-  strncpy( tmp, fName, 255 );
+  Strncpy( tmp, fName, 255 );
 
   XtFree( fName );
 
@@ -2361,7 +2361,7 @@ int fileOpened = 0;
 
   f = fopen( tmp, "w" );
   if ( !f ) {
-    strncpy( msg, activeWindowClass_str199, 255 );
+    Strncpy( msg, activeWindowClass_str199, 255 );
     Strncat( msg, tmp, 255 );
     awo->appCtx->postMessage( msg );
     goto done;
@@ -2394,7 +2394,7 @@ int fileOpened = 0;
 
   stat = fclose(f);
   if ( stat < 0 ) {
-    strncpy( msg, activeWindowClass_str200, 255 );
+    Strncpy( msg, activeWindowClass_str200, 255 );
     Strncat( msg, tmp, 255 );
     awo->appCtx->postMessage( msg );
     goto done;
@@ -2410,7 +2410,7 @@ done:
 
     stat = fclose(f);
     if ( stat < 0 ) {
-      strncpy( msg, activeWindowClass_str200, 255 );
+      Strncpy( msg, activeWindowClass_str200, 255 );
       Strncat( msg, tmp, 255 );
       awo->appCtx->postMessage( msg );
     }
@@ -2533,10 +2533,10 @@ char *item;
 
   if ( item ) {
     //fprintf( stderr, "selectScheme_cb, item = [%s]\n", item );
-    strncpy( awo->curSchemeSet, item, 63 );
+    Strncpy( awo->curSchemeSet, item, 63 );
   }
   else {
-    strncpy( awo->curSchemeSet, "", 63 );
+    Strncpy( awo->curSchemeSet, "", 63 );
     awo->loadComponentScheme( "default" );
     //awo->appCtx->displayScheme.loadDefault( &awo->appCtx->ci );
     //awo->setDisplayScheme( &awo->appCtx->displayScheme );
@@ -2657,13 +2657,13 @@ char *envPtr, text[255+1];
 
       envPtr = getenv( environment_str8 );
       if ( envPtr ) {
-        strncpy( text, envPtr, 255 );
+        Strncpy( text, envPtr, 255 );
         if ( envPtr[strlen(envPtr)] != '/' ) {
           Strncat( text, "/", 255 );
         }
       }
       else {
-        strncpy( text, "/tmp/", 255 );
+        Strncpy( text, "/tmp/", 255 );
       }
 
       xmStr1 = XmStringCreateLocalized( text );
@@ -5618,7 +5618,7 @@ int efSetAccLargestH = 300;
         awo->savedState = awo->state;
         awo->state = AWC_WAITING;
         extractName( awo->fileName, name );
-        strncpy( awo->newPath, awo->appCtx->curPath, 255 );
+        Strncpy( awo->newPath, awo->appCtx->curPath, 255 );
         awo->newPath[255] = 0;
         Strncat( awo->newPath, name, 255 );
         //Strncat( awo->newPath, ".edl", 255 );
@@ -5949,13 +5949,13 @@ int efSetAccLargestH = 300;
       
       awo->state = AWC_EDITING;
       awo->currentEf = NULL;
-      strncpy( awo->bufId, awo->id, 31 );
+      Strncpy( awo->bufId, awo->id, 31 );
       awo->bufX = awo->x;
       awo->bufY = awo->y;
       awo->bufW = awo->w;
       awo->bufH = awo->h;
-      strncpy( awo->bufTitle, awo->title, 127 );
-      strncpy( awo->bufDefaultPvType, awo->defaultPvType, 15 );
+      Strncpy( awo->bufTitle, awo->title, 127 );
+      Strncpy( awo->bufDefaultPvType, awo->defaultPvType, 15 );
 
       awo->bufOrthoMove = awo->orthoMove;
       awo->bufOrthogonal = awo->orthogonal;
@@ -13379,7 +13379,7 @@ char *cptr;
 char *none = activeWindowClass_str83;
 char t[255+1];
 
-  strncpy( fileNameAndRev, fileName, 255 );
+  Strncpy( fileNameAndRev, fileName, 255 );
   fileNameAndRev[255] = 0;
   if ( !blank(fileRev) ) {
     Strncat( fileNameAndRev, " (", 287 );
@@ -13417,7 +13417,7 @@ char t[255+1];
     }
     else {
       //cptr = expStrTitle.getExpanded();
-      strncpy( t, expStrTitle.getExpanded(), 255 );
+      Strncpy( t, expStrTitle.getExpanded(), 255 );
       t[255] = 0;
       if ( invalidFile ) {
         Strncat( t, " (", 255 );
@@ -13443,7 +13443,7 @@ XTextProperty xtext;
 char *cptr;
 char *none = activeWindowClass_str83;
 
-  strncpy( fileNameAndRev, fileName, 255 );
+  Strncpy( fileNameAndRev, fileName, 255 );
   fileNameAndRev[255] = 0;
   if ( !blank(fileRev) ) {
     Strncat( fileNameAndRev, " (", 287 );
@@ -14605,7 +14605,7 @@ Arg args[3];
 
       if ( i == 0 ) {
         // init scheme set with first one
-        strncpy( curSchemeSet, appCtx->schemeSetList[i], 63 );
+        Strncpy( curSchemeSet, appCtx->schemeSetList[i], 63 );
       }
 
     }
@@ -17027,9 +17027,9 @@ int activeWindowClass::setGraphicEnvironment (
   ci = OneCi;
   fi = OneFi;
 
-  strncpy( defaultFontTag, fi->defaultFont(), 127 );
-  strncpy( defaultCtlFontTag, fi->defaultFont(), 127 );
-  strncpy( defaultBtnFontTag, fi->defaultFont(), 127 );
+  Strncpy( defaultFontTag, fi->defaultFont(), 127 );
+  Strncpy( defaultCtlFontTag, fi->defaultFont(), 127 );
+  Strncpy( defaultBtnFontTag, fi->defaultFont(), 127 );
 
   drawGc.create( drawWidget );
   drawGc.setCI( ci );
@@ -17173,10 +17173,10 @@ int stat;
   gotOne = strstr( fName, "/" );
 
   if ( gotOne ) {
-    strncpy( oneFileName, fName, 255 );
+    Strncpy( oneFileName, fName, 255 );
   }
   else {
-    strncpy( oneFileName, appCtx->colorPath, 255 );
+    Strncpy( oneFileName, appCtx->colorPath, 255 );
     Strncat( oneFileName, fName, 255 );
   }
 
@@ -17192,9 +17192,9 @@ int stat;
   stat = scheme.load( ci, oneFileName );
   if ( !( stat & 1 ) ) return stat;
 
-  strncpy( defaultPvType, scheme.getPvType(), 15 );
+  Strncpy( defaultPvType, scheme.getPvType(), 15 );
 
-  strncpy( defaultFontTag, scheme.getFont(), 127 );
+  Strncpy( defaultFontTag, scheme.getFont(), 127 );
   if ( strcmp( defaultFontTag, "" ) != 0 ) {
     stat = defaultFm.setFontTag( defaultFontTag );
   }
@@ -17204,7 +17204,7 @@ int stat;
     stat = defaultFm.setFontAlignment( defaultAlignment );
   }
 
-  strncpy( defaultCtlFontTag, scheme.getCtlFont(), 127 );
+  Strncpy( defaultCtlFontTag, scheme.getCtlFont(), 127 );
   if ( strcmp( defaultCtlFontTag, "" ) != 0 ) {
     stat = defaultCtlFm.setFontTag( defaultCtlFontTag );
   }
@@ -17214,7 +17214,7 @@ int stat;
     stat = defaultCtlFm.setFontAlignment( defaultCtlAlignment );
   }
 
-  strncpy( defaultBtnFontTag, scheme.getBtnFont(), 127 );
+  Strncpy( defaultBtnFontTag, scheme.getBtnFont(), 127 );
   if ( strcmp( defaultBtnFontTag, "" ) != 0 ) {
     stat = defaultBtnFm.setFontTag( defaultBtnFontTag );
   }
@@ -17285,10 +17285,10 @@ int stat;
   gotOne = strstr( fName, "/" );
 
   if ( gotOne ) {
-    strncpy( oneFileName, fName, 255 );
+    Strncpy( oneFileName, fName, 255 );
   }
   else {
-    strncpy( oneFileName, appCtx->colorPath, 255 );
+    Strncpy( oneFileName, appCtx->colorPath, 255 );
     Strncat( oneFileName, fName, 255 );
   }
 
@@ -17344,7 +17344,7 @@ int maxver = 1;
     }
     else {
 
-      strncpy( tmp, envPtr, 511 );
+      Strncpy( tmp, envPtr, 511 );
       tmp[511] = 0;
       num = strtol( tmp, &nonInt, 10 );
       if ( !nonInt || !strcmp( nonInt, "" ) ) {
@@ -17357,7 +17357,7 @@ int maxver = 1;
 
   }
 
-  strncpy( spec, fname, 511 );
+  Strncpy( spec, fname, 511 );
   Strncat( spec, "-*", 520 );
   min = max = count = 0;
   getFirstFileNameExt( spec, 511, name, 511, ext, &found );
@@ -17385,7 +17385,7 @@ int maxver = 1;
 
     if ( ( maxver != -1 ) && count >= maxver ) {
 
-      strncpy( tmp, fname, 510 ); // leave room for version info
+      Strncpy( tmp, fname, 510 ); // leave room for version info
       tmp[510] = 0;
       snprintf( verstr, 10, "-%-d", min ); 
       Strncat( tmp, verstr, 530 );
@@ -17398,7 +17398,7 @@ int maxver = 1;
     }
 
     num = max+1;
-    strncpy( tmp, fname, 510 ); // leave room for version info
+    Strncpy( tmp, fname, 510 ); // leave room for version info
     tmp[510] = 0;
     snprintf( verstr, 10, "-%-d", num ); 
     Strncat( tmp, verstr, 530 );
@@ -17411,7 +17411,7 @@ int maxver = 1;
   }
   else {
 
-    strncpy( tmp, fname, 510 ); // leave room for ~
+    Strncpy( tmp, fname, 510 ); // leave room for ~
     Strncat( tmp, "~", 511 );
 
     if ( fileExists( tmp ) ) {
@@ -17479,10 +17479,10 @@ int stat;
   gotOne = strstr( fName, "/" );
 
   if ( gotOne ) {
-    strncpy( oneFileName, fName, 255 );
+    Strncpy( oneFileName, fName, 255 );
   }
   else {
-    strncpy( oneFileName, appCtx->curPath, 255 );
+    Strncpy( oneFileName, appCtx->curPath, 255 );
     Strncat( oneFileName, fName, 255 );
   }
 
@@ -17578,10 +17578,10 @@ tagClass tag;
   gotOne = strstr( fName, "/" );
 
   if ( gotOne ) {
-    strncpy( oneFileName, fName, 255 );
+    Strncpy( oneFileName, fName, 255 );
   }
   else {
-    strncpy( oneFileName, appCtx->curPath, 255 );
+    Strncpy( oneFileName, appCtx->curPath, 255 );
     Strncat( oneFileName, fName, 255 );
   }
 
@@ -17628,7 +17628,7 @@ tagClass tag;
   while ( cur != head ) {
     if ( !cur->node->deleteRequest && !cur->node->hidden ) {
       if ( strcmp( cur->node->getCreateParam(), "" ) == 0 ) {
-        strncpy( fullName, cur->node->objName(), 255 );
+        Strncpy( fullName, cur->node->objName(), 255 );
         description = obj.getNameFromClass( fullName );
         fprintf( f, "# (%s)\n", description );
         fprintf( f, "object %s\n", cur->node->objName() );
@@ -17638,7 +17638,7 @@ tagClass tag;
 	      }
       }
       else {
-        strncpy( fullName, cur->node->objName(), 255 );
+        Strncpy( fullName, cur->node->objName(), 255 );
         Strncat( fullName, ":", 255 );
         Strncat( fullName, cur->node->getCreateParam(), 255 );
         description = obj.getNameFromClass( fullName );
@@ -18399,7 +18399,7 @@ tagClass tag;
 
       // Create internal, hidden related display object
 
-      strncpy( tagName, prefix, 255 );
+      Strncpy( tagName, prefix, 255 );
       Strncat( tagName, displayName, 255 );
       Strncat( tagName, postfix, 255 );
 
@@ -19128,7 +19128,7 @@ char *envPtr;
   highlightedObject = NULL;
 
   if ( activateCallbackFlag ) {
-    strncpy( callbackName, id, 63 );
+    Strncpy( callbackName, id, 63 );
     Strncat( callbackName, "Activate", 63 );
     activateCallback = appCtx->userLibObject.getFunc( callbackName );
     if ( activateCallback ) {
@@ -19689,7 +19689,7 @@ pvDefPtr pvDefCur;
       XtUnmanageChild( executeWidget );
 
       if ( deactivateCallbackFlag ) {
-        strncpy( callbackName, id, 63 );
+        Strncpy( callbackName, id, 63 );
         Strncat( callbackName, "Deactivate", 63 );
         deactivateCallback = appCtx->userLibObject.getFunc(
          callbackName );
@@ -19723,7 +19723,7 @@ pvDefPtr pvDefCur;
   this->refresh();
 
   if ( deactivateCallbackFlag ) {
-    strncpy( callbackName, id, 63 );
+    Strncpy( callbackName, id, 63 );
     Strncat( callbackName, "Deactivate", 63 );
     deactivateCallback = appCtx->userLibObject.getFunc(
      callbackName );
@@ -20263,7 +20263,7 @@ int numComments = 0, moreComments = 1, checkForRev = 1,
                   Strncat( fileNameAndRev, " (", 287 );
                   Strncat( fileNameAndRev, activeWindowClass_str214, 287 );
                   Strncat( fileNameAndRev, ")", 287 );
-                  strncpy( fileRev, activeWindowClass_str214, 31 );
+                  Strncpy( fileRev, activeWindowClass_str214, 31 );
                   fileRev[31] = 0;
 	        }
 
@@ -20277,7 +20277,7 @@ int numComments = 0, moreComments = 1, checkForRev = 1,
                   Strncat( fileNameAndRev, " (", 287 );
                   Strncat( fileNameAndRev, tk, 287 );
                   Strncat( fileNameAndRev, ")", 287 );
-                  strncpy( fileRev, tk, 31 );
+                  Strncpy( fileRev, tk, 31 );
                   fileRev[31] = 0;
 	        }
 
@@ -21505,7 +21505,7 @@ Arg args[5];
           return 0;
         }
 
-        strncpy( title, tk, 127 );
+        Strncpy( title, tk, 127 );
         expStrTitle.setRaw( title );
 
       }
@@ -21908,10 +21908,10 @@ int result;
   gotOne = strstr( fName, "/" );
 
   if ( gotOne ) {
-    strncpy( oneFileName, fName, 255 );
+    Strncpy( oneFileName, fName, 255 );
   }
   else {
-    strncpy( oneFileName, appCtx->curPath, 255 );
+    Strncpy( oneFileName, appCtx->curPath, 255 );
     Strncat( oneFileName, fName, 255 );
   }
 
@@ -21987,9 +21987,9 @@ int stat;
 
   if ( !displayScheme->isLoaded() ) return;
 
-  strncpy( defaultPvType, displayScheme->getPvType(), 15 );
+  Strncpy( defaultPvType, displayScheme->getPvType(), 15 );
 
-  strncpy( defaultFontTag, displayScheme->getFont(), 127 );
+  Strncpy( defaultFontTag, displayScheme->getFont(), 127 );
   if ( strcmp( defaultFontTag, "" ) != 0 ) {
     stat = defaultFm.setFontTag( defaultFontTag );
   }
@@ -21999,7 +21999,7 @@ int stat;
     stat = defaultFm.setFontAlignment( defaultAlignment );
   }
 
-  strncpy( defaultCtlFontTag, displayScheme->getCtlFont(), 127 );
+  Strncpy( defaultCtlFontTag, displayScheme->getCtlFont(), 127 );
   if ( strcmp( defaultCtlFontTag, "" ) != 0 ) {
     stat = defaultCtlFm.setFontTag( defaultCtlFontTag );
   }
@@ -22009,7 +22009,7 @@ int stat;
     stat = defaultCtlFm.setFontAlignment( defaultCtlAlignment );
   }
 
-  strncpy( defaultBtnFontTag, displayScheme->getBtnFont(), 127 );
+  Strncpy( defaultBtnFontTag, displayScheme->getBtnFont(), 127 );
   if ( strcmp( defaultBtnFontTag, "" ) != 0 ) {
     stat = defaultBtnFm.setFontTag( defaultBtnFontTag );
   }
@@ -22153,7 +22153,7 @@ int num_selected;
 
     if ( cur->node->objName() ) {
       if ( obj.getNameFromClass( cur->node->objName() ) ) {
-        strncpy( buf, obj.getNameFromClass( cur->node->objName() ), 31 );
+        Strncpy( buf, obj.getNameFromClass( cur->node->objName() ), 31 );
       }
       else {
         strcpy( buf, "?" );
@@ -22403,7 +22403,7 @@ char nameWithSubs[1024+1];
 
   this->substituteSpecial( 1024, inName, nameWithSubs );
 
-  strncpy( fileName, nameWithSubs, 255 );
+  Strncpy( fileName, nameWithSubs, 255 );
   fileName[255] = 0;
   getFileName( displayName, nameWithSubs, 127 );
   displayName[127] = 0;
@@ -22412,7 +22412,7 @@ char nameWithSubs[1024+1];
   getFilePostfix( postfix, nameWithSubs, 127 );
   postfix[127] = 0;
 
-  strncpy( fileNameForSym, nameWithSubs, 255 );
+  Strncpy( fileNameForSym, nameWithSubs, 255 );
   fileNameForSym[255] = 0;
   getFileName( displayNameForSym, nameWithSubs, 127 );
   displayNameForSym[127] = 0;
@@ -22421,12 +22421,12 @@ char nameWithSubs[1024+1];
   getFilePostfix( postfixForSym, nameWithSubs, 127 );
   postfixForSym[127] = 0;
   
-  //strncpy( fileName, inName, 255 );
+  //Strncpy( fileName, inName, 255 );
   //getFileName( displayName, inName, 127 );
   //getFilePrefix( prefix, inName, 127 );
   //getFilePostfix( postfix, inName, 127 );
 
-  //strncpy( fileNameForSym, inName, 255 );
+  //Strncpy( fileNameForSym, inName, 255 );
   //getFileName( displayNameForSym, inName, 127 );
   //getFilePrefix( prefixForSym, inName, 127 );
   //getFilePostfix( postfixForSym, inName, 127 );
@@ -22449,7 +22449,7 @@ char nameWithSubs[1024+1];
 
   this->substituteSpecial( 1024, inName, nameWithSubs );
 
-  strncpy( fileNameForSym, nameWithSubs, 255 );
+  Strncpy( fileNameForSym, nameWithSubs, 255 );
   fileNameForSym[255] = 0;
   getFileName( displayNameForSym, nameWithSubs, 127 );
   displayNameForSym[127] = 0;
@@ -22458,7 +22458,7 @@ char nameWithSubs[1024+1];
   getFilePostfix( postfixForSym, nameWithSubs, 127 );
   postfixForSym[127] = 0;
 
-  //strncpy( fileNameForSym, inName, 255 );
+  //Strncpy( fileNameForSym, inName, 255 );
   //getFileName( displayNameForSym, inName, 127 );
   //getFilePrefix( prefixForSym, inName, 127 );
   //getFilePostfix( postfixForSym, inName, 127 );
@@ -22488,7 +22488,7 @@ int i;
       //f = fopen( buf, mode );
       f = fileOpen( buf, mode );
       if ( f ) {
-        strncpy( fileName, buf, 255 ); // update fileName
+        Strncpy( fileName, buf, 255 ); // update fileName
         storeFileNameForSymbols( buf ); // update int sym file name components
         return f;
       }
@@ -22597,7 +22597,7 @@ int i;
       //f = fopen( buf, mode );
       f = fileOpen( buf, mode );
       if ( f ) {
-        strncpy( fileName, buf, 255 ); // update fileName
+        Strncpy( fileName, buf, 255 ); // update fileName
         storeFileNameForSymbols( buf ); // update int sym file name components
         return f;
       }
@@ -22651,18 +22651,18 @@ void activeWindowClass::executeFromDeferredQueue( void )
 
     changeSinceAutoSave = 0;
 
-    strncpy( oldName, autosaveName, 255 );
+    Strncpy( oldName, autosaveName, 255 );
     oldName[255] = 0;
 
     envPtr = getenv( environment_str8 );
     if ( envPtr ) {
-      strncpy( autosaveName, envPtr, 255 );
+      Strncpy( autosaveName, envPtr, 255 );
       if ( envPtr[strlen(envPtr)] != '/' ) {
         Strncat( autosaveName, "/", 255 );
       }
     }
     else {
-      strncpy( autosaveName, "/tmp/", 255 );
+      Strncpy( autosaveName, "/tmp/", 255 );
     }
 
     Strncat( autosaveName, activeWindowClass_str1, 255 );
@@ -22940,7 +22940,7 @@ int i, len, iIn, iOut, p0, p1, more, state, winid, isEnvVar, isPvVal;
 	      p1 = iIn;
 	      len = p1 - p0 + 1;
         if ( len > 1023 ) len = 1023;
-	      strncpy( param, &bufIn[p0], len );
+	      Strncpy( param, &bufIn[p0], len );
 	      param[len] = 0;
 
         if ( strcmp( param, "<WINID>" ) == 0 ) {
@@ -23008,14 +23008,14 @@ int i, len, iIn, iOut, p0, p1, more, state, winid, isEnvVar, isPvVal;
 	      }
         else if ( strcmp( param, "<DSPNAME>" ) == 0 ) {
           bufOut[iOut] = 0;
-          strncpy( dspName, XDisplayName(appCtx->displayName), 127 );
+          Strncpy( dspName, XDisplayName(appCtx->displayName), 127 );
           Strncat( bufOut, dspName, max );
           iOut = strlen( bufOut );
           if ( iOut >= max ) iOut = max - 1;
 	      }
         else if ( strcmp( param, "<DSPID>" ) == 0 ) {
           bufOut[iOut] = 0;
-          strncpy( dspName, XDisplayName(appCtx->displayName), 127 );
+          Strncpy( dspName, XDisplayName(appCtx->displayName), 127 );
           for ( i=0; i<(int) strlen(dspName); i++ ) {
             if ( dspName[i] == '.' ) dspName[i] = '-';
 	        }
@@ -23026,7 +23026,7 @@ int i, len, iIn, iOut, p0, p1, more, state, winid, isEnvVar, isPvVal;
         else if ( strncmp( param, "<val:", 5 ) == 0 ) {
 
           isPvVal = 1;
-          strncpy( tmp, param, 1023 );
+          Strncpy( tmp, param, 1023 );
           tmp[1023] = 0;
 
           ptr = strstr( tmp, ">" );
@@ -23065,7 +23065,7 @@ int i, len, iIn, iOut, p0, p1, more, state, winid, isEnvVar, isPvVal;
           if ( strncmp( param, "<env:", 5 ) == 0 ) {
 
             isEnvVar = 1;
-            strncpy( tmp, param, 1023 );
+            Strncpy( tmp, param, 1023 );
             tmp[1023] = 0;
 
             ptr = strstr( tmp, ">" );
@@ -23381,7 +23381,7 @@ char *sysMacros[] = {
   envPtr = getenv( environment_str5 );
   if ( envPtr ) {
 
-    strncpy( buf, envPtr, 255 );
+    Strncpy( buf, envPtr, 255 );
 
     if ( buf[strlen(buf)-1] != '/' ) {
       Strncat( buf, "/", 255 );

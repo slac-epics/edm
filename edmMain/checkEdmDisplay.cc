@@ -15,7 +15,7 @@ char displayName[63+1];
     return 1;
   }
 
-  strncpy( displayName, argv[1], 63 );
+  Strncpy( displayName, argv[1], 63 );
   displayName[63] = 0;
 
   testDisplay = XOpenDisplay( displayName );

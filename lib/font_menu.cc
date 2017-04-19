@@ -624,7 +624,7 @@ void fontMenuClass::show( void ) {
 
 char *fontMenuClass::currentFontTag ( void ) {
 
-  strncpy( fontTagStr, this->familyStr, 127 );
+  Strncpy( fontTagStr, this->familyStr, 127 );
   Strncat( fontTagStr, "-", 127 );
   Strncat( fontTagStr, this->boldStr, 127 );
   Strncat( fontTagStr, "-", 127 );
@@ -648,23 +648,23 @@ Arg args[5];
 int n;
 int familyOK, sizeOK;
 
-  strncpy( buf, string, 127 );
+  Strncpy( buf, string, 127 );
 
   tk = strtok( buf, "-" );
   if ( !tk ) return FONTMENU_FAIL;
-  strncpy( familyVal, tk, 127 );
+  Strncpy( familyVal, tk, 127 );
 
   tk = strtok( NULL, "-" );
   if ( !tk ) return FONTMENU_FAIL;
-  strncpy( boldVal, tk, 7 );
+  Strncpy( boldVal, tk, 7 );
 
   tk = strtok( NULL, "-" );
   if ( !tk ) return FONTMENU_FAIL;
-  strncpy( italicsVal, tk, 3 );
+  Strncpy( italicsVal, tk, 3 );
 
   tk = strtok( NULL, "-" );
   if ( !tk ) return FONTMENU_FAIL;
-  strncpy( sizeVal, tk, 7 );
+  Strncpy( sizeVal, tk, 7 );
 
   // family
 

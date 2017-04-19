@@ -196,7 +196,7 @@ scaleClass *sclo = (scaleClass *) client;
 
   sclo->scaleId = sclo->eBuf->bufScaleId;
 
-  strncpy( sclo->fontTag, sclo->fm.currentFontTag(), 63 );
+  Strncpy( sclo->fontTag, sclo->fm.currentFontTag(), 63 );
   sclo->fontTag[63] = 0;
 
   sclo->actWin->fi->loadFontTag( sclo->fontTag );
@@ -435,9 +435,9 @@ char title[32], *ptr;
 
   ptr = actWin->obj.getNameFromClass( "458bb765_eab9_4d65_8fda_2ce55d2baec6" );
   if ( ptr )
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   else
-    strncpy( title, scale_str2, 31 );
+    Strncpy( title, scale_str2, 31 );
 
   Strncat( title, scale_str3, 31 );
 
@@ -451,32 +451,32 @@ char title[32], *ptr;
   eBuf->bufScaleId = scaleId;
 
   if ( minPvExpStr.getRaw() )
-    strncpy( eBuf->minBufPvName, minPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
+    Strncpy( eBuf->minBufPvName, minPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->minBufPvName, "" );
 
  if ( maxPvExpStr.getRaw() )
-   strncpy( eBuf->maxBufPvName, maxPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
+   Strncpy( eBuf->maxBufPvName, maxPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->maxBufPvName, "" );
 
  if ( colorPvExpStr.getRaw() )
-   strncpy( eBuf->colorBufPvName, colorPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
+   Strncpy( eBuf->colorBufPvName, colorPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->colorBufPvName, "" );
 
  if ( modePvExpStr.getRaw() )
-   strncpy( eBuf->modeBufPvName, modePvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
+   Strncpy( eBuf->modeBufPvName, modePvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->modeBufPvName, "" );
 
  if ( labelPvExpStr.getRaw() )
-   strncpy( eBuf->labelBufPvName, labelPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
+   Strncpy( eBuf->labelBufPvName, labelPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->labelBufPvName, "" );
 
  if ( updatePvExpStr.getRaw() )
-   strncpy( eBuf->updateBufPvName, updatePvExpStr.getRaw(),
+   Strncpy( eBuf->updateBufPvName, updatePvExpStr.getRaw(),
     PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->updateBufPvName, "" );
@@ -2105,7 +2105,7 @@ char buf[128];
     sprintf( buf, "%-3g", value );
   }
 
-  strncpy( string, buf, len );
+  Strncpy( string, buf, len );
 
   return 1;
 

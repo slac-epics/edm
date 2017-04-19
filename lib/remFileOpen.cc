@@ -91,7 +91,7 @@ nameListPtr cur;
   ptr = getenv( environment_str12 );
   if ( !ptr ) return;
 
-  strncpy( file, ptr, 255 );
+  Strncpy( file, ptr, 255 );
   file[255] = 0;
 
   l = strlen(ptr);
@@ -374,7 +374,7 @@ unsigned int i;
 int status;
 char buf[255+1], namePart[255+1], postPart[255+1], *tk, *context;
 
-  strncpy( buf, fullName, 255 );
+  Strncpy( buf, fullName, 255 );
   buf[255] = 0;
 
   strcpy( name, "" );
@@ -397,7 +397,7 @@ char buf[255+1], namePart[255+1], postPart[255+1], *tk, *context;
     status = getFileName( namePart, fullName, 255 );
     if ( status & 1 ) {
 
-      strncpy( name, namePart, 255 );
+      Strncpy( name, namePart, 255 );
       name[255] = 0;
 
       status = getFilePostfix( postPart, fullName, 255 );
@@ -434,7 +434,7 @@ char *first, *last;
   if ( first && last && ( first < last ) ) {
     len1 = (long) first - (long) fname;
     if ( len1 > 255 ) len1 = 255;
-    strncpy( nameToCheck, fname, len1 );
+    Strncpy( nameToCheck, fname, len1 );
     nameToCheck[len1] = 0;
     remain = 255 - len1;
     len2 = strlen( fname ) - (long) last + (long) fname - 1;
@@ -444,7 +444,7 @@ char *first, *last;
   }
   else {
 
-    strncpy( nameToCheck, fname, 255 );
+    Strncpy( nameToCheck, fname, 255 );
     nameToCheck[255] = 0;
 
     // else if filename is of the form name.ext?params,
@@ -492,7 +492,7 @@ char buf[255+1];
 
     len1 = (long) first - (long) name;
     if ( len1 > maxlen ) len1 = maxlen;
-    strncpy( buf, name, len1 );
+    Strncpy( buf, name, len1 );
     buf[len1] = 0;
     remain = maxlen - len1;
     len2 = strlen( name ) - (long) last + (long) name - 1;
@@ -500,7 +500,7 @@ char buf[255+1];
     strncat( buf, last+1, len2 );
     buf[len1+len2] = 0;
 
-    strncpy( name, buf, maxlen );
+    Strncpy( name, buf, maxlen );
     name[maxlen] = 0;
 
   }
@@ -592,7 +592,7 @@ int len, i, loc=0;
   }
   else {
 
-    strncpy( fullNameWithParams, fullName, maxlen );
+    Strncpy( fullNameWithParams, fullName, maxlen );
     Strncat( fullNameWithParams, params, maxlen );
     fullNameWithParams[maxlen] = 0;
 
@@ -646,7 +646,7 @@ static int disableCache = 0;
   }
 #endif
 
-  strncpy( fullName, fullNameBuf, 255 );
+  Strncpy( fullName, fullNameBuf, 255 );
   fullName[255] = 0;
 
   discardParams( fullName, 255 );
@@ -798,7 +798,7 @@ static int disableCache = 0;
       }
     }
 
-    strncpy( buf, tmpDir, 255 );
+    Strncpy( buf, tmpDir, 255 );
     Strncat( buf, plainName, 255 );
 
     if ( disableCache ) {
@@ -822,10 +822,10 @@ static int disableCache = 0;
         umask( curMode );
       }
       if ( !f ) return NULL;
-      strncpy( tmpName, buf, 255 );
+      Strncpy( tmpName, buf, 255 );
       tmpName[255] = 0;
 
-      strncpy( buf, fullName, 255 );
+      Strncpy( buf, fullName, 255 );
 
       if ( debugMode() ) fprintf( stderr, "get [%s]\n", buf );
 
@@ -851,7 +851,7 @@ static int disableCache = 0;
 
     }
 
-    strncpy( buf, tmpDir, 255 );
+    Strncpy( buf, tmpDir, 255 );
     Strncat( buf, plainName, 255 );
 
     if ( gotExt ) {
@@ -1018,7 +1018,7 @@ static int disableCache = 0;
     }
   }
 
-  strncpy( name, fullName, 255 );
+  Strncpy( name, fullName, 255 );
   name[255] = 0;
 
   if ( debugMode() ) fprintf( stderr, "Open file [%s] [%s]\n", name, mode );
@@ -1027,11 +1027,11 @@ static int disableCache = 0;
 
     status = getFileNameAndExt( name, fullName, 255 );
     if ( !(status & 1 ) ) {
-      strncpy( name, fullName, 255 );
+      Strncpy( name, fullName, 255 );
       name[255] = 0;
     }
 
-    strncpy( allPaths, urlList, 10239 );
+    Strncpy( allPaths, urlList, 10239 );
     allPaths[10239] = 0;
     context = NULL;
     tk = strtok_r( allPaths, "|", &context );
@@ -1047,7 +1047,7 @@ static int disableCache = 0;
         tk[l-1] = 0;
       }
 
-      strncpy( buf, tmpDir, 255 );
+      Strncpy( buf, tmpDir, 255 );
       Strncat( buf, name, 255 );
 
       if ( disableCache ) {
@@ -1072,7 +1072,7 @@ static int disableCache = 0;
         }
         if ( !f ) return NULL;
         f_open_successful = 1;
-        strncpy( tmpName, buf, 255 );
+        Strncpy( tmpName, buf, 255 );
         tmpName[255] = 0;
 
         strcpy( buf, tk );
@@ -1120,7 +1120,7 @@ static int disableCache = 0;
       return NULL;
     }
 
-    strncpy( buf, tmpDir, 255 );
+    Strncpy( buf, tmpDir, 255 );
     Strncat( buf, name, 255 );
 
     if ( gotExt ) {

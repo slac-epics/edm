@@ -366,7 +366,7 @@ int calpadClass::setMonth (
 
 int stat;
 
-  strncpy( monthString, mon, 3 );
+  Strncpy( monthString, mon, 3 );
   monthString[3] = 0;
   stat = setMonthDayYear();
   return stat;
@@ -382,7 +382,7 @@ int stat;
  if ( ( mon < 1 ) || ( mon > 12 ) ) return 0;
 
   month = mon - 1;
-  strncpy( monthString, months[month], 3 );
+  Strncpy( monthString, months[month], 3 );
   monthString[3] = 0;
   stat = setMonthDayYear();
   return stat;
@@ -480,7 +480,7 @@ int stat;
   min = sysTime.tm_time.tm_min;
   sec = sysTime.tm_time.tm_sec;
 
-  strncpy( monthString, months[month], 3 );
+  Strncpy( monthString, months[month], 3 );
   monthString[3] = 0;
 
   stat = setMonthDayYear();
@@ -859,7 +859,7 @@ char buf[127+1];
 
   sprintf( buf, "%s-%02d-%-d %02d:%02d:%02d", monthString, day, year,
    hour, min, sec );
-  strncpy( dateString, buf, maxLen );
+  Strncpy( dateString, buf, maxLen );
   dateString[maxLen] = 0;
 
   return dateString;

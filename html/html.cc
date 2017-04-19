@@ -99,8 +99,8 @@ htmlClass *htmlo = (htmlClass *) client;
   else
     htmlo->visInverted = 1;
 
-  strncpy( htmlo->minVisString, htmlo->eBuf->bufMinVisString, 39 );
-  strncpy( htmlo->maxVisString, htmlo->eBuf->bufMaxVisString, 39 );
+  Strncpy( htmlo->minVisString, htmlo->eBuf->bufMinVisString, 39 );
+  Strncpy( htmlo->maxVisString, htmlo->eBuf->bufMaxVisString, 39 );
 
   if ( htmlo->bufValue ) {
     htmlo->value.setRaw( htmlo->bufValue );
@@ -430,8 +430,8 @@ activeGraphicClass *ago = (activeGraphicClass *) this;
   visPvExists = alarmPvExists = contentPvExists = 0;
   activeMode = 0;
 
-  strncpy( minVisString, source->minVisString, 39 );
-  strncpy( maxVisString, source->maxVisString, 39 );
+  Strncpy( minVisString, source->minVisString, 39 );
+  Strncpy( maxVisString, source->maxVisString, 39 );
 
   value.copy( source->value );
 
@@ -522,9 +522,9 @@ char title[32], *ptr;
 
   ptr = actWin->obj.getNameFromClass( "html" );
   if ( ptr )
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   else
-    strncpy( title, htmlClass_str4, 31 );
+    Strncpy( title, htmlClass_str4, 31 );
 
   Strncat( title, htmlClass_str5, 31 );
 
@@ -538,17 +538,17 @@ char title[32], *ptr;
   eBuf->bufBgColor = bgColor.pixelIndex();
 
   if ( alarmPvExpStr.getRaw() )
-    strncpy( eBuf->bufAlarmPvName, alarmPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
+    Strncpy( eBuf->bufAlarmPvName, alarmPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufAlarmPvName, "" );
 
   if ( visPvExpStr.getRaw() )
-    strncpy( eBuf->bufVisPvName, visPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
+    Strncpy( eBuf->bufVisPvName, visPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufVisPvName, "" );
 
   if ( contentPvExpStr.getRaw() )
-    strncpy( eBuf->bufContentPvName, contentPvExpStr.getRaw(),
+    Strncpy( eBuf->bufContentPvName, contentPvExpStr.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufContentPvName, "" );
@@ -558,18 +558,18 @@ char title[32], *ptr;
   else
     eBuf->bufVisInverted = 1;
 
-  strncpy( eBuf->bufMinVisString, minVisString, 39 );
-  strncpy( eBuf->bufMaxVisString, maxVisString, 39 );
+  Strncpy( eBuf->bufMinVisString, minVisString, 39 );
+  Strncpy( eBuf->bufMaxVisString, maxVisString, 39 );
 
   if ( value.getRaw() )
-    strncpy( bufValue, value.getRaw(), htmlClass::MAX_TEXT_LEN );
+    Strncpy( bufValue, value.getRaw(), htmlClass::MAX_TEXT_LEN );
   else
-    strncpy( bufValue, "", htmlClass::MAX_TEXT_LEN );
+    Strncpy( bufValue, "", htmlClass::MAX_TEXT_LEN );
 
   if ( docRoot.getRaw() )
-    strncpy( bufDocRoot, docRoot.getRaw(), htmlClass::MAX_FILENAME_LEN );
+    Strncpy( bufDocRoot, docRoot.getRaw(), htmlClass::MAX_FILENAME_LEN );
   else
-    strncpy( bufDocRoot, "", htmlClass::MAX_FILENAME_LEN );
+    Strncpy( bufDocRoot, "", htmlClass::MAX_FILENAME_LEN );
 
   eBuf->bufUseFile = useFile;
 
@@ -865,7 +865,7 @@ char *tk, *gotData, *context,
           return 0;
         }
 
-        strncpy( oneValue, tk, htmlClass::MAX_TEXT_LEN );
+        Strncpy( oneValue, tk, htmlClass::MAX_TEXT_LEN );
         oneValue[htmlClass::MAX_TEXT_LEN] = 0;
 
       }
@@ -2005,7 +2005,7 @@ struct stat buf;
 char tmp[MAX_FILENAME_LEN+1], tmp1[MAX_FILENAME_LEN+1], *tk;
 
   absolute = 0;
-  strncpy( tmp1, name, MAX_FILENAME_LEN );
+  Strncpy( tmp1, name, MAX_FILENAME_LEN );
   tmp1[MAX_FILENAME_LEN] = 0;
   tk = strtok( tmp1, " \t\n" );
   if ( tk ) {
@@ -2016,15 +2016,15 @@ char tmp[MAX_FILENAME_LEN+1], tmp1[MAX_FILENAME_LEN+1], *tk;
 
   if ( !absolute ) {
 
-    strncpy( tmp1, docRoot.getExpanded(), MAX_FILENAME_LEN );
+    Strncpy( tmp1, docRoot.getExpanded(), MAX_FILENAME_LEN );
     tmp1[MAX_FILENAME_LEN] = 0;
     tk = strtok( tmp1, " \t\n" );
     if ( tk ) {
-      strncpy( tmp, tk, MAX_FILENAME_LEN );
+      Strncpy( tmp, tk, MAX_FILENAME_LEN );
       tmp[MAX_FILENAME_LEN] = 0;
     }
     else {
-      strncpy( tmp, "", MAX_FILENAME_LEN );
+      Strncpy( tmp, "", MAX_FILENAME_LEN );
       tmp[MAX_FILENAME_LEN] = 0;
     }
 
@@ -2043,7 +2043,7 @@ char tmp[MAX_FILENAME_LEN+1], tmp1[MAX_FILENAME_LEN+1], *tk;
   }
   else {
 
-    strncpy( tmp, name, MAX_FILENAME_LEN );
+    Strncpy( tmp, name, MAX_FILENAME_LEN );
     tmp[MAX_FILENAME_LEN] = 0;
 
   }

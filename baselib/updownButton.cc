@@ -238,7 +238,7 @@ activeUpdownButtonClass *udbto = (activeUpdownButtonClass *) client;
 
   udbto->label.setRaw( udbto->eBuf->bufLabel );
 
-  strncpy( udbto->fontTag, udbto->fm.currentFontTag(), 63 );
+  Strncpy( udbto->fontTag, udbto->fm.currentFontTag(), 63 );
   udbto->actWin->fi->loadFontTag( udbto->fontTag );
   udbto->fs = udbto->actWin->fi->getXFontStruct( udbto->fontTag );
 
@@ -257,8 +257,8 @@ activeUpdownButtonClass *udbto = (activeUpdownButtonClass *) client;
   udbto->maxDv = udbto->scaleMax = udbto->efScaleMax.value();
 
   udbto->visPvExpString.setRaw( udbto->eBuf->bufVisPvName );
-  strncpy( udbto->minVisString, udbto->eBuf->bufMinVisString, 39 );
-  strncpy( udbto->maxVisString, udbto->eBuf->bufMaxVisString, 39 );
+  Strncpy( udbto->minVisString, udbto->eBuf->bufMinVisString, 39 );
+  Strncpy( udbto->maxVisString, udbto->eBuf->bufMaxVisString, 39 );
 
   if ( udbto->eBuf->bufVisInverted )
     udbto->visInverted = 0;
@@ -667,7 +667,7 @@ activeGraphicClass *udbto = (activeGraphicClass *) this;
 
   buttonPressed = 0;
 
-  strncpy( fontTag, source->fontTag, 63 );
+  Strncpy( fontTag, source->fontTag, 63 );
 
   fs = actWin->fi->getXFontStruct( fontTag );
 
@@ -700,8 +700,8 @@ activeGraphicClass *udbto = (activeGraphicClass *) this;
   visibility = 0;
   prevVisibility = -1;
   visInverted = source->visInverted;
-  strncpy( minVisString, source->minVisString, 39 );
-  strncpy( maxVisString, source->maxVisString, 39 );
+  Strncpy( minVisString, source->minVisString, 39 );
+  Strncpy( maxVisString, source->maxVisString, 39 );
   activeMode = 0;
   eBuf = NULL;
 
@@ -1346,7 +1346,7 @@ char tmpCoarse[39+1];
           return 0;
         }
 
-        strncpy( fontTag, tk, 63 );
+        Strncpy( fontTag, tk, 63 );
 
       }
 
@@ -1354,7 +1354,7 @@ char tmpCoarse[39+1];
 
         tk = strtok_r( NULL, "\"\n \t", &context );
         if ( tk ) {
-          strncpy( tmpDestPvName, tk, 28 );
+          Strncpy( tmpDestPvName, tk, 28 );
           tmpDestPvName[28] = 0;
           destPvExpString.setRaw( tmpDestPvName );
 	}
@@ -1365,7 +1365,7 @@ char tmpCoarse[39+1];
 
         tk = strtok_r( NULL, "\"\n \t", &context );
         if ( tk ) {
-          strncpy( tmpFine, tk, 28 );
+          Strncpy( tmpFine, tk, 28 );
           tmpFine[28] = 0;
           fineExpString.setRaw( tmpFine );
 	}
@@ -1376,7 +1376,7 @@ char tmpCoarse[39+1];
 
         tk = strtok_r( NULL, "\"\n \t", &context );
         if ( tk ) {
-          strncpy( tmpCoarse, tk, 28 );
+          Strncpy( tmpCoarse, tk, 28 );
           tmpCoarse[28] = 0;
           coarseExpString.setRaw( tmpCoarse );
 	}
@@ -1426,9 +1426,9 @@ char title[32], *ptr;
 
   ptr = actWin->obj.getNameFromClass( "activeUpdownButtonClass" );
   if ( ptr )
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   else
-    strncpy( title, activeUpdownButtonClass_str2, 31 );
+    Strncpy( title, activeUpdownButtonClass_str2, 31 );
 
   Strncat( title, activeUpdownButtonClass_str3, 31 );
 
@@ -1445,31 +1445,31 @@ char title[32], *ptr;
   eBuf->bufBotShadowColor = botShadowColor;
 
   if ( destPvExpString.getRaw() )
-    strncpy( eBuf->bufDestPvName, destPvExpString.getRaw(),
+    Strncpy( eBuf->bufDestPvName, destPvExpString.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufDestPvName, "" );
 
   if ( savePvExpString.getRaw() )
-    strncpy( eBuf->bufSavePvName, savePvExpString.getRaw(),
+    Strncpy( eBuf->bufSavePvName, savePvExpString.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufSavePvName, "" );
 
   if ( fineExpString.getRaw() )
-    strncpy( eBuf->bufFine, fineExpString.getRaw(), 39 );
+    Strncpy( eBuf->bufFine, fineExpString.getRaw(), 39 );
   else
-    strncpy( eBuf->bufFine, "", 39 );
+    Strncpy( eBuf->bufFine, "", 39 );
 
   if ( coarseExpString.getRaw() )
-    strncpy( eBuf->bufCoarse, coarseExpString.getRaw(), 39 );
+    Strncpy( eBuf->bufCoarse, coarseExpString.getRaw(), 39 );
   else
-    strncpy( eBuf->bufCoarse, "", 39 );
+    Strncpy( eBuf->bufCoarse, "", 39 );
 
   if ( label.getRaw() )
-    strncpy( eBuf->bufLabel, label.getRaw(), 39 );
+    Strncpy( eBuf->bufLabel, label.getRaw(), 39 );
   else
-    strncpy( eBuf->bufLabel, "", 39 );
+    Strncpy( eBuf->bufLabel, "", 39 );
 
   eBuf->buf3D = _3D;
   eBuf->bufInvisible = invisible;
@@ -1480,7 +1480,7 @@ char title[32], *ptr;
   eBuf->bufEfScaleMax = efScaleMax;
 
   if ( visPvExpString.getRaw() )
-    strncpy( eBuf->bufVisPvName, visPvExpString.getRaw(),
+    Strncpy( eBuf->bufVisPvName, visPvExpString.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufVisPvName, "" );
@@ -1491,13 +1491,13 @@ char title[32], *ptr;
     eBuf->bufVisInverted = 1;
 
   if ( colorPvExpString.getRaw() )
-    strncpy( eBuf->bufColorPvName, colorPvExpString.getRaw(),
+    Strncpy( eBuf->bufColorPvName, colorPvExpString.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufColorPvName, "" );
 
-  strncpy( eBuf->bufMinVisString, minVisString, 39 );
-  strncpy( eBuf->bufMaxVisString, maxVisString, 39 );
+  Strncpy( eBuf->bufMinVisString, minVisString, 39 );
+  Strncpy( eBuf->bufMaxVisString, maxVisString, 39 );
 
   ef.create( actWin->top, actWin->appCtx->ci.getColorMap(),
    &actWin->appCtx->entryFormX,
@@ -1882,9 +1882,9 @@ int blink = 0;
   if ( fs ) {
 
     if ( label.getExpanded() )
-      strncpy( string, label.getExpanded(), 39 );
+      Strncpy( string, label.getExpanded(), 39 );
     else
-      strncpy( string, "", 39 );
+      Strncpy( string, "", 39 );
 
     if ( isSaved ) {
       Strncat( string, " *", 63 );
@@ -2894,7 +2894,7 @@ void activeUpdownButtonClass::changeDisplayParams (
     botShadowColor = _botShadowColor;
 
   if ( _flag & ACTGRF_BTNFONTTAG_MASK ) {
-    strncpy( fontTag, _btnFontTag, 63 );
+    Strncpy( fontTag, _btnFontTag, 63 );
     fontTag[63] = 0;
     actWin->fi->loadFontTag( fontTag );
     fs = actWin->fi->getXFontStruct( fontTag );
@@ -3001,13 +3001,13 @@ void activeUpdownButtonClass::replaceString (
   else if ( i == 5 ) {
     int l = max;
     if ( 39 < max ) l = 39;
-    strncpy( minVisString, string, l );
+    Strncpy( minVisString, string, l );
     minVisString[l] = 0;
   }
   else if ( i == 6 ) {
     int l = max;
     if ( 39 < max ) l = 39;
-    strncpy( maxVisString, string, l );
+    Strncpy( maxVisString, string, l );
     maxVisString[l] = 0;
   }
 

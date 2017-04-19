@@ -1308,7 +1308,7 @@ XmString str;
   curWidgetIsLabel = 0;
   leftAttachmentExists = 0;
 
-  strncpy( title, label, 31 );
+  Strncpy( title, label, 31 );
   title[31] = 0;
 
   if ( fi ) {
@@ -1531,7 +1531,7 @@ char buf[16];
   curWidgetIsLabel = 0;
   leftAttachmentExists = 0;
 
-  strncpy( title, label, 31 );
+  Strncpy( title, label, 31 );
   title[31] = 0;
 
   if ( fi ) {
@@ -2017,7 +2017,7 @@ char *buf;
   teo = (class textEntry *) client;
 
   buf = XmTextGetString( w );
-  strncpy( teo->charDest, buf, teo->maxLen );
+  Strncpy( teo->charDest, buf, teo->maxLen );
   XtFree( buf );
 
 
@@ -2035,7 +2035,7 @@ char *buf;
   teo = (class textEntry *) client;
 
   buf = XmTextGetString( w );
-  strncpy( teo->charDest, buf, teo->maxLen );
+  Strncpy( teo->charDest, buf, teo->maxLen );
   XtFree( buf );
 
 }
@@ -2058,7 +2058,7 @@ XmTextPosition pos;
 
   if ( blank(buf) || isLegalInteger( buf ) ) {
     *dest = strtol( buf, NULL, 0 );
-    strncpy( teo->lastGoodNumeric, buf, 31 );
+    Strncpy( teo->lastGoodNumeric, buf, 31 );
     teo->lastGoodNumeric[31] = 0;
   }
   else {
@@ -2090,7 +2090,7 @@ XmTextPosition pos;
   buf = XmTextGetString( w );
 
   if ( blank(buf) || isLegalInteger( buf ) ) {
-    strncpy( teo->lastGoodNumeric, buf, 31 );
+    Strncpy( teo->lastGoodNumeric, buf, 31 );
     teo->lastGoodNumeric[31] = 0;
     i = strtol( buf, NULL, 0 );
     dest->setValue( i );
@@ -2132,7 +2132,7 @@ XmTextPosition pos;
 
   if ( blank(buf) || isLegalFloat( buf ) ) {
     *dest = atof( buf );
-    strncpy( teo->lastGoodNumeric, buf, 31 );
+    Strncpy( teo->lastGoodNumeric, buf, 31 );
     teo->lastGoodNumeric[31] = 0;
   }
   else {
@@ -2164,7 +2164,7 @@ XmTextPosition pos;
   buf = XmTextGetString( w );
 
   if ( blank(buf) || isLegalFloat( buf ) ) {
-    strncpy( teo->lastGoodNumeric, buf, 31 );
+    Strncpy( teo->lastGoodNumeric, buf, 31 );
     teo->lastGoodNumeric[31] = 0;
     d = atof( buf );
     dest->setValue( d );
@@ -2206,7 +2206,7 @@ int i;
 //   fprintf( stderr, "In TextFieldToStringArray, index = %-d\n", i );
 
   buf = XmTextGetString( w );
-  strncpy( destArray[i], buf, dsc->size );
+  Strncpy( destArray[i], buf, dsc->size );
   XtFree( buf );
 
 }
@@ -2357,7 +2357,7 @@ char buf[127+1];
   // textField widget
 
   cur->destPtrI = dest;
-  strncpy( cur->lastGoodNumeric, buf, 31 );
+  Strncpy( cur->lastGoodNumeric, buf, 31 );
   cur->lastGoodNumeric[31] = 0;
 
   if ( curTopParent  == topForm ) {
@@ -2510,7 +2510,7 @@ char buf[127+1];
   // textField widget
 
   cur->destPtrEfI = dest;
-  strncpy( cur->lastGoodNumeric, buf, 31 );
+  Strncpy( cur->lastGoodNumeric, buf, 31 );
   cur->lastGoodNumeric[31] = 0;
 
   if ( curTopParent  == topForm ) {
@@ -2662,7 +2662,7 @@ char buf[127+1];
   // textField widget
 
   cur->destPtrD = dest;
-  strncpy( cur->lastGoodNumeric, buf, 31 );
+  Strncpy( cur->lastGoodNumeric, buf, 31 );
   cur->lastGoodNumeric[31] = 0;
 
   if ( curTopParent  == topForm ) {
@@ -2814,7 +2814,7 @@ char buf[127+1];
   // textField widget
 
   cur->destPtrD = dest;
-  strncpy( cur->lastGoodNumeric, buf, 31 );
+  Strncpy( cur->lastGoodNumeric, buf, 31 );
   cur->lastGoodNumeric[31] = 0;
 
   if ( curTopParent  == topForm ) {
@@ -2965,7 +2965,7 @@ char buf[127+1];
   cur = new textEntry;
 
   cur->destPtrEfD = dest;
-  strncpy( cur->lastGoodNumeric, buf, 31 );
+  Strncpy( cur->lastGoodNumeric, buf, 31 );
   cur->lastGoodNumeric[31] = 0;
 
   // textField widget
@@ -3803,7 +3803,7 @@ void OptionToString (
 widgetListPtr cur;
 
   cur = (widgetListPtr) client;
-  strncpy( (char *) cur->destination, cur->value, cur->size );
+  Strncpy( (char *) cur->destination, cur->value, cur->size );
 
 }
 
@@ -3841,7 +3841,7 @@ int i;
 //   fprintf( stderr, "i = %-d\n", i );
 //   fprintf( stderr, "value = [%s]\n", value );
 
-  strncpy( destArray[i], value, dsc->size );
+  Strncpy( destArray[i], value, dsc->size );
 
 }
 
