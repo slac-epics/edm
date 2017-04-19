@@ -131,6 +131,7 @@ public:
 
     if ( !pattern ) return 0;
     lp = strlen(pattern);
+    if ( lp > 127 ) return 0; // patterns longer than 127 disallowed
     if ( lp == 0 ) return 0; // empty pattern disallowed
 
     if ( !winName ) return 0;
@@ -161,7 +162,7 @@ public:
 
       if ( begins ) {
 
-        strncpy( buf, pattern, 127 );
+        Strncpy( buf, pattern, 127 );
         buf[lp-1] = 0;                    // discard last char
         ptr = strstr( winName, buf );
         if ( ptr == winName )
@@ -172,7 +173,7 @@ public:
       }
       else if ( ends ) {
 
-        strncpy( buf, &pattern[1], 127 ); // discard first char
+        Strncpy( buf, &pattern[1], 127 ); // discard first char
         start = ls - strlen(buf);
         if ( start < 0 ) return 0;
         ptr = strstr( &winName[start], buf );
@@ -203,7 +204,7 @@ public:
       l = strlen(str);
       if ( l > WINNAME_MAX ) l = WINNAME_MAX;
       winName = new char[l+1];
-      strncpy( winName, str, l );
+      Strncpy( winName, str, l );
       winName[l] = 0;
     }
   }

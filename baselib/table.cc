@@ -57,7 +57,7 @@ activeTableClass *tableo = (activeTableClass *) client;
 
   tableo->readPvExpStr.setRaw( tableo->eBuf->bufReadPvName );
 
-  strncpy( tableo->fontTag, tableo->fm.currentFontTag(), 63 );
+  Strncpy( tableo->fontTag, tableo->fm.currentFontTag(), 63 );
   tableo->fontTag[63] = 0;
   tableo->actWin->fi->loadFontTag( tableo->fontTag );
   tableo->fs =
@@ -221,7 +221,7 @@ activeGraphicClass *tableo = (activeGraphicClass *) this;
   name = new char[strlen("activeTableClass")+1];
   strcpy( name, "activeTableClass" );
 
-  strncpy( fontTag, source->fontTag, 63 );
+  Strncpy( fontTag, source->fontTag, 63 );
   fontTag[63] = 0;
   fs = actWin->fi->getXFontStruct( fontTag );
 
@@ -572,9 +572,9 @@ char title[32], *ptr;
 
   ptr = actWin->obj.getNameFromClass( "activeTableClass" );
   if ( ptr )
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   else
-    strncpy( title, activeTableClass_str4, 31 );
+    Strncpy( title, activeTableClass_str4, 31 );
 
   Strncat( title, activeTableClass_str5, 31 );
 
@@ -591,7 +591,7 @@ char title[32], *ptr;
   eBuf->bufBotShadowColor = botShadowColor.pixelIndex();
 
   if ( readPvExpStr.getRaw() )
-    strncpy( eBuf->bufReadPvName, readPvExpStr.getRaw(),
+    Strncpy( eBuf->bufReadPvName, readPvExpStr.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufReadPvName, "" );
@@ -983,7 +983,7 @@ Widget wdgt;
   nc = needConnectInit; needConnectInit = 0;
   nu = needUpdate; needUpdate = 0;
   nd = needDraw; needDraw = 0;
-  strncpy( v, curReadV, 39 );
+  Strncpy( v, curReadV, 39 );
   actWin->remDefExeNode( aglPtr );
   actWin->appCtx->proc->unlock();
 
@@ -1012,7 +1012,7 @@ Widget wdgt;
 
   if ( nu ) {
 
-    strncpy( readV, v, 39 );
+    Strncpy( readV, v, 39 );
 
     // open file name in readV
     //fprintf( stderr, "open [%s]\n", readV );
@@ -1125,7 +1125,7 @@ Widget wdgt;
 //----------------------------------------------------------------------------
 
   if ( nd ) {
-    strncpy( readV, v, 39 );
+    Strncpy( readV, v, 39 );
     drawActive();
   }
 

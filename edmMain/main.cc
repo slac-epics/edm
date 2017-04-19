@@ -278,14 +278,14 @@ static void addDisplayToList (
 int i, n, found;
 char dspName[63+1];
 
-  strncpy( dspName, g_defaultDisplay, 63 );
+  Strncpy( dspName, g_defaultDisplay, 63 );
   dspName[63] = 0;
 
   for ( i=0; i<argc; i++ ) {
     if ( strcmp( argv[i], "-display" ) == 0 ) {
       n = i+1;
       if ( n < argc ) {
-        strncpy( dspName, argv[n], 63 );
+        Strncpy( dspName, argv[n], 63 );
         dspName[63] = 0;
       }
     }
@@ -304,7 +304,7 @@ char dspName[63+1];
 
   if ( !found ) {
     if ( g_displayIndex < MAXDSPNAMES ) {
-      strncpy( g_displayNames[g_displayIndex], dspName, 63 );
+      Strncpy( g_displayNames[g_displayIndex], dspName, 63 );
       g_displayNames[g_displayIndex][63] = 0;
       g_displayIndex++;
     }
@@ -322,7 +322,7 @@ static void addDisplayToListByName (
 int i, found;
 char dspName[63+1];
 
-  strncpy( dspName, displayName, 63 );
+  Strncpy( dspName, displayName, 63 );
   dspName[63] = 0;
 
   found = 0;
@@ -336,7 +336,7 @@ char dspName[63+1];
 
   if ( !found ) {
     if ( g_displayIndex < MAXDSPNAMES ) {
-      strncpy( g_displayNames[g_displayIndex], dspName, 63 );
+      Strncpy( g_displayNames[g_displayIndex], dspName, 63 );
       g_displayNames[g_displayIndex][63] = 0;
       g_displayIndex++;
     }
@@ -356,13 +356,13 @@ SYS_PROC_ID_TYPE procId;
 
   envPtr = getenv( environment_str8 );
   if ( envPtr ) {
-    strncpy( checkPointFileName, envPtr, 255 );
+    Strncpy( checkPointFileName, envPtr, 255 );
     if ( envPtr[strlen(envPtr)] != '/' ) {
       Strncat( checkPointFileName, "/", 255 );
     }
   }
   else {
-    strncpy( checkPointFileName, "/tmp/", 255 );
+    Strncpy( checkPointFileName, "/tmp/", 255 );
   }
   Strncat( checkPointFileName, "edmCheckPointFile_", 255 );
   sys_get_proc_id( &procId );
@@ -381,13 +381,13 @@ char *envPtr;
 
   envPtr = getenv( environment_str8 );
   if ( envPtr ) {
-    strncpy( checkPointFileName, envPtr, 255 );
+    Strncpy( checkPointFileName, envPtr, 255 );
     if ( envPtr[strlen(envPtr)] != '/' ) {
       Strncat( checkPointFileName, "/", 255 );
     }
   }
   else {
-    strncpy( checkPointFileName, "/tmp/", 255 );
+    Strncpy( checkPointFileName, "/tmp/", 255 );
   }
   Strncat( checkPointFileName, "edmCheckPointFile_", 255 );
   Strncat( checkPointFileName, procIdName, 255 );
@@ -937,12 +937,12 @@ int value, n, nIn, nOut;
   // if not doing a -open operation, do simple load balancing
   if ( !openCmd ) {
 
-    strncpy( buf, envPtr, 511 );
+    Strncpy( buf, envPtr, 511 );
     buf[511] = 0;
 
     tk1 = strtok_r( buf, ",", &buf1 );
     if ( tk1 ) {
-      strncpy( host, tk1, 31 );
+      Strncpy( host, tk1, 31 );
       host[31] = 0;
       min = -1;
       useItem = 1;
@@ -951,18 +951,18 @@ int value, n, nIn, nOut;
     item = 1;
     while ( tk1 ) {
 
-      strncpy( chkHost, tk1, 31 );
+      Strncpy( chkHost, tk1, 31 );
       chkHost[31] = 0;
       merit = 1.0;
 
       // use msg as a tmp buffer
-      strncpy( msg, tk1, 254 );
+      Strncpy( msg, tk1, 254 );
       msg[254] = 0;
       tk2 = strtok_r( msg, ":", &buf2 );
 
       if ( tk2 ) {
 
-        strncpy( chkHost, tk2, 31 );
+        Strncpy( chkHost, tk2, 31 );
 
         tk2 = strtok_r( NULL, ":", &buf2 );
         if ( tk2 ) {
@@ -1039,7 +1039,7 @@ int value, n, nIn, nOut;
 
       if ( ( num < min ) || ( min == -1 ) ) {
         min = num;
-        strncpy( host, chkHost, 31 );
+        Strncpy( host, chkHost, 31 );
         host[31] = 0;
         useItem = item;
       }
@@ -1062,19 +1062,19 @@ nextHost:
   // if we are doing a -open operation, find first server that is managing our display
   else {
 
-    strncpy( buf, envPtr, 511 );
+    Strncpy( buf, envPtr, 511 );
     buf[511] = 0;
 
     tk1 = strtok_r( buf, ",", &buf1 );
     if ( tk1 ) {
-      strncpy( host, tk1, 31 );
+      Strncpy( host, tk1, 31 );
       host[31] = 0;
     }
 
     item = 0;
     while ( tk1 ) {
 
-      strncpy( chkHost, tk1, 31 );
+      Strncpy( chkHost, tk1, 31 );
       chkHost[31] = 0;
 
       //fprintf( stderr, "Checking host [%s]\n", chkHost );
@@ -1141,7 +1141,7 @@ nextHost:
 
       if ( strcmp( msg, "1" ) == 0 ) {
         //fprintf( stderr, "got yes response from %s\n", chkHost );
-        strncpy( host, chkHost, 31 );
+        Strncpy( host, chkHost, 31 );
         host[31] = 0;
         item = 1;
         useItem = item;
@@ -1218,7 +1218,7 @@ nextHost1:
       pos = 1;
       max = MAX_MSG_LEN - pos;
 
-      strncpy( &msg[pos], "*OPN*|", max );
+      Strncpy( &msg[pos], "*OPN*|", max );
       pos = strlen(msg);
       max = MAX_MSG_LEN - pos;
 
@@ -1229,7 +1229,7 @@ nextHost1:
       pos = 1;
       max = MAX_MSG_LEN - pos;
 
-      strncpy( &msg[pos], "*PUT*|", max );
+      Strncpy( &msg[pos], "*PUT*|", max );
       pos = strlen(msg);
       max = MAX_MSG_LEN - pos;
 
@@ -1240,7 +1240,7 @@ nextHost1:
       pos = 1;
       max = MAX_MSG_LEN - pos;
 
-      strncpy( &msg[pos], "*CTL*|", max );
+      Strncpy( &msg[pos], "*CTL*|", max );
       pos = strlen(msg);
       max = MAX_MSG_LEN - pos;
 
@@ -1251,17 +1251,17 @@ nextHost1:
       pos = 1;
       max = MAX_MSG_LEN - pos;
 
-      strncpy( &msg[pos], "*OIS*|", max );
+      Strncpy( &msg[pos], "*OIS*|", max );
       pos = strlen(msg);
       max = MAX_MSG_LEN - pos;
 
     }
 
-    strncpy( &msg[pos], displayName, max );
+    Strncpy( &msg[pos], displayName, max );
     pos = strlen(msg);
     max = MAX_MSG_LEN - pos;
 
-    strncpy( &msg[pos], "|", max );
+    Strncpy( &msg[pos], "|", max );
     pos = strlen(msg);
     max = MAX_MSG_LEN - pos;
 
@@ -1269,15 +1269,15 @@ nextHost1:
     pos = strlen(msg);
     max = MAX_MSG_LEN - pos;
 
-    strncpy( &msg[pos], "edm|", max );
+    Strncpy( &msg[pos], "edm|", max );
     pos = strlen(msg);
     max = MAX_MSG_LEN - pos;
 
     if ( appendDisplay ) {
-      strncpy( &msg[pos], global_str56, max );
+      Strncpy( &msg[pos], global_str56, max );
       pos = strlen(msg);
       max = MAX_MSG_LEN - pos;
-      strncpy( &msg[pos], displayName, max );
+      Strncpy( &msg[pos], displayName, max );
       pos = strlen(msg);
       max = MAX_MSG_LEN - pos;
       Strncat( &msg[pos], "|", max );
@@ -1286,7 +1286,7 @@ nextHost1:
     }
 
     for ( i=1; i<argc; i++ ) {
-      strncpy( &msg[pos], argv[i], max );
+      Strncpy( &msg[pos], argv[i], max );
       pos = strlen(msg);
       max = MAX_MSG_LEN - pos;
       Strncat( &msg[pos], "|", max );
@@ -1305,15 +1305,15 @@ nextHost1:
     pos = strlen(msg);
     max = MAX_MSG_LEN - pos;
 
-    strncpy( &msg[pos], "edm|", max );
+    Strncpy( &msg[pos], "edm|", max );
     pos = strlen(msg);
     max = MAX_MSG_LEN - pos;
 
     if ( appendDisplay ) {
-      strncpy( &msg[pos], global_str56, max );
+      Strncpy( &msg[pos], global_str56, max );
       pos = strlen(msg);
       max = MAX_MSG_LEN - pos;
-      strncpy( &msg[pos], displayName, max );
+      Strncpy( &msg[pos], displayName, max );
       pos = strlen(msg);
       max = MAX_MSG_LEN - pos;
       Strncat( &msg[pos], "|", max );
@@ -1322,7 +1322,7 @@ nextHost1:
     }
 
     for ( i=1; i<argc; i++ ) {
-      strncpy( &msg[pos], argv[i], max );
+      Strncpy( &msg[pos], argv[i], max );
       pos = strlen(msg);
       max = MAX_MSG_LEN - pos;
       Strncat( &msg[pos], "|", max );
@@ -1655,7 +1655,7 @@ int *portNumPtr = (int *) thread_get_app_data( h );
 
           q_stat_r = REMQHI( (void *) &g_mainFreeQueue, (void **) &node, 0 );
           if ( q_stat_r & 1 ) {
-            strncpy( node->msg, &msg[1], 254 );
+            Strncpy( node->msg, &msg[1], 254 );
             q_stat_i = INSQTI( (void *) node, (void *) &g_mainActiveQueue, 0 );
             if ( !( q_stat_i & 1 ) ) {
               fprintf( stderr, main_str17 );
@@ -1676,7 +1676,7 @@ int *portNumPtr = (int *) thread_get_app_data( h );
 
           q_stat_r = REMQHI( (void *) &g_mainFreeQueue, (void **) &node, 0 );
           if ( q_stat_r & 1 ) {
-            strncpy( node->msg, &msg[1], 254 );
+            Strncpy( node->msg, &msg[1], 254 );
             q_stat_i = INSQTI( (void *) node, (void *) &g_mainActiveQueue, 0 );
             if ( !( q_stat_i & 1 ) ) {
               fprintf( stderr, main_str17 );
@@ -1740,7 +1740,7 @@ int *portNumPtr = (int *) thread_get_app_data( h );
           q_stat_r = REMQHI( (void *) &g_mainFreeQueue, (void **) &node, 0 );
           if ( q_stat_r & 1 ) {
             n++;
-            strncpy( node->msg, &msg[1], 254 );
+            Strncpy( node->msg, &msg[1], 254 );
             q_stat_i = INSQTI( (void *) node, (void *) &g_mainActiveQueue, 0 );
             if ( !( q_stat_i & 1 ) ) {
               fprintf( stderr, main_str17 );
@@ -1945,7 +1945,7 @@ char *tk, *buf1;
           g_pidNum = atol( argv[n] );
 	  l = strlen( argv[n] );
 	  if ( l > 31 ) l = 31;
-	  strncpy( g_restartId, argv[n], l );
+	  Strncpy( g_restartId, argv[n], l );
 	}
         else if ( strcmp( argv[n], global_str11 ) == 0 ) {
           *local = 1;
@@ -1981,14 +1981,14 @@ char *tk, *buf1;
             *local = 1;
             return;
           }
-          strncpy( buf, argv[n], 1023 );
+          Strncpy( buf, argv[n], 1023 );
 	  buf1 = NULL;
           tk = strtok_r( buf, "=,", &buf1 );
           while ( tk ) {
-            strncpy( mac, tk, 1023 );
+            Strncpy( mac, tk, 1023 );
             tk = strtok_r( NULL, "=,", &buf1 );
             if ( tk ) {
-              strncpy( exp, tk, 1023 );
+              Strncpy( exp, tk, 1023 );
             }
             else {
               *local = 1;
@@ -2018,7 +2018,7 @@ char *tk, *buf1;
             *local = 1;
             return;
           }
-          strncpy( displayName, argv[n], 63 );
+          Strncpy( displayName, argv[n], 63 );
         }
         else if ( strcmp( argv[n], global_str22 ) == 0 ) {
           n++;
@@ -2086,7 +2086,7 @@ char *tk, *buf1;
 
   if ( strcmp( displayName, "" ) == 0 ) {
 
-    strncpy( displayName, g_defaultDisplay, 63 );
+    Strncpy( displayName, g_defaultDisplay, 63 );
     displayName[63] = 0;
 
   }
@@ -2144,7 +2144,7 @@ int shutdownTry = 200; // aprox 10 seconds
 
   envPtr = getenv("DISPLAY");
   if ( envPtr ) {
-    strncpy( g_defaultDisplay, envPtr, 63 );
+    Strncpy( g_defaultDisplay, envPtr, 63 );
     g_defaultDisplay[63] = 0;
   }
   else {
@@ -2918,7 +2918,7 @@ int shutdownTry = 200; // aprox 10 seconds
 
 	    //fprintf( stderr, "START\n" );
 
-            strncpy( tmpMsg, node->msg, 255 );
+            Strncpy( tmpMsg, node->msg, 255 );
             tmpMsg[255] = 0;
 
 	    //fprintf( stderr, "tmpMsg = [%s]\n", tmpMsg );
@@ -3025,7 +3025,7 @@ int shutdownTry = 200; // aprox 10 seconds
 
 	    }
 
-            strncpy( tmpMsg, node->msg, 255 );
+            Strncpy( tmpMsg, node->msg, 255 );
             tmpMsg[255] = 0;
             buf1 = NULL;
             tk = strtok_r( tmpMsg, "|", &buf1 );
@@ -3038,7 +3038,7 @@ int shutdownTry = 200; // aprox 10 seconds
               args = new argsType;
 
 	      if ( needConnect ) {
-                strncpy( tmpMsg, node->msg, 255 );
+                Strncpy( tmpMsg, node->msg, 255 );
                 tmpMsg[255] = 0;
                 buf1 = NULL;
                 tk = strtok_r( tmpMsg, "|", &buf1 ); // discard two
@@ -3052,7 +3052,7 @@ int shutdownTry = 200; // aprox 10 seconds
                 if ( !tk ) goto parse_error;
 	      }
 	      else {
-                strncpy( tmpMsg, node->msg, 255 );
+                Strncpy( tmpMsg, node->msg, 255 );
                 tmpMsg[255] = 0;
                 buf1 = NULL;
                 tk = strtok_r( tmpMsg, "|", &buf1 );

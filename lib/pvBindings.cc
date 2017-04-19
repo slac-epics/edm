@@ -211,14 +211,14 @@ FILE *f;
 
     envPtr = getenv(environment_str4);
     if ( envPtr ) {
-      strncpy( prefix, envPtr, 127 );
+      Strncpy( prefix, envPtr, 127 );
       if ( prefix[strlen(prefix)-1] != '/' ) Strncat( prefix, "/", 127 );
     }
     else {
       strcpy( prefix, "/etc/edm/" );
     }
 
-    strncpy( fname, prefix, 127 );
+    Strncpy( fname, prefix, 127 );
     Strncat( fname, "edmPvObjects", 127 );
 
     f = fopen( fname, "r" );
@@ -273,7 +273,7 @@ FILE *f;
 
         expandEnvVars( rawLine, 255, line );
 
-        strncpy( buf, line, 255 );
+        Strncpy( buf, line, 255 );
 
         comment = 0;
         tk = strtok( buf, " \t\n" );
@@ -576,7 +576,7 @@ void pvBindingClass::getOptionMenuList (
   int *_num )
 {
 
-  strncpy( list, pvOptionMenuList, listSize );
+  Strncpy( list, pvOptionMenuList, listSize );
   *_num = num;
 
   // fprintf( stderr, "pvOptionMenuList = [%s]\n", pvOptionMenuList );

@@ -42,7 +42,7 @@ activeExitButtonClass *ebto = (activeExitButtonClass *) client;
   ebto->topShadowColor = ebto->bufTopShadowColor;
   ebto->botShadowColor = ebto->bufBotShadowColor;
 
-  strncpy( ebto->fontTag, ebto->fm.currentFontTag(), 63 );
+  Strncpy( ebto->fontTag, ebto->fm.currentFontTag(), 63 );
   ebto->actWin->fi->loadFontTag( ebto->fontTag );
   ebto->fs = ebto->actWin->fi->getXFontStruct( ebto->fontTag );
 
@@ -56,7 +56,7 @@ activeExitButtonClass *ebto = (activeExitButtonClass *) client;
 
   ebto->invisible = ebto->bufInvisible;
 
-  strncpy( ebto->label, ebto->bufLabel, 31 );
+  Strncpy( ebto->label, ebto->bufLabel, 31 );
 
   ebto->x = ebto->bufX;
   ebto->sboxX = ebto->bufX;
@@ -161,7 +161,7 @@ activeGraphicClass *ebto = (activeGraphicClass *) this;
   topShadowCb = source->topShadowCb;
   botShadowCb = source->botShadowCb;
 
-  strncpy( fontTag, source->fontTag, 63 );
+  Strncpy( fontTag, source->fontTag, 63 );
 
   fs = actWin->fi->getXFontStruct( fontTag );
 
@@ -175,7 +175,7 @@ activeGraphicClass *ebto = (activeGraphicClass *) this;
   exitProgram = source->exitProgram;
   controlParent = source->controlParent;
   invisible = source->invisible;
-  strncpy( label, source->label, 31 );
+  Strncpy( label, source->label, 31 );
 
   doAccSubs( label, 31 );
 
@@ -223,7 +223,7 @@ int activeExitButtonClass::createInteractive (
   exitProgram = 0;
   controlParent = 0;
   invisible = 0;
-  strncpy( label, activeExitButtonClass_str1, 31 );
+  Strncpy( label, activeExitButtonClass_str1, 31 );
 
   this->draw();
 
@@ -508,9 +508,9 @@ char title[32], *ptr;
 
   ptr = actWin->obj.getNameFromClass( "activeExitButtonClass" );
   if ( ptr )
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   else
-    strncpy( title, activeExitButtonClass_str2, 31 );
+    Strncpy( title, activeExitButtonClass_str2, 31 );
 
   Strncat( title, activeExitButtonClass_str3, 31 );
 
@@ -523,13 +523,13 @@ char title[32], *ptr;
   bufBgColor = bgColor;
   bufTopShadowColor = topShadowColor;
   bufBotShadowColor = botShadowColor;
-  strncpy( bufFontTag, fontTag, 63 );
+  Strncpy( bufFontTag, fontTag, 63 );
   buf3D = _3D;
   bufIconify = iconify;
   bufExitProgram = exitProgram;
   bufControlParent = controlParent;
   bufInvisible = invisible;
-  strncpy( bufLabel, label, 31 );
+  Strncpy( bufLabel, label, 31 );
 
   ef.create( actWin->top, actWin->appCtx->ci.getColorMap(),
    &actWin->appCtx->entryFormX,
@@ -1014,7 +1014,7 @@ void activeExitButtonClass::replaceString (
   if ( i == 0 ) {
     int l = max;
     if ( 31 < max ) l = 31;
-    strncpy( label, string, l );
+    Strncpy( label, string, l );
     label[l] = 0;
   }
 

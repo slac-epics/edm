@@ -32,9 +32,9 @@ char *ptr, buf[127+1];
 
   if ( strstr( generic_service_name, "::" ) ) {
 
-    strncpy( buf, generic_service_name, 127 );
+    Strncpy( buf, generic_service_name, 127 );
     ptr = strtok( buf, "::" );
-    strncpy( node, ptr, 7 );
+    Strncpy( node, ptr, 7 );
     ptr = strtok( NULL, "::" );
     strcpy( service_name, ptr );
 
@@ -45,7 +45,7 @@ char *ptr, buf[127+1];
     i = 0;
 
     strcpy( service_name, "IOS" );
-    strncpy( node, nodes[i], 7 );
+    Strncpy( node, nodes[i], 7 );
     *mode = modes[i];
 
   }
@@ -55,7 +55,7 @@ char *ptr, buf[127+1];
     i = 0;
 
     strcpy( service_name, "CONSOLE" );
-    strncpy( node, nodes[i], 7 );
+    Strncpy( node, nodes[i], 7 );
     *mode = modes[i];
 
   }
@@ -65,7 +65,7 @@ char *ptr, buf[127+1];
     i = 0;
 
     strcpy( service_name, "DBSCANSRV" );
-    strncpy( node, nodes[i], 7 );
+    Strncpy( node, nodes[i], 7 );
     *mode = modes[i];
 
   }
@@ -75,7 +75,7 @@ char *ptr, buf[127+1];
     i = 0;
 
     strcpy( service_name, "TEST" );
-    strncpy( node, nodes[i], 7 );
+    Strncpy( node, nodes[i], 7 );
     *mode = modes[i];
 
   }

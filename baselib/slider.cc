@@ -453,7 +453,7 @@ activeSliderClass *slo = (activeSliderClass *) client;
 
   //  slo->formatType = slo->eBuf->bufFormatType;
 
-  strncpy( slo->displayFormat, slo->eBuf->bufDisplayFormat, 15 );
+  Strncpy( slo->displayFormat, slo->eBuf->bufDisplayFormat, 15 );
 
   slo->limitsFromDb = slo->eBuf->bufLimitsFromDb;
   slo->efPrecision = slo->eBuf->bufEfPrecision;
@@ -468,11 +468,11 @@ activeSliderClass *slo = (activeSliderClass *) client;
   else
     slo->precision = slo->efPrecision.value();
 
-  strncpy( slo->fontTag, slo->fm.currentFontTag(), 63 );
+  Strncpy( slo->fontTag, slo->fm.currentFontTag(), 63 );
   slo->actWin->fi->loadFontTag( slo->fontTag );
   slo->fs = slo->actWin->fi->getXFontStruct( slo->fontTag );
 
-  strncpy( slo->id, slo->bufId, 31 );
+  Strncpy( slo->id, slo->bufId, 31 );
   slo->changeCallbackFlag = slo->eBuf->bufChangeCallbackFlag;
   slo->activateCallbackFlag = slo->eBuf->bufActivateCallbackFlag;
   slo->deactivateCallbackFlag = slo->eBuf->bufDeactivateCallbackFlag;
@@ -823,7 +823,7 @@ activeGraphicClass *slo = (activeGraphicClass *) this;
 
   // formatType = source->formatType;
 
-  strncpy( fontTag, source->fontTag, 63 );
+  Strncpy( fontTag, source->fontTag, 63 );
 
   fs = actWin->fi->getXFontStruct( fontTag );
 
@@ -841,10 +841,10 @@ activeGraphicClass *slo = (activeGraphicClass *) this;
   strcpy( readLabel, "" );
 
   controlLabelType = source->controlLabelType;
-  strncpy( controlLabelTypeStr, source->controlLabelTypeStr, 15 );
+  Strncpy( controlLabelTypeStr, source->controlLabelTypeStr, 15 );
 
   readLabelType = source->readLabelType;
-  strncpy( readLabelTypeStr, source->readLabelTypeStr, 15 );
+  Strncpy( readLabelTypeStr, source->readLabelTypeStr, 15 );
 
   increment = source->increment;
   accelMultiplier = source->accelMultiplier;
@@ -871,7 +871,7 @@ activeGraphicClass *slo = (activeGraphicClass *) this;
   efScaleMin = source->efScaleMin;
   efScaleMax = source->efScaleMax;
   efPrecision = source->efPrecision;
-  strncpy( displayFormat, source->displayFormat, 15 );
+  Strncpy( displayFormat, source->displayFormat, 15 );
 
   frameWidget = NULL;
 
@@ -1570,7 +1570,7 @@ float val;
     efScaleMax.read( f ); actWin->incLine();
 
     readStringFromFile( oneName, 39+1, f ); actWin->incLine();
-    strncpy( displayFormat, oneName, 15 );
+    Strncpy( displayFormat, oneName, 15 );
 
     if ( limitsFromDb || efPrecision.isNull() )
       precision = 1;
@@ -1652,13 +1652,13 @@ char title[32], *ptr;
 
   ptr = actWin->obj.getNameFromClass( "activeSliderClass" );
   if ( ptr )
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   else
-    strncpy( title, activeSliderClass_str10, 31 );
+    Strncpy( title, activeSliderClass_str10, 31 );
 
   Strncat( title, activeSliderClass_str11, 31 );
 
-  strncpy( bufId, id, 31 );
+  Strncpy( bufId, id, 31 );
 
   eBuf->bufX = x;
   eBuf->bufY = y;
@@ -1674,41 +1674,41 @@ char title[32], *ptr;
   eBuf->bufReadColorMode = readColorMode;
   eBuf->bufIncrement = increment;
   eBuf->bufAccelMultiplier = accelMultiplier;
-  strncpy( eBuf->bufFontTag, fontTag, 63 );
+  Strncpy( eBuf->bufFontTag, fontTag, 63 );
 
   eBuf->bufChangeCallbackFlag = changeCallbackFlag;
   eBuf->bufActivateCallbackFlag = activateCallbackFlag;
   eBuf->bufDeactivateCallbackFlag = deactivateCallbackFlag;
 
   if ( controlPvName.getRaw() )
-    strncpy( eBuf->controlBufPvName, controlPvName.getRaw(),
+    Strncpy( eBuf->controlBufPvName, controlPvName.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
-    strncpy( eBuf->controlBufPvName, "", 39 );
+    Strncpy( eBuf->controlBufPvName, "", 39 );
 
   if ( readPvName.getRaw() )
-    strncpy( eBuf->readBufPvName, readPvName.getRaw(),
+    Strncpy( eBuf->readBufPvName, readPvName.getRaw(),
     PV_Factory::MAX_PV_NAME );
   else
-    strncpy( eBuf->readBufPvName, "", 39 );
+    Strncpy( eBuf->readBufPvName, "", 39 );
 
   if ( savedValuePvName.getRaw() )
-    strncpy( eBuf->savedValueBufPvName, savedValuePvName.getRaw(),
+    Strncpy( eBuf->savedValueBufPvName, savedValuePvName.getRaw(),
     PV_Factory::MAX_PV_NAME );
   else
-    strncpy( eBuf->savedValueBufPvName, "", 39 );
+    Strncpy( eBuf->savedValueBufPvName, "", 39 );
 
   if ( controlLabelName.getRaw() )
-    strncpy( eBuf->controlBufLabelName, controlLabelName.getRaw(),
+    Strncpy( eBuf->controlBufLabelName, controlLabelName.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
-    strncpy( eBuf->controlBufLabelName, "", 39 );
+    Strncpy( eBuf->controlBufLabelName, "", 39 );
 
   if ( readLabelName.getRaw() )
-    strncpy( eBuf->readBufLabelName, readLabelName.getRaw(),
+    Strncpy( eBuf->readBufLabelName, readLabelName.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
-    strncpy( eBuf->readBufLabelName, "", 39 );
+    Strncpy( eBuf->readBufLabelName, "", 39 );
 
   if ( controlLabelType == SLC_K_LITERAL )
     strcpy( controlLabelTypeStr, activeSliderClass_str12 );
@@ -1728,7 +1728,7 @@ char title[32], *ptr;
   eBuf->bufEfPrecision = efPrecision;
   eBuf->bufEfScaleMin = efScaleMin;
   eBuf->bufEfScaleMax = efScaleMax;
-  strncpy( eBuf->bufDisplayFormat, displayFormat, 15 );
+  Strncpy( eBuf->bufDisplayFormat, displayFormat, 15 );
 
   ef.create( actWin->top, actWin->appCtx->ci.getColorMap(),
    &actWin->appCtx->entryFormX,
@@ -2486,9 +2486,9 @@ int tX, tY, x0, y0, x1, y1, incX0, incY0, incX1, incY1;
 
   ptr = slo->actWin->obj.getNameFromClass( "activeSliderClass" );
   if ( ptr )
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   else
-    strncpy( title, activeSliderClass_str54, 31 );
+    Strncpy( title, activeSliderClass_str54, 31 );
 
   Strncat( title, activeSliderClass_str55, 31 );
 
@@ -3305,11 +3305,11 @@ char callbackName[63+1];
 
       if ( controlLabelType == SLC_K_PV_NAME ) {
         controlLabelExists = 1;
-        strncpy( controlLabel, controlPvName.getExpanded(),
+        Strncpy( controlLabel, controlPvName.getExpanded(),
          PV_Factory::MAX_PV_NAME );
       }
       else {
-        strncpy( controlLabel, controlLabelName.getExpanded(),
+        Strncpy( controlLabel, controlLabelName.getExpanded(),
          PV_Factory::MAX_PV_NAME );
       }
 
@@ -3323,11 +3323,11 @@ char callbackName[63+1];
 
       if ( readLabelType == SLC_K_PV_NAME ) {
         readLabelExists = 1;
-        strncpy( readLabel, readPvName.getExpanded(),
+        Strncpy( readLabel, readPvName.getExpanded(),
          PV_Factory::MAX_PV_NAME );
       }
       else {
-        strncpy( readLabel, readLabelName.getExpanded(),
+        Strncpy( readLabel, readLabelName.getExpanded(),
          PV_Factory::MAX_PV_NAME );
       }
 
@@ -3355,21 +3355,21 @@ char callbackName[63+1];
       if ( anyCallbackFlag ) {
 
         if ( changeCallbackFlag ) {
-          strncpy( callbackName, id, 63 );
+          Strncpy( callbackName, id, 63 );
           Strncat( callbackName, activeSliderClass_str64, 63 );
           changeCallback =
            actWin->appCtx->userLibObject.getFunc( callbackName );
 	}
 
         if ( activateCallbackFlag ) {
-          strncpy( callbackName, id, 63 );
+          Strncpy( callbackName, id, 63 );
           Strncat( callbackName, activeSliderClass_str65, 63 );
           activateCallback =
            actWin->appCtx->userLibObject.getFunc( callbackName );
 	}
 
         if ( deactivateCallbackFlag ) {
-          strncpy( callbackName, id, 63 );
+          Strncpy( callbackName, id, 63 );
           Strncat( callbackName, activeSliderClass_str66, 63 );
           deactivateCallback =
            actWin->appCtx->userLibObject.getFunc( callbackName );

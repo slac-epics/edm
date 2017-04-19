@@ -382,7 +382,7 @@ struct mbx_blk {
 /***
 /* build net connect block
 */
-  strncpy( ncb, node, MAX_NCB );
+  Strncpy( ncb, node, MAX_NCB );
   strncat( ncb, "::\"task=", MAX_NCB );
   strncat( ncb, task, MAX_NCB );
   index = strlen( ncb );

@@ -125,7 +125,7 @@ char* zXtMalloc ( size_t size )
     cur->addr = (unsigned int) ptr;
     cur->size = (unsigned int) size;
     cur->seq = g_seqX++;
-    strncpy( cur->fname, "XtMalloc", 31 );
+    Strncpy( cur->fname, "XtMalloc", 31 );
     cur->line = 0;
 
     stat = avl_insert_node( g_treeX, (void *) cur, &dup );
@@ -176,7 +176,7 @@ char* zlocXtMalloc ( size_t size, char* _fname, int _line )
     cur->addr = (unsigned int) ptr;
     cur->size = (unsigned int) size;
     cur->seq = g_seqX++;
-    strncpy( cur->fname, _fname, 31 );
+    Strncpy( cur->fname, _fname, 31 );
     cur->line = _line;
 
     stat = avl_insert_node( g_treeX, (void *) cur, &dup );
@@ -231,7 +231,7 @@ char* zXtCalloc ( size_t num, size_t size )
     cur->addr = (unsigned int) ptr;
     cur->size = (unsigned int) size;
     cur->seq = g_seqX++;
-    strncpy( cur->fname, "XtCalloc", 31 );
+    Strncpy( cur->fname, "XtCalloc", 31 );
     cur->line = 0;
 
     stat = avl_insert_node( g_treeX, (void *) cur, &dup );
@@ -282,7 +282,7 @@ char* zlocXtCalloc ( size_t num, size_t size, char* _fname, int _line )
     cur->addr = (unsigned int) ptr;
     cur->size = (unsigned int) size;
     cur->seq = g_seqX++;
-    strncpy( cur->fname, _fname, 31 );
+    Strncpy( cur->fname, _fname, 31 );
     cur->line = _line;
 
     stat = avl_insert_node( g_treeX, (void *) cur, &dup );
@@ -481,7 +481,7 @@ char* zXtRealloc ( char *oldPtr, size_t size )
     cur->addr = (unsigned int) ptr;
     cur->size = (unsigned int) size;
     cur->seq = g_seqX++;
-    strncpy( cur->fname, "XtRealloc", 31 );
+    Strncpy( cur->fname, "XtRealloc", 31 );
     cur->line = 0;
 
     stat = avl_insert_node( g_treeX, (void *) cur, &dup );
@@ -562,7 +562,7 @@ char* zlocXtRealloc ( char *oldPtr, size_t size, char* _fname, int _line )
     cur->addr = (unsigned int) ptr;
     cur->size = (unsigned int) size;
     cur->seq = g_seqX++;
-    strncpy( cur->fname, _fname, 31 );
+    Strncpy( cur->fname, _fname, 31 );
     cur->line = _line;
 
     stat = avl_insert_node( g_treeX, (void *) cur, &dup );
@@ -624,7 +624,7 @@ void* znew ( size_t size )
     cur->addr = (unsigned int) ptr;
     cur->size = (unsigned int) size;
     cur->seq = g_seq++;
-    strncpy( cur->fname, "new", 31 );
+    Strncpy( cur->fname, "new", 31 );
     cur->line = 0;
 
     stat = avl_insert_node( g_tree, (void *) cur, &dup );
@@ -677,7 +677,7 @@ void* zlocnew ( size_t size, char* _fname, int _line )
     cur->addr = (unsigned int) ptr;
     cur->size = (unsigned int) size;
     cur->seq = g_seq++;
-    strncpy( cur->fname, _fname, 31 );
+    Strncpy( cur->fname, _fname, 31 );
     cur->line = _line;
 
     stat = avl_insert_node( g_tree, (void *) cur, &dup );

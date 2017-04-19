@@ -88,7 +88,7 @@ activeMeterClass *metero = (activeMeterClass *) client;
   //metero->scaleMax   = metero->eBuf->bufScaleMax;
   metero->scaleMaxExpStr.setRaw( metero->eBuf->bufScaleMax );
 
-  strncpy( metero->scaleFormat, metero->eBuf->bufScaleFormat, 15 );
+  Strncpy( metero->scaleFormat, metero->eBuf->bufScaleFormat, 15 );
 
   //metero->scalePrecision = metero->eBuf->bufScalePrecision;
   metero->scalePrecExpStr.setRaw( metero->eBuf->bufScalePrecision );
@@ -112,17 +112,17 @@ activeMeterClass *metero = (activeMeterClass *) client;
   metero->controlPvExpStr.setRaw( metero->eBuf->bufControlPvName );
   metero->readPvExpStr.setRaw( metero->eBuf->bufReadPvName );
 
-  strncpy( metero->label, metero->eBuf->bufLabel, 39 );
-  strncpy( metero->literalLabel, metero->eBuf->bufLiteralLabel, 39 );
+  Strncpy( metero->label, metero->eBuf->bufLabel, 39 );
+  Strncpy( metero->literalLabel, metero->eBuf->bufLiteralLabel, 39 );
 
   metero->labelType = metero->eBuf->bufLabelType;
 
-  strncpy( metero->scaleFontTag, metero->scaleFm.currentFontTag(), 63 );
+  Strncpy( metero->scaleFontTag, metero->scaleFm.currentFontTag(), 63 );
 
   metero->actWin->fi->loadFontTag( metero->scaleFontTag );
   metero->scaleFs = metero->actWin->fi->getXFontStruct( metero->scaleFontTag );
 
-  strncpy( metero->labelFontTag, metero->labelFm.currentFontTag(), 63 );
+  Strncpy( metero->labelFontTag, metero->labelFm.currentFontTag(), 63 );
 
   metero->actWin->fi->loadFontTag( metero->labelFontTag );
   metero->labelFs = metero->actWin->fi->getXFontStruct( metero->labelFontTag );
@@ -325,10 +325,10 @@ activeGraphicClass *metero = (activeGraphicClass *) this;
   name = new char[strlen("activeMeterClass")+1];
   strcpy( name, "activeMeterClass" );
 
-  strncpy( scaleFontTag, source->scaleFontTag, 63 );
+  Strncpy( scaleFontTag, source->scaleFontTag, 63 );
   scaleFs = actWin->fi->getXFontStruct( scaleFontTag );
 
-  strncpy( labelFontTag, source->labelFontTag, 63 );
+  Strncpy( labelFontTag, source->labelFontTag, 63 );
   labelFs = actWin->fi->getXFontStruct( labelFontTag );
 
   meterColor.copy( source->meterColor );
@@ -342,8 +342,8 @@ activeGraphicClass *metero = (activeGraphicClass *) this;
   controlPvExpStr.copy( source->controlPvExpStr );
   readPvExpStr.copy( source->readPvExpStr );
 
-  strncpy( label, source->label, 39 );
-  strncpy( literalLabel, source->literalLabel, 39);
+  Strncpy( label, source->label, 39 );
+  Strncpy( literalLabel, source->literalLabel, 39);
 
   meterColorMode = source->meterColorMode;
   scaleColorMode = source->scaleColorMode;
@@ -353,7 +353,7 @@ activeGraphicClass *metero = (activeGraphicClass *) this;
   needleType = source->needleType;
   scalePrecision = source->scalePrecision;
   scalePrecExpStr.copy( source->scalePrecExpStr );
-  strncpy( scaleFormat, source->scaleFormat, 15 );
+  Strncpy( scaleFormat, source->scaleFormat, 15 );
   meterAngle = source->meterAngle;
   scaleMin = source->scaleMin;
   scaleMinExpStr.copy( source->scaleMinExpStr );
@@ -961,7 +961,7 @@ char oneName[PV_Factory::MAX_PV_NAME+1];
 
   if ( major > 1 || minor > 1 ) {
     readStringFromFile( oneName, 39+1, f ); actWin->incLine();
-    strncpy( scaleFormat, oneName, 15 );
+    Strncpy( scaleFormat, oneName, 15 );
   }
 
   if ( strcmp( scaleFormat, "g" ) == 0 ) {
@@ -1037,9 +1037,9 @@ char title[32], *ptr;
 
   ptr = actWin->obj.getNameFromClass( "activeMeterClass" );
   if ( ptr )
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   else
-    strncpy( title, activeMeterClass_str2, 31 );
+    Strncpy( title, activeMeterClass_str2, 31 );
 
   Strncat( title, activeMeterClass_str3, 31 );
 
@@ -1054,7 +1054,7 @@ char title[32], *ptr;
 
   //eBuf->bufLabelIntervals = labelIntervals;
   if ( labIntExpStr.getRaw() )
-    strncpy( eBuf->bufLabelIntervals, labIntExpStr.getRaw(),
+    Strncpy( eBuf->bufLabelIntervals, labIntExpStr.getRaw(),
      15 );
   else
     strcpy( eBuf->bufLabelIntervals, "" );
@@ -1075,19 +1075,19 @@ char title[32], *ptr;
   eBuf->bufBgColor = bgColor.pixelIndex();
 
   if ( readPvExpStr.getRaw() )
-    strncpy( eBuf->bufReadPvName, readPvExpStr.getRaw(),
+    Strncpy( eBuf->bufReadPvName, readPvExpStr.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufReadPvName, "" );
 
   if ( controlPvExpStr.getRaw() )
-    strncpy( eBuf->bufControlPvName, controlPvExpStr.getRaw(),
+    Strncpy( eBuf->bufControlPvName, controlPvExpStr.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufControlPvName, "" );
 
-  strncpy( eBuf->bufLabel, label, 39 );
-  strncpy( eBuf->bufLiteralLabel, literalLabel, 39);
+  Strncpy( eBuf->bufLabel, label, 39 );
+  Strncpy( eBuf->bufLiteralLabel, literalLabel, 39);
 
   eBuf->bufLabelType = labelType;
   eBuf->bufScaleLimitsFromDb = scaleLimitsFromDb;
@@ -1096,21 +1096,21 @@ char title[32], *ptr;
 
   //eBuf->bufScalePrecision = scalePrecision;
   if ( scalePrecExpStr.getRaw() )
-    strncpy( eBuf->bufScalePrecision, scalePrecExpStr.getRaw(),
+    Strncpy( eBuf->bufScalePrecision, scalePrecExpStr.getRaw(),
      15 );
   else
     strcpy( eBuf->bufScalePrecision, "" );
 
   //eBuf->bufScaleMin = scaleMin;
   if ( scaleMinExpStr.getRaw() )
-    strncpy( eBuf->bufScaleMin, scaleMinExpStr.getRaw(),
+    Strncpy( eBuf->bufScaleMin, scaleMinExpStr.getRaw(),
      15 );
   else
     strcpy( eBuf->bufScaleMin, "" );
 
   //eBuf->bufScaleMax = scaleMax;
   if ( scaleMaxExpStr.getRaw() )
-    strncpy( eBuf->bufScaleMax, scaleMaxExpStr.getRaw(),
+    Strncpy( eBuf->bufScaleMax, scaleMaxExpStr.getRaw(),
      15 );
   else
     strcpy( eBuf->bufScaleMax, "" );
@@ -1118,7 +1118,7 @@ char title[32], *ptr;
   eBuf->bufTrackDelta = trackDelta;
   eBuf->bufShowScale = showScale;
   eBuf->bufUseDisplayBg = useDisplayBg;
-  strncpy( eBuf->bufScaleFormat, scaleFormat, 15 );
+  Strncpy( eBuf->bufScaleFormat, scaleFormat, 15 );
 
   ef.create( actWin->top, actWin->appCtx->ci.getColorMap(),
    &actWin->appCtx->entryFormX,
@@ -1281,7 +1281,7 @@ int activeMeterClass::draw ( void ) {
 //}
 // else if (labelType =2) {
  if (strlen(literalLabel)){
-   strncpy (label, literalLabel, 39);
+   Strncpy (label, literalLabel, 39);
    faceH = faceH + caseWidth - 4 - labelFontHeight;
  }
  else strcpy (label,"");
@@ -1634,7 +1634,7 @@ XPoint xpoints[6];
 //}
 // else if (labelType =2) {
  if (strlen(literalLabel)){
-   strncpy (label, literalLabel, 39);
+   Strncpy (label, literalLabel, 39);
    faceH = faceH + caseWidth - 4 - labelFontHeight;
  }
  else strcpy (label,"");

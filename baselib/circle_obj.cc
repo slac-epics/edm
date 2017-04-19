@@ -104,8 +104,8 @@ activeCircleClass *aco = (activeCircleClass *) client;
   else
     aco->visInverted = 1;
 
-  strncpy( aco->minVisString, aco->eBuf->bufMinVisString, 39 );
-  strncpy( aco->maxVisString, aco->eBuf->bufMaxVisString, 39 );
+  Strncpy( aco->minVisString, aco->eBuf->bufMinVisString, 39 );
+  Strncpy( aco->maxVisString, aco->eBuf->bufMaxVisString, 39 );
 
   aco->x = aco->eBuf->bufX;
   aco->sboxX = aco->eBuf->bufX;
@@ -345,8 +345,8 @@ activeGraphicClass *ago = (activeGraphicClass *) this;
   visPvExists = alarmPvExists = 0;
   activeMode = 0;
 
-  strncpy( minVisString, source->minVisString, 39 );
-  strncpy( maxVisString, source->maxVisString, 39 );
+  Strncpy( minVisString, source->minVisString, 39 );
+  Strncpy( maxVisString, source->maxVisString, 39 );
 
   lineWidth = source->lineWidth;
   lineStyle = source->lineStyle;
@@ -417,9 +417,9 @@ char title[32], *ptr;
 
   ptr = actWin->obj.getNameFromClass( "activeCircleClass" );
   if ( ptr )
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   else
-    strncpy( title, activeCircleClass_str4, 31 );
+    Strncpy( title, activeCircleClass_str4, 31 );
 
   Strncat( title, activeCircleClass_str5, 31 );
 
@@ -439,12 +439,12 @@ char title[32], *ptr;
   eBuf->bufLineStyle = lineStyle;
 
   if ( alarmPvExpStr.getRaw() )
-    strncpy( eBuf->bufAlarmPvName, alarmPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
+    Strncpy( eBuf->bufAlarmPvName, alarmPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufAlarmPvName, "" );
 
   if ( visPvExpStr.getRaw() )
-    strncpy( eBuf->bufVisPvName, visPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
+    Strncpy( eBuf->bufVisPvName, visPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufVisPvName, "" );
 
@@ -453,8 +453,8 @@ char title[32], *ptr;
   else
     eBuf->bufVisInverted = 1;
 
-  strncpy( eBuf->bufMinVisString, minVisString, 39 );
-  strncpy( eBuf->bufMaxVisString, maxVisString, 39 );
+  Strncpy( eBuf->bufMinVisString, minVisString, 39 );
+  Strncpy( eBuf->bufMaxVisString, maxVisString, 39 );
 
   ef.create( actWin->top, actWin->appCtx->ci.getColorMap(),
    &actWin->appCtx->entryFormX,
@@ -1910,13 +1910,13 @@ void activeCircleClass::replaceString (
   else if ( i == 2 ) {
     int l = max;
     if ( 39 < max ) l = 39;
-    strncpy( minVisString, string, l );
+    Strncpy( minVisString, string, l );
     minVisString[l] = 0;
   }
   else if ( i == 3 ) {
     int l = max;
     if ( 39 < max ) l = 39;
-    strncpy( maxVisString, string, l );
+    Strncpy( maxVisString, string, l );
     maxVisString[l] = 0;
   }
 

@@ -1245,14 +1245,14 @@ void TwoDProfileMonitor::editCommon ( activeWindowClass *actWin,
     ef.addTextField ("Widget Height", 30, &hBuf);
     ef.addTextField ("Bits per pixel", 30, &nBitsPerPixelBuf);
     // copy out, we'll copy in during "Apply"
-    strncpy (dataPvBuf, dataPvStr.getRaw (), sizeof (dataPvBuf) - 1);
+    Strncpy (dataPvBuf, dataPvStr.getRaw (), sizeof (dataPvBuf) - 1);
     ef.addTextField ("Data PV", 30, dataPvBuf, sizeof (dataPvBuf) - 1);
 
     // copy out, we'll copy in during "Apply"
-    strncpy (widthPvBuf, widthPvStr.getRaw (), sizeof (widthPvBuf) - 1);
+    Strncpy (widthPvBuf, widthPvStr.getRaw (), sizeof (widthPvBuf) - 1);
     ef.addTextField ("Data Width (Fixed/PV)", 30, widthPvBuf,
                      sizeof (widthPvBuf) - 1);
-    strncpy (heightPvBuf,heightPvStr.getRaw (), sizeof (heightPvBuf) - 1);
+    Strncpy (heightPvBuf,heightPvStr.getRaw (), sizeof (heightPvBuf) - 1);
     ef.addTextField ("Data Height PV (ignored for fixed size)",
                      30, heightPvBuf, sizeof (heightPvBuf) - 1);
 

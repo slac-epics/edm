@@ -166,12 +166,12 @@ int n, l;
     if ( axtdo->changeValOnLoseFocus ) {
 
       buf = XmTextGetString( axtdo->tf_widget );
-      strncpy( axtdo->entryValue, buf, XTDC_K_MAX );
+      Strncpy( axtdo->entryValue, buf, XTDC_K_MAX );
       axtdo->entryValue[XTDC_K_MAX] = 0;
       XtFree( buf );
-      strncpy( axtdo->curValue, axtdo->entryValue, XTDC_K_MAX );
+      Strncpy( axtdo->curValue, axtdo->entryValue, XTDC_K_MAX );
       axtdo->curValue[XTDC_K_MAX] = 0;
-      strncpy( axtdo->value, axtdo->entryValue, XTDC_K_MAX );
+      Strncpy( axtdo->value, axtdo->entryValue, XTDC_K_MAX );
       axtdo->value[XTDC_K_MAX] = 0;
 
       axtdo->bufInvalidate();
@@ -214,12 +214,12 @@ int n, l;
 
       if ( axtdo->pvType == ProcessVariable::specificType::text ) {
         buf = XmTextGetString( axtdo->tf_widget );
-        strncpy( axtdo->entryValue, buf, XTDC_K_MAX );
+        Strncpy( axtdo->entryValue, buf, XTDC_K_MAX );
         axtdo->entryValue[XTDC_K_MAX] = 0;
         XtFree( buf );
-        strncpy( axtdo->curValue, axtdo->entryValue, XTDC_K_MAX );
+        Strncpy( axtdo->curValue, axtdo->entryValue, XTDC_K_MAX );
         axtdo->curValue[XTDC_K_MAX] = 0;
-        strncpy( string, axtdo->entryValue, XTDC_K_MAX );
+        Strncpy( string, axtdo->entryValue, XTDC_K_MAX );
         string[XTDC_K_MAX] = 0;
       }
     
@@ -235,9 +235,9 @@ int n, l;
           stat = axtdo->putValueWithClip( string );
 
           if ( !stat ) {
-            strncpy( axtdo->entryValue, axtdo->value, XTDC_K_MAX );
+            Strncpy( axtdo->entryValue, axtdo->value, XTDC_K_MAX );
             axtdo->entryValue[XTDC_K_MAX] = 0;
-            strncpy( axtdo->curValue, axtdo->entryValue, XTDC_K_MAX );
+            Strncpy( axtdo->curValue, axtdo->entryValue, XTDC_K_MAX );
             axtdo->curValue[XTDC_K_MAX] = 0;
             XmTextSetString( axtdo->tf_widget, axtdo->entryValue );
           }
@@ -381,7 +381,7 @@ char string[XTDC_K_MAX+1], tmp[XTDC_K_MAX+1];
           }
         }
         else {
-          strncpy( tmp, str, XTDC_K_MAX );
+          Strncpy( tmp, str, XTDC_K_MAX );
           tmp[XTDC_K_MAX] = 0;
         }
         if ( isLegalInteger(tmp) ) {
@@ -407,7 +407,7 @@ char string[XTDC_K_MAX+1], tmp[XTDC_K_MAX+1];
 
       case ProcessVariable::specificType::text:
 
-        strncpy( string, str, XTDC_K_MAX );
+        Strncpy( string, str, XTDC_K_MAX );
         string[XTDC_K_MAX] = 0;
 
         if ( axtdo->pvExists ) {
@@ -597,7 +597,7 @@ char tmp[XTDC_K_MAX+1];
 
   }
 
-  strncpy( axtdo->curValue, axtdo->entryValue, XTDC_K_MAX );
+  Strncpy( axtdo->curValue, axtdo->entryValue, XTDC_K_MAX );
   axtdo->curValue[XTDC_K_MAX] = 0;
 
   axtdo->editDialogIsActive = 0;
@@ -631,7 +631,7 @@ char tmp[XTDC_K_MAX+1], name[XTDC_K_MAX+1], *tk;
 
     tk = strtok( tmp, "/" );
     if ( tk ) {
-      strncpy( name, tk, XTDC_K_MAX );
+      Strncpy( name, tk, XTDC_K_MAX );
       name[XTDC_K_MAX] = 0;
     }
     else {
@@ -641,7 +641,7 @@ char tmp[XTDC_K_MAX+1], name[XTDC_K_MAX+1], *tk;
 
       tk = strtok( NULL, "/" );
       if ( tk ) {
-        strncpy( name, tk, XTDC_K_MAX );
+        Strncpy( name, tk, XTDC_K_MAX );
         name[XTDC_K_MAX] = 0;
       }
 
@@ -649,17 +649,17 @@ char tmp[XTDC_K_MAX+1], name[XTDC_K_MAX+1], *tk;
 
     if ( axtdo->fileComponent == XTDC_K_FILE_NAME ) {
 
-      strncpy( tmp, name, XTDC_K_MAX );
+      Strncpy( tmp, name, XTDC_K_MAX );
       tmp[XTDC_K_MAX] = 0;
       tk = strtok( tmp, "." );
       if ( tk ) {
-        strncpy( name, tk, XTDC_K_MAX );
+        Strncpy( name, tk, XTDC_K_MAX );
         name[XTDC_K_MAX] = 0;
       }
 
     }
 
-    strncpy( axtdo->entryValue, name, XTDC_K_MAX );
+    Strncpy( axtdo->entryValue, name, XTDC_K_MAX );
 
   }
   else {
@@ -668,7 +668,7 @@ char tmp[XTDC_K_MAX+1], name[XTDC_K_MAX+1], *tk;
 
   }
 
-  strncpy( axtdo->curValue, axtdo->entryValue, XTDC_K_MAX );
+  Strncpy( axtdo->curValue, axtdo->entryValue, XTDC_K_MAX );
   axtdo->curValue[XTDC_K_MAX] = 0;
 
   axtdo->editDialogIsActive = 0;
@@ -873,19 +873,19 @@ char string[XTDC_K_MAX+1];
 char *buf;
 
   if ( axtdo->isPassword ) {
-    strncpy( axtdo->entryValue, axtdo->pwValue, XTDC_K_MAX );
+    Strncpy( axtdo->entryValue, axtdo->pwValue, XTDC_K_MAX );
     axtdo->entryValue[XTDC_K_MAX] = 0;
   }
   else {
     buf = XmTextGetString( axtdo->tf_widget );
-    strncpy( axtdo->entryValue, buf, XTDC_K_MAX );
+    Strncpy( axtdo->entryValue, buf, XTDC_K_MAX );
     axtdo->entryValue[XTDC_K_MAX] = 0;
     XtFree( buf );
   }
 
-  strncpy( axtdo->curValue, axtdo->entryValue, XTDC_K_MAX );
+  Strncpy( axtdo->curValue, axtdo->entryValue, XTDC_K_MAX );
   axtdo->curValue[XTDC_K_MAX] = 0;
-  strncpy( string, axtdo->entryValue, XTDC_K_MAX );
+  Strncpy( string, axtdo->entryValue, XTDC_K_MAX );
   string[XTDC_K_MAX] = 0;
   if ( axtdo->pvExists ) {
     stat = stringPut( axtdo->pvId,
@@ -931,19 +931,19 @@ char *buf;
   if ( !axtdo->widget_value_changed ) return;
  
   if ( axtdo->isPassword ) {
-    strncpy( axtdo->entryValue, axtdo->pwValue, XTDC_K_MAX );
+    Strncpy( axtdo->entryValue, axtdo->pwValue, XTDC_K_MAX );
     axtdo->entryValue[XTDC_K_MAX] = 0;
   }
   else {
     buf = XmTextGetString( axtdo->tf_widget );
-    strncpy( axtdo->entryValue, buf, XTDC_K_MAX );
+    Strncpy( axtdo->entryValue, buf, XTDC_K_MAX );
     axtdo->entryValue[XTDC_K_MAX] = 0;
     XtFree( buf );
   }
 
-  strncpy( axtdo->curValue, axtdo->entryValue, XTDC_K_MAX );
+  Strncpy( axtdo->curValue, axtdo->entryValue, XTDC_K_MAX );
   axtdo->curValue[XTDC_K_MAX] = 0;
-  strncpy( string, axtdo->entryValue, XTDC_K_MAX );
+  Strncpy( string, axtdo->entryValue, XTDC_K_MAX );
   string[XTDC_K_MAX] = 0;
   if ( axtdo->pvExists ) {
     stat = stringPut( axtdo->pvId,
@@ -987,7 +987,7 @@ unsigned int uivalue;
 char *buf, tmp[XTDC_K_MAX+1];
 
   buf = XmTextGetString( axtdo->tf_widget );
-  strncpy( axtdo->entryValue, buf, XTDC_K_MAX );
+  Strncpy( axtdo->entryValue, buf, XTDC_K_MAX );
   axtdo->entryValue[XTDC_K_MAX] = 0;
   XtFree( buf );
 
@@ -1010,13 +1010,13 @@ char *buf, tmp[XTDC_K_MAX+1];
     }
   }
   else {
-    strncpy( tmp, axtdo->entryValue, XTDC_K_MAX );
+    Strncpy( tmp, axtdo->entryValue, XTDC_K_MAX );
     tmp[XTDC_K_MAX] = 0;
   }
 
   if ( isLegalInteger(tmp) ) {
 
-    strncpy( axtdo->curValue, tmp, XTDC_K_MAX );
+    Strncpy( axtdo->curValue, tmp, XTDC_K_MAX );
     axtdo->curValue[XTDC_K_MAX] = 0;
 
     uivalue = strtoul( tmp, NULL, 0 );
@@ -1027,9 +1027,9 @@ char *buf, tmp[XTDC_K_MAX+1];
       stat = axtdo->putValueWithClip( ivalue );
 
       if ( !stat ) {
-        strncpy( axtdo->entryValue, axtdo->value, XTDC_K_MAX );
+        Strncpy( axtdo->entryValue, axtdo->value, XTDC_K_MAX );
         axtdo->entryValue[XTDC_K_MAX] = 0;
-        strncpy( axtdo->curValue, axtdo->entryValue, XTDC_K_MAX );
+        Strncpy( axtdo->curValue, axtdo->entryValue, XTDC_K_MAX );
         axtdo->curValue[XTDC_K_MAX] = 0;
         XmTextSetString( axtdo->tf_widget, axtdo->entryValue );
       }
@@ -1062,7 +1062,7 @@ char tmp[XTDC_K_MAX+1];
   if ( !axtdo->widget_value_changed ) return;
 
   buf = XmTextGetString( axtdo->tf_widget );
-  strncpy( axtdo->entryValue, buf, XTDC_K_MAX );
+  Strncpy( axtdo->entryValue, buf, XTDC_K_MAX );
   axtdo->entryValue[XTDC_K_MAX] = 0;
   XtFree( buf );
 
@@ -1085,13 +1085,13 @@ char tmp[XTDC_K_MAX+1];
     }
   }
   else {
-    strncpy( tmp, axtdo->entryValue, XTDC_K_MAX );
+    Strncpy( tmp, axtdo->entryValue, XTDC_K_MAX );
     tmp[XTDC_K_MAX] = 0;
   }
 
   if ( isLegalInteger(tmp) ) {
 
-    strncpy( axtdo->curValue, tmp, XTDC_K_MAX );
+    Strncpy( axtdo->curValue, tmp, XTDC_K_MAX );
     axtdo->curValue[XTDC_K_MAX] = 0;
 
     ivalue = strtol( tmp, NULL, 0 );
@@ -1101,9 +1101,9 @@ char tmp[XTDC_K_MAX+1];
       stat = axtdo->putValueWithClip( ivalue );
 
       if ( !stat ) {
-        strncpy( axtdo->entryValue, axtdo->value, XTDC_K_MAX );
+        Strncpy( axtdo->entryValue, axtdo->value, XTDC_K_MAX );
         axtdo->entryValue[XTDC_K_MAX] = 0;
-        strncpy( axtdo->curValue, axtdo->entryValue, XTDC_K_MAX );
+        Strncpy( axtdo->curValue, axtdo->entryValue, XTDC_K_MAX );
         axtdo->curValue[XTDC_K_MAX] = 0;
         XmTextSetString( axtdo->tf_widget, axtdo->entryValue );
       }
@@ -1134,7 +1134,7 @@ double dvalue;
 char *buf, tmp[XTDC_K_MAX+1];
 
   buf = XmTextGetString( axtdo->tf_widget );
-  strncpy( axtdo->entryValue, buf, XTDC_K_MAX );
+  Strncpy( axtdo->entryValue, buf, XTDC_K_MAX );
   axtdo->entryValue[XTDC_K_MAX] = 0;
   XtFree( buf );
 
@@ -1168,7 +1168,7 @@ char *buf, tmp[XTDC_K_MAX+1];
   }
   else {
 
-    strncpy( tmp, axtdo->entryValue, XTDC_K_MAX );
+    Strncpy( tmp, axtdo->entryValue, XTDC_K_MAX );
     tmp[XTDC_K_MAX] = 0;
 
     if ( isLegalFloat(tmp) ) {
@@ -1180,7 +1180,7 @@ char *buf, tmp[XTDC_K_MAX+1];
 
   if ( doPut ) {
 
-    strncpy( axtdo->curValue, tmp, XTDC_K_MAX );
+    Strncpy( axtdo->curValue, tmp, XTDC_K_MAX );
     axtdo->curValue[XTDC_K_MAX] = 0;
 
     if ( axtdo->pvExists ) {
@@ -1188,9 +1188,9 @@ char *buf, tmp[XTDC_K_MAX+1];
       stat = axtdo->putValueWithClip( dvalue );
 
       if ( !stat ) {
-        strncpy( axtdo->entryValue, axtdo->value, XTDC_K_MAX );
+        Strncpy( axtdo->entryValue, axtdo->value, XTDC_K_MAX );
         axtdo->entryValue[XTDC_K_MAX] = 0;
-        strncpy( axtdo->curValue, axtdo->entryValue, XTDC_K_MAX );
+        Strncpy( axtdo->curValue, axtdo->entryValue, XTDC_K_MAX );
         axtdo->curValue[XTDC_K_MAX] = 0;
         XmTextSetString( axtdo->tf_widget, axtdo->entryValue );
       }
@@ -1223,7 +1223,7 @@ char *buf, tmp[XTDC_K_MAX+1];
   if ( !axtdo->widget_value_changed ) return;
 
   buf = XmTextGetString( axtdo->tf_widget );
-  strncpy( axtdo->entryValue, buf, XTDC_K_MAX );
+  Strncpy( axtdo->entryValue, buf, XTDC_K_MAX );
   axtdo->entryValue[XTDC_K_MAX] = 0;
   XtFree( buf );
 
@@ -1257,7 +1257,7 @@ char *buf, tmp[XTDC_K_MAX+1];
   }
   else {
 
-    strncpy( tmp, axtdo->entryValue, XTDC_K_MAX );
+    Strncpy( tmp, axtdo->entryValue, XTDC_K_MAX );
     tmp[XTDC_K_MAX] = 0;
 
     if ( isLegalFloat(tmp) ) {
@@ -1269,7 +1269,7 @@ char *buf, tmp[XTDC_K_MAX+1];
 
   if ( doPut ) {
 
-    strncpy( axtdo->curValue, tmp, XTDC_K_MAX );
+    Strncpy( axtdo->curValue, tmp, XTDC_K_MAX );
     axtdo->curValue[XTDC_K_MAX] = 0;
 
     if ( axtdo->pvExists ) {
@@ -1277,9 +1277,9 @@ char *buf, tmp[XTDC_K_MAX+1];
       stat = axtdo->putValueWithClip( dvalue );
 
       if ( !stat ) {
-        strncpy( axtdo->entryValue, axtdo->value, XTDC_K_MAX );
+        Strncpy( axtdo->entryValue, axtdo->value, XTDC_K_MAX );
         axtdo->entryValue[XTDC_K_MAX] = 0;
-        strncpy( axtdo->curValue, axtdo->entryValue, XTDC_K_MAX );
+        Strncpy( axtdo->curValue, axtdo->entryValue, XTDC_K_MAX );
         axtdo->curValue[XTDC_K_MAX] = 0;
         XmTextSetString( axtdo->tf_widget, axtdo->entryValue );
       }
@@ -1600,8 +1600,7 @@ unsigned short svalue;
 
       svalue = (unsigned short) pv->get_int();
       if ( svalue < pv->get_enum_count() ) {
-        strncpy( axtdo->curValue, pv->get_enum( svalue ), XTDC_K_MAX );
-	axtdo->curValue[XTDC_K_MAX] = 0;
+        Strncpy( axtdo->curValue, pv->get_enum( svalue ), XTDC_K_MAX );
         axtdo->entryState = (int) svalue;
       }
       else {
@@ -1847,7 +1846,7 @@ unsigned int uivalue;
 short svalue;
 char string[XTDC_K_MAX+1], tmp[XTDC_K_MAX+1];
 
-  strncpy( axtdo->curValue, axtdo->entryValue, XTDC_K_MAX );
+  Strncpy( axtdo->curValue, axtdo->entryValue, XTDC_K_MAX );
   axtdo->curValue[XTDC_K_MAX] = 0;
 
   switch ( axtdo->pvType ) {
@@ -1933,7 +1932,7 @@ char string[XTDC_K_MAX+1], tmp[XTDC_K_MAX+1];
       }
     }
     else {
-      strncpy( tmp, axtdo->entryValue, XTDC_K_MAX );
+      Strncpy( tmp, axtdo->entryValue, XTDC_K_MAX );
       tmp[XTDC_K_MAX] = 0;
     }
 
@@ -1961,7 +1960,7 @@ char string[XTDC_K_MAX+1], tmp[XTDC_K_MAX+1];
 
   case ProcessVariable::specificType::text:
 
-    strncpy( string, axtdo->entryValue, XTDC_K_MAX );
+    Strncpy( string, axtdo->entryValue, XTDC_K_MAX );
     string[XTDC_K_MAX] = 0;
     if ( axtdo->pvExists ) {
       stat = stringPut( axtdo->pvId,
@@ -2037,12 +2036,12 @@ activeXTextDspClass *axtdo = (activeXTextDspClass *) client;
   axtdo->eraseSelectBoxCorners();
   axtdo->erase();
 
-  strncpy( axtdo->value, axtdo->eBuf->bufPvName, axtdo->minStringSize() );
+  Strncpy( axtdo->value, axtdo->eBuf->bufPvName, axtdo->minStringSize() );
   axtdo->value[axtdo->minStringSize()] = 0;
-  strncpy( axtdo->curValue, axtdo->eBuf->bufPvName, axtdo->minStringSize() );
+  Strncpy( axtdo->curValue, axtdo->eBuf->bufPvName, axtdo->minStringSize() );
   axtdo->curValue[axtdo->minStringSize()] = 0;
 
-  strncpy( axtdo->pvName, axtdo->eBuf->bufPvName, PV_Factory::MAX_PV_NAME );
+  Strncpy( axtdo->pvName, axtdo->eBuf->bufPvName, PV_Factory::MAX_PV_NAME );
   axtdo->pvName[PV_Factory::MAX_PV_NAME] = 0;
   axtdo->pvExpStr.setRaw( axtdo->pvName );
 
@@ -2053,7 +2052,7 @@ activeXTextDspClass *axtdo = (activeXTextDspClass *) client;
   axtdo->defDir.setRaw( axtdo->eBuf->bufDefDir );
   axtdo->pattern.setRaw( axtdo->eBuf->bufPattern );
 
-  strncpy( axtdo->fontTag, axtdo->fm.currentFontTag(), 63 );
+  Strncpy( axtdo->fontTag, axtdo->fm.currentFontTag(), 63 );
   axtdo->fontTag[63] = 0;
   axtdo->actWin->fi->loadFontTag( axtdo->fontTag );
   axtdo->actWin->drawGc.setFontTag( axtdo->fontTag, axtdo->actWin->fi );
@@ -2085,7 +2084,7 @@ activeXTextDspClass *axtdo = (activeXTextDspClass *) client;
   else
     axtdo->precision = axtdo->efPrecision.value();
 
-  strncpy( axtdo->fieldLenInfo, axtdo->eBuf->bufFieldLenInfo, 7 );
+  Strncpy( axtdo->fieldLenInfo, axtdo->eBuf->bufFieldLenInfo, 7 );
   axtdo->fieldLenInfo[7] = 0;
 
   axtdo->clipToDspLimits = axtdo->eBuf->bufClipToDspLimits;
@@ -2157,7 +2156,7 @@ activeXTextDspClass *axtdo = (activeXTextDspClass *) client;
 
   axtdo->noExecuteClipMask = axtdo->eBuf->bufNoExecuteClipMask;
 
-  strncpy( axtdo->id, axtdo->bufId, 31 );
+  Strncpy( axtdo->id, axtdo->bufId, 31 );
   axtdo->id[31] = 0;
   axtdo->changeCallbackFlag = axtdo->eBuf->bufChangeCallbackFlag;
   axtdo->activateCallbackFlag = axtdo->eBuf->bufActivateCallbackFlag;
@@ -2385,12 +2384,12 @@ activeGraphicClass *ago = (activeGraphicClass *) this;
 
   fgColor.copy(source->fgColor);
 
-  strncpy( fontTag, source->fontTag, 63 );
+  Strncpy( fontTag, source->fontTag, 63 );
   fontTag[63] = 0;
 
   fs = actWin->fi->getXFontStruct( fontTag );
 
-  strncpy( value, source->value, XTDC_K_MAX );
+  Strncpy( value, source->value, XTDC_K_MAX );
   value[XTDC_K_MAX] = 0;
 
   alignment = source->alignment;
@@ -2403,7 +2402,7 @@ activeGraphicClass *ago = (activeGraphicClass *) this;
   stringY = source->stringY;
   stringX = source->stringX;
 
-  strncpy( pvName, source->pvName, PV_Factory::MAX_PV_NAME );
+  Strncpy( pvName, source->pvName, PV_Factory::MAX_PV_NAME );
   pvName[PV_Factory::MAX_PV_NAME] = 0;
 
   pvExpStr.copy( source->pvExpStr );
@@ -2421,7 +2420,7 @@ activeGraphicClass *ago = (activeGraphicClass *) this;
   fastUpdate = source->fastUpdate;
   precision = source->precision;
   efPrecision = source->efPrecision;
-  strncpy( fieldLenInfo, source->fieldLenInfo, 7 );
+  Strncpy( fieldLenInfo, source->fieldLenInfo, 7 );
   fieldLenInfo[7] = 0;
   clipToDspLimits = source->clipToDspLimits;
   upperLim = source->upperLim;
@@ -2582,7 +2581,7 @@ char string[XTDC_K_MAX+1], tmp[XTDC_K_MAX+1];
         }
       }
       else {
-        strncpy( tmp, str, XTDC_K_MAX );
+        Strncpy( tmp, str, XTDC_K_MAX );
         tmp[XTDC_K_MAX] = 0;
       }
       if ( isLegalInteger(tmp) ) {
@@ -2607,7 +2606,7 @@ char string[XTDC_K_MAX+1], tmp[XTDC_K_MAX+1];
 
     case ProcessVariable::specificType::text:
 
-      strncpy( string, str, XTDC_K_MAX );
+      Strncpy( string, str, XTDC_K_MAX );
       string[XTDC_K_MAX] = 0;
       if ( pvExists ) {
         putSuccess = stringPut( pvId,
@@ -3226,9 +3225,9 @@ static int objTypeEnum[4] = {
   else
     bgColor.setAlarmInsensitive();
 
-  strncpy( pvName, pvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
+  Strncpy( pvName, pvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
   pvName[PV_Factory::MAX_PV_NAME] = 0;
-  strncpy( value, pvName, minStringSize() );
+  Strncpy( value, pvName, minStringSize() );
   value[minStringSize()] = 0;
 
   actWin->fi->loadFontTag( fontTag );
@@ -3405,7 +3404,7 @@ int tmpFgColor, tmpSvalColor;
   else
     fgColor.setAlarmInsensitive();
 
-  strncpy( value, pvName, minStringSize() );
+  Strncpy( value, pvName, minStringSize() );
   value[minStringSize()] = 0;
 
   if ( ( major > 1 ) || ( minor > 5 ) ) {
@@ -3741,7 +3740,7 @@ int tmpFgColor;
           return 0;
         }
 
-        strncpy( pvName, tk, 28 );
+        Strncpy( pvName, tk, 28 );
         pvName[28] = 0;
 
       }
@@ -3754,8 +3753,7 @@ int tmpFgColor;
           return 0;
         }
 
-        strncpy( fontTag, tk, 63 );
-	fontTag[63] = 0;
+        Strncpy( fontTag, tk, 63 );
 
       }
             
@@ -3825,7 +3823,7 @@ int tmpFgColor;
 
   fgColor.setAlarmInsensitive();
 
-  strncpy( value, pvName, minStringSize() );
+  Strncpy( value, pvName, minStringSize() );
   value[minStringSize()] = 0;
 
   pvExpStr.setRaw( pvName );
@@ -3886,18 +3884,18 @@ int noedit;
 
   ptr = actWin->obj.getNameFromClass( title );
   if ( ptr ) {
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
     title[31] = 0;
   }
   else {
-    strncpy( title, activeXTextDspClass_str4, 31 );
+    Strncpy( title, activeXTextDspClass_str4, 31 );
     title[31] = 0;
   }
 
   Strncat( title, activeXTextDspClass_str5, 31 );
   title[31] = 0;
 
-  strncpy( bufId, id, 31 );
+  Strncpy( bufId, id, 31 );
   bufId[31] = 0;
 
   eBuf->bufX = x;
@@ -3906,20 +3904,20 @@ int noedit;
   eBuf->bufH = h;
   eBuf->bufFgColor = fgColor.pixelIndex();
   eBuf->bufBgColor = bgColor.pixelIndex();
-  strncpy( eBuf->bufFontTag, fontTag, 63 );
+  Strncpy( eBuf->bufFontTag, fontTag, 63 );
   eBuf->bufFontTag[63] = 0;
   eBuf->bufUseDisplayBg = useDisplayBg;
   eBuf->bufAutoHeight = autoHeight;
   eBuf->bufFormatType = formatType;
   eBuf->bufColorMode = colorMode;
   eBuf->bufBgColorMode = bgColorMode;
-  strncpy( bfrValue, value, XTDC_K_MAX );
+  Strncpy( bfrValue, value, XTDC_K_MAX );
   bfrValue[XTDC_K_MAX] = 0;
-  strncpy( eBuf->bufPvName, pvName, PV_Factory::MAX_PV_NAME );
+  Strncpy( eBuf->bufPvName, pvName, PV_Factory::MAX_PV_NAME );
   eBuf->bufPvName[PV_Factory::MAX_PV_NAME] = 0;
 
   if ( fgPvExpStr.getRaw() ) {
-    strncpy( eBuf->bufColorPvName, fgPvExpStr.getRaw(),
+    Strncpy( eBuf->bufColorPvName, fgPvExpStr.getRaw(),
      PV_Factory::MAX_PV_NAME );
     eBuf->bufColorPvName[PV_Factory::MAX_PV_NAME] = 0;
   }
@@ -3928,7 +3926,7 @@ int noedit;
   }
 
   if ( svalPvExpStr.getRaw() ) {
-    strncpy( eBuf->bufSvalPvName, svalPvExpStr.getRaw(),
+    Strncpy( eBuf->bufSvalPvName, svalPvExpStr.getRaw(),
      PV_Factory::MAX_PV_NAME );
     eBuf->bufSvalPvName[PV_Factory::MAX_PV_NAME] = 0;
   }
@@ -3937,7 +3935,7 @@ int noedit;
   }
 
   if ( defDir.getRaw() ) {
-    strncpy( eBuf->bufDefDir, defDir.getRaw(), XTDC_K_MAX );
+    Strncpy( eBuf->bufDefDir, defDir.getRaw(), XTDC_K_MAX );
     eBuf->bufDefDir[XTDC_K_MAX] = 0;
   }
   else {
@@ -3945,7 +3943,7 @@ int noedit;
   }
 
   if ( pattern.getRaw() ) {
-    strncpy( eBuf->bufPattern, pattern.getRaw(), XTDC_K_MAX );
+    Strncpy( eBuf->bufPattern, pattern.getRaw(), XTDC_K_MAX );
     eBuf->bufPattern[XTDC_K_MAX] = 0;
   }
   else {
@@ -3967,7 +3965,7 @@ int noedit;
   eBuf->bufChangeValOnLoseFocus = changeValOnLoseFocus;
   eBuf->bufFastUpdate = fastUpdate;
   eBuf->bufEfPrecision = efPrecision;
-  strncpy( eBuf->bufFieldLenInfo, fieldLenInfo, 7 );
+  Strncpy( eBuf->bufFieldLenInfo, fieldLenInfo, 7 );
   eBuf->bufFieldLenInfo[7] = 0;
   eBuf->bufClipToDspLimits = clipToDspLimits;
   eBuf->bufChangeCallbackFlag = changeCallbackFlag;
@@ -4513,10 +4511,10 @@ int clipStat = 0;
 
     }
 
-    strncpy( entryValue, value, XTDC_K_MAX );
+    Strncpy( entryValue, value, XTDC_K_MAX );
     entryValue[XTDC_K_MAX] = 0;
 
-    strncpy( bfrValue, value, XTDC_K_MAX );
+    Strncpy( bfrValue, value, XTDC_K_MAX );
     bfrValue[XTDC_K_MAX] = 0;
 
     if ( bufInvalid ) {
@@ -4607,7 +4605,7 @@ int clipStat = 0;
   actWin->executeGc.restoreFg();
   actWin->executeGc.restoreBg();
 
-  strncpy( bfrValue, value, XTDC_K_MAX );
+  Strncpy( bfrValue, value, XTDC_K_MAX );
   bfrValue[XTDC_K_MAX] = 0;
 
   updateBlink( blink );
@@ -4657,9 +4655,9 @@ expStringClass tmpStr;
   tmpStr.expand1st( numMacros, macros, expansions );
   pattern.setRaw( tmpStr.getExpanded() );
 
-  strncpy( pvName, pvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
+  Strncpy( pvName, pvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
   pvName[PV_Factory::MAX_PV_NAME] = 0;
-  strncpy( value, pvName, minStringSize() );
+  Strncpy( value, pvName, minStringSize() );
   value[minStringSize()] = 0;
   stringLength = strlen( value );
   fs = actWin->fi->getXFontStruct( fontTag );
@@ -4909,8 +4907,7 @@ char callbackName[63+1];
       if ( anyCallbackFlag ) {
 
         if ( changeCallbackFlag ) {
-          strncpy( callbackName, id, 63 );
-	  callbackName[63] = 0;
+          Strncpy( callbackName, id, 63 );
           Strncat( callbackName, activeXTextDspClass_str36, 63 );
           callbackName[63] = 0;
           changeCallback =
@@ -4918,8 +4915,7 @@ char callbackName[63+1];
 	}
 
         if ( activateCallbackFlag ) {
-          strncpy( callbackName, id, 63 );
-	  callbackName[63] = 0;
+          Strncpy( callbackName, id, 63 );
           Strncat( callbackName, activeXTextDspClass_str37, 63 );
           callbackName[63] = 0;
           activateCallback =
@@ -4927,8 +4923,7 @@ char callbackName[63+1];
 	}
 
         if ( deactivateCallbackFlag ) {
-          strncpy( callbackName, id, 63 );
-	  callbackName[63] = 0;
+          Strncpy( callbackName, id, 63 );
           Strncat( callbackName, activeXTextDspClass_str38, 63 );
           callbackName[63] = 0;
           deactivateCallback =
@@ -5201,7 +5196,7 @@ Widget parent;
       if ( isFile ) {
 
         if ( defDir.getExpanded() ) {
-          strncpy( tmpDir, defDir.getExpanded(), XTDC_K_MAX );
+          Strncpy( tmpDir, defDir.getExpanded(), XTDC_K_MAX );
           tmpDir[XTDC_K_MAX] = 0;
 	}
         else {
@@ -5209,7 +5204,7 @@ Widget parent;
 	}
 
         if ( pattern.getExpanded() ) {
-          strncpy( tmpPat, pattern.getExpanded(), XTDC_K_MAX );
+          Strncpy( tmpPat, pattern.getExpanded(), XTDC_K_MAX );
           tmpPat[XTDC_K_MAX] = 0;
 	}
         else {
@@ -5241,7 +5236,7 @@ Widget parent;
 
   }
 
-  strncpy( entryValue, value, XTDC_K_MAX );
+  Strncpy( entryValue, value, XTDC_K_MAX );
   entryValue[XTDC_K_MAX] = 0;
 
   textEntry.create( actWin->top, &teX, &teY, &teW, &teH, &teLargestH, "",
@@ -5444,7 +5439,7 @@ char locFieldLenInfo[7+1];
   ne = needErase; needErase = 0;
   nfgpvp = needFgPvPut; needFgPvPut = 0;
   nasc = needAccessSecurityCheck; needAccessSecurityCheck = 0;
-  strncpy( value, curValue, XTDC_K_MAX );
+  Strncpy( value, curValue, XTDC_K_MAX );
   value[XTDC_K_MAX] = 0;
   actWin->remDefExeNode( aglPtr );
   actWin->appCtx->proc->unlock();
@@ -5493,7 +5488,7 @@ char locFieldLenInfo[7+1];
     case ProcessVariable::specificType::real:
     case ProcessVariable::specificType::flt:
 
-      strncpy( units, pvId->get_units(), MAX_UNITS_SIZE );
+      Strncpy( units, pvId->get_units(), MAX_UNITS_SIZE );
       units[MAX_UNITS_SIZE] = 0;
 
       if ( limitsFromDb || efPrecision.isNull() ) {
@@ -5521,7 +5516,7 @@ char locFieldLenInfo[7+1];
     case ProcessVariable::specificType::shrt:
     case ProcessVariable::specificType::integer:
 
-      strncpy( units, pvId->get_units(), MAX_UNITS_SIZE );
+      Strncpy( units, pvId->get_units(), MAX_UNITS_SIZE );
       units[MAX_UNITS_SIZE] = 0;
 
       if ( limitsFromDb || efPrecision.isNull() ) {
@@ -5555,7 +5550,7 @@ char locFieldLenInfo[7+1];
 
       svalue = (short) pvId->get_int();
       if ( ( svalue >= 0 ) && ( svalue < numStates ) ) {
-        strncpy( value, pvId->get_enum( svalue ), XTDC_K_MAX );
+        Strncpy( value, pvId->get_enum( svalue ), XTDC_K_MAX );
         value[XTDC_K_MAX] = 0;
         entryState = (int) svalue;
       }
@@ -5563,7 +5558,7 @@ char locFieldLenInfo[7+1];
         strcpy( value, "" );
       }
 
-      strncpy( curValue, value, XTDC_K_MAX );
+      Strncpy( curValue, value, XTDC_K_MAX );
       curValue[XTDC_K_MAX] = 0;
 
       isWidget = 0;
@@ -5636,7 +5631,7 @@ char locFieldLenInfo[7+1];
             strcpy( locFieldLenInfo, "" );
           }
           else {
-            strncpy( locFieldLenInfo, fieldLenInfo, 7 );
+            Strncpy( locFieldLenInfo, fieldLenInfo, 7 );
             locFieldLenInfo[7] = 0;
           }
 
@@ -5669,7 +5664,7 @@ char locFieldLenInfo[7+1];
             strcpy( locFieldLenInfo, "" );
           }
           else {
-            strncpy( locFieldLenInfo, fieldLenInfo, 7 );
+            Strncpy( locFieldLenInfo, fieldLenInfo, 7 );
             locFieldLenInfo[7] = 0;
           }
 
@@ -5702,7 +5697,7 @@ char locFieldLenInfo[7+1];
             strcpy( locFieldLenInfo, "-" );
           }
           else {
-            strncpy( locFieldLenInfo, fieldLenInfo, 7 );
+            Strncpy( locFieldLenInfo, fieldLenInfo, 7 );
             locFieldLenInfo[7] = 0;
           }
 
@@ -5737,7 +5732,7 @@ char locFieldLenInfo[7+1];
             strcpy( locFieldLenInfo, "-" );
           }
           else {
-            strncpy( locFieldLenInfo, fieldLenInfo, 7 );
+            Strncpy( locFieldLenInfo, fieldLenInfo, 7 );
             locFieldLenInfo[7] = 0;
           }
 
@@ -5815,7 +5810,7 @@ char locFieldLenInfo[7+1];
         numCols = 6;
       }
 
-      strncpy( entryValue, value, XTDC_K_MAX );
+      Strncpy( entryValue, value, XTDC_K_MAX );
       entryValue[XTDC_K_MAX] = 0;
       csrPos = strlen(entryValue);
 
@@ -6112,7 +6107,7 @@ char *buf;
       l = strlen(curValue);
       if ( l > bufSize ) l = bufSize;
 
-      strncpy( _value, curValue, l );
+      Strncpy( _value, curValue, l );
       _value[l] = 0;
 
     }
@@ -6123,7 +6118,7 @@ char *buf;
       l = strlen(buf);
       if ( l > bufSize ) l = bufSize;
 
-      strncpy( _value, buf, l );
+      Strncpy( _value, buf, l );
       _value[l] = 0;
 
       XtFree( buf );
@@ -6136,7 +6131,7 @@ char *buf;
   else if ( strcmp( prop, activeXTextDspClass_str66 ) == 0 ) {
 
     if ( !tf_widget ) {
-      strncpy( _value, "", bufSize );
+      Strncpy( _value, "", bufSize );
       _value[bufSize] = 0;
       return 0;
     }
@@ -6146,7 +6141,7 @@ char *buf;
     l = strlen(buf);
     if ( l > bufSize ) l = bufSize;
 
-    strncpy( _value, buf, l );
+    Strncpy( _value, buf, l );
     _value[l] = 0;
 
     XtFree( buf );
@@ -6286,12 +6281,12 @@ int changed = 0;
 
         changed = 1;
 
-        strncpy( value, ctlPvs[0], minStringSize() );
+        Strncpy( value, ctlPvs[0], minStringSize() );
         value[minStringSize()] = 0;
-        strncpy( curValue, ctlPvs[0], minStringSize() );
+        Strncpy( curValue, ctlPvs[0], minStringSize() );
         curValue[minStringSize()] = 0;
 
-        strncpy( pvName, ctlPvs[0], PV_Factory::MAX_PV_NAME );
+        Strncpy( pvName, ctlPvs[0], PV_Factory::MAX_PV_NAME );
         pvName[PV_Factory::MAX_PV_NAME] = 0;
         pvExpStr.setRaw( pvName );
 
@@ -6308,12 +6303,12 @@ int changed = 0;
 
         changed = 1;
 
-        strncpy( value, readbackPvs[0], minStringSize() );
+        Strncpy( value, readbackPvs[0], minStringSize() );
         value[minStringSize()] = 0;
-        strncpy( curValue, readbackPvs[0], minStringSize() );
+        Strncpy( curValue, readbackPvs[0], minStringSize() );
         curValue[minStringSize()] = 0;
 
-        strncpy( pvName, readbackPvs[0], PV_Factory::MAX_PV_NAME );
+        Strncpy( pvName, readbackPvs[0], PV_Factory::MAX_PV_NAME );
         pvName[PV_Factory::MAX_PV_NAME] = 0;
         pvExpStr.setRaw( pvName );
 
@@ -6414,11 +6409,11 @@ void activeXTextDspClass::replaceString (
 
   if ( i == 0 ) {
     pvExpStr.setRaw( string );
-    strncpy( pvName, pvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
+    Strncpy( pvName, pvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
     pvName[PV_Factory::MAX_PV_NAME] = 0;
-    strncpy( value, string, minStringSize() );
+    Strncpy( value, string, minStringSize() );
     value[minStringSize()] = 0;
-    strncpy( curValue, string, minStringSize() );
+    Strncpy( curValue, string, minStringSize() );
     value[minStringSize()] = 0;
   }
   else if ( i == 1 ) {

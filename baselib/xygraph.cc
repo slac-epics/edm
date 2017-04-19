@@ -227,7 +227,7 @@ edmTime base( (const unsigned long) ( xyo->curSec ),
   envPtr = getenv( environment_str14 );
   if ( envPtr ) {
 
-    strncpy( fname, envPtr, 255 );
+    Strncpy( fname, envPtr, 255 );
     if ( envPtr[strlen(envPtr)] != '/' ) {
       Strncat( fname, "/", 255 );
     }
@@ -238,7 +238,7 @@ edmTime base( (const unsigned long) ( xyo->curSec ),
     envPtr = getenv( environment_str8 );
     if ( envPtr ) {
 
-      strncpy( fname, envPtr, 255 );
+      Strncpy( fname, envPtr, 255 );
       if ( envPtr[strlen(envPtr)] != '/' ) {
         Strncat( fname, "/", 255 );
       }
@@ -246,7 +246,7 @@ edmTime base( (const unsigned long) ( xyo->curSec ),
     }
     else {
 
-      strncpy( fname, "/tmp/", 255 );
+      Strncpy( fname, "/tmp/", 255 );
 
     }
 
@@ -3810,7 +3810,7 @@ int i, yi;
   axygo->resetPvExpStr.setRaw( axygo->eBuf->bufResetPvName );
   axygo->resetMode = axygo->eBuf->bufResetMode;
 
-  strncpy( axygo->fontTag, axygo->fm.currentFontTag(), 63 );
+  Strncpy( axygo->fontTag, axygo->fm.currentFontTag(), 63 );
   axygo->actWin->fi->loadFontTag( axygo->fontTag );
   axygo->actWin->drawGc.setFontTag( axygo->fontTag, axygo->actWin->fi );
 
@@ -4157,18 +4157,18 @@ int i, yi;
     y1Min[yi] = source->y1Min[yi];
     y1Max[yi] = source->y1Max[yi];
     y1FormatType[yi] = source->y1FormatType[yi];
-    strncpy( y1Format[yi], source->y1Format[yi], 15 );
+    Strncpy( y1Format[yi], source->y1Format[yi], 15 );
     curY1Min[yi] = 1;
     curY1Max[yi] = 2;
     curY1NumLabelTicks[yi] = 2;
   }
 
   xFormatType = source->xFormatType;
-  strncpy( xFormat, source->xFormat, 15 );
+  Strncpy( xFormat, source->xFormat, 15 );
 
   activeMode = 0;
 
-  strncpy( fontTag, source->fontTag, 63 );
+  Strncpy( fontTag, source->fontTag, 63 );
   fs = actWin->fi->getXFontStruct( fontTag );
   fontAscent = source->fontAscent;
   fontDescent = source->fontDescent;
@@ -5668,9 +5668,9 @@ int i, yi;
 
   ptr = actWin->obj.getNameFromClass( "xyGraphClass" );
   if ( ptr )
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   else
-    strncpy( title, "Unknown object", 31 );
+    Strncpy( title, "Unknown object", 31 );
 
   Strncat( title, " Properties", 31 );
 
@@ -5696,26 +5696,16 @@ int i, yi;
 
   eBuf->bufCount = count;
 
-  strncpy( eBuf->bufGraphTitle, graphTitle.getRaw(), 127 );
-  eBuf->bufGraphTitle[127] = 0;
-  strncpy( eBuf->bufXLabel, xLabel.getRaw(), 127 );
-  eBuf->bufXLabel[127] = 0;
-  strncpy( eBuf->bufYLabel, yLabel.getRaw(), 127 );
-  eBuf->bufYLabel[127] = 0;
-  strncpy( eBuf->bufY2Label, y2Label.getRaw(), 127 );
-  eBuf->bufY2Label[127] = 0;
+  Strncpy( eBuf->bufGraphTitle, graphTitle.getRaw(), 127 );
+  Strncpy( eBuf->bufXLabel, xLabel.getRaw(), 127 );
+  Strncpy( eBuf->bufYLabel, yLabel.getRaw(), 127 );
+  Strncpy( eBuf->bufY2Label, y2Label.getRaw(), 127 );
   eBuf->bufFgColor = fgColor;
   eBuf->bufBgColor = bgColor;
   eBuf->bufGridColor = gridColor;
-  strncpy( eBuf->bufTraceCtlPvName, traceCtlPvExpStr.getRaw(),
-   PV_Factory::MAX_PV_NAME );
-  eBuf->bufTraceCtlPvName[PV_Factory::MAX_PV_NAME] = 0;
-  strncpy( eBuf->bufTrigPvName, trigPvExpStr.getRaw(),
-   PV_Factory::MAX_PV_NAME );
-  eBuf->bufTrigPvName[PV_Factory::MAX_PV_NAME] = 0;
-  strncpy( eBuf->bufResetPvName, resetPvExpStr.getRaw(),
-   PV_Factory::MAX_PV_NAME );
-  eBuf->bufResetPvName[PV_Factory::MAX_PV_NAME] = 0;
+  Strncpy( eBuf->bufTraceCtlPvName, traceCtlPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
+  Strncpy( eBuf->bufTrigPvName,     trigPvExpStr.getRaw(),     PV_Factory::MAX_PV_NAME );
+  Strncpy( eBuf->bufResetPvName,    resetPvExpStr.getRaw(),    PV_Factory::MAX_PV_NAME );
   eBuf->bufResetMode = resetMode;
 
   eBuf->bufXNumLabelIntervals = xNumLabelIntervals;
@@ -5784,15 +5774,9 @@ int i, yi;
      "Trace Properties", NULL, NULL, NULL );
 
     for ( i=0; i<numTraces; i++ ) {
-      strncpy( eBuf->bufXPvName[i], xPvExpStr[i].getRaw(),
-       PV_Factory::MAX_PV_NAME );
-      eBuf->bufXPvName[i][PV_Factory::MAX_PV_NAME] = 0;
-      strncpy( eBuf->bufYPvName[i], yPvExpStr[i].getRaw(),
-       PV_Factory::MAX_PV_NAME );
-      eBuf->bufYPvName[i][PV_Factory::MAX_PV_NAME] = 0;
-      strncpy( eBuf->bufNPvName[i], nPvExpStr[i].getRaw(),
-       PV_Factory::MAX_PV_NAME );
-      eBuf->bufNPvName[i][PV_Factory::MAX_PV_NAME] = 0;
+      Strncpy( eBuf->bufXPvName[i], xPvExpStr[i].getRaw(), PV_Factory::MAX_PV_NAME );
+      Strncpy( eBuf->bufYPvName[i], yPvExpStr[i].getRaw(), PV_Factory::MAX_PV_NAME );
+      Strncpy( eBuf->bufNPvName[i], nPvExpStr[i].getRaw(), PV_Factory::MAX_PV_NAME );
       eBuf->bufPlotStyle[i] = plotStyle[i];
       eBuf->bufPlotSymbolType[i] = plotSymbolType[i];
       eBuf->bufPlotUpdateMode[i] = plotUpdateMode[i];
@@ -12135,8 +12119,7 @@ char fullName[127+1], label[127+1];
 
   if ( y1Axis[0] && !blank( yLabel.getExpanded() ) ) {
 
-    strncpy( label, yLabel.getExpanded(), 127 );
-    label[127] = 0;
+    Strncpy( label, yLabel.getExpanded(), 127 );
 
     actWin->executeGc.saveFg();
     actWin->executeGc.setFG( actWin->ci->pix(fgColor) );
@@ -12204,8 +12187,7 @@ char fullName[127+1], label[127+1];
 
   if ( y1Axis[1] && !blank( y2Label.getExpanded() ) ) {
 
-    strncpy( label, y2Label.getExpanded(), 127 );
-    label[127] = 0;
+    Strncpy( label, y2Label.getExpanded(), 127 );
 
     actWin->executeGc.saveFg();
     actWin->executeGc.setFG( actWin->ci->pix(fgColor) );

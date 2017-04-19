@@ -80,7 +80,7 @@ void activeGraphicClass::clone ( const activeGraphicClass *source ) {
   nextSelectedToEdit = NULL;
   inGroup = source->inGroup;
   editMode = source->editMode;
-  strncpy( id, source->id, 31 );
+  Strncpy( id, source->id, 31 );
   objType = source->objType;
 
   selected = 0;
@@ -185,16 +185,16 @@ void activeGraphicClass::getObjType (
 {
 
   if ( objType == GRAPHICS ) {
-    strncpy( strObjType, global_str3, maxLen );
+    Strncpy( strObjType, global_str3, maxLen );
   }
   else if ( objType == MONITORS ) {
-    strncpy( strObjType, global_str2, maxLen );
+    Strncpy( strObjType, global_str2, maxLen );
   }
   else if ( objType == CONTROLS ) {
-    strncpy( strObjType, global_str5, maxLen );
+    Strncpy( strObjType, global_str5, maxLen );
   }
   else {
-    strncpy( strObjType, "", maxLen );
+    Strncpy( strObjType, "", maxLen );
   }
 
 }
@@ -3170,7 +3170,7 @@ activeWindowListPtr cur;
   cur->node.realize();
   cur->node.setGraphicEnvironment( &actWin->appCtx->ci, &actWin->appCtx->fi );
 
-  strncpy( cur->node.fileName, fileName,
+  Strncpy( cur->node.fileName, fileName,
    sizeof(cur->node.fileName)-1 );
 
   if ( setPosition ) {
@@ -3242,7 +3242,7 @@ int l;
   }
 
   ago->dragData = new char[l+1];
-  strncpy( ago->dragData, ago->dragValue( ago->currentDragIndex ), l );
+  Strncpy( ago->dragData, ago->dragValue( ago->currentDragIndex ), l );
   ago->dragData[l] = 0;
 
   *type_return = *target;
@@ -3324,7 +3324,7 @@ Widget mkDragIcon( Widget w, activeGraphicClass *agc )
   char *str = agc->dragValue(agc->getCurrentDragIndex());
   if ( str ) {
     if ( !blank(str) ) {
-      strncpy( tmpStr, str, PV_Factory::MAX_PV_NAME );
+      Strncpy( tmpStr, str, PV_Factory::MAX_PV_NAME );
       tmpStr[PV_Factory::MAX_PV_NAME] = 0;
     }
   }
@@ -4096,7 +4096,7 @@ void activeGraphicClass::postIncompatable ( void ) {
 char msg[255+1];
 char line[31+1];
 
-  strncpy( msg, actWin->obj.getNameFromClass( objName() ), 255 );
+  Strncpy( msg, actWin->obj.getNameFromClass( objName() ), 255 );
   msg[255] = 0;
 
   Strncat( msg, activeGraphicClass_str7, 255 );

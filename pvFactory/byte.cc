@@ -435,12 +435,12 @@ int edmByteClass::genericEdit() // create Property Dialog
     ptr = actWin->obj.getNameFromClass(name);
     if (ptr)
     {
-        strncpy(title, ptr, 80);
+        Strncpy(title, ptr, 80);
         title[80] = 0;
         Strncat(title, " Properties", 80);
     }
     else
-        strncpy(title, "Unknown object Properties", 80);
+        Strncpy(title, "Unknown object Properties", 80);
    
     // Copy data member contents into edit buffers
   bufX = x;
@@ -457,7 +457,7 @@ int edmByteClass::genericEdit() // create Property Dialog
   bufLineWidth = lineWidth;
   bufLineStyle = lineStyle;
 
-  strncpy(bufPvName, getRawPVName(), PV_Factory::MAX_PV_NAME);
+  Strncpy(bufPvName, getRawPVName(), PV_Factory::MAX_PV_NAME);
 
   bufTheDir = theDir;
   bufNobt = nobt;

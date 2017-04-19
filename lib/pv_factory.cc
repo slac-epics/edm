@@ -97,7 +97,7 @@ void PV_Factory::set_default_pv_type (
 
   if ( legal_pv_type( pv_type ) ) {
 
-    strncpy( default_pv_type, pv_type, 31 );
+    Strncpy( default_pv_type, pv_type, 31 );
     default_pv_type[31] = 0;
 
   }

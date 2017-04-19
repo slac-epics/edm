@@ -32,9 +32,9 @@ char *ptr, buf[127+1];
 
   if ( strstr( generic_service_name, "::" ) ) {
 
-    strncpy( buf, generic_service_name, 127 );
+    Strncpy( buf, generic_service_name, 127 );
     ptr = strtok( buf, "::" );
-    strncpy( node, ptr, 16 );
+    Strncpy( node, ptr, 16 );
     ptr = strtok( NULL, "::" );
     strcpy( service_name, ptr );
 
@@ -45,7 +45,7 @@ char *ptr, buf[127+1];
     i = 0;
 
     strcpy( service_name, "5100" );
-    strncpy( node, nodes[i], 16 );
+    Strncpy( node, nodes[i], 16 );
     *mode = modes[i];
 
   }
@@ -55,7 +55,7 @@ char *ptr, buf[127+1];
     i = 0;
 
     strcpy( service_name, "5101" );
-    strncpy( node, nodes[i], 16 );
+    Strncpy( node, nodes[i], 16 );
     *mode = modes[i];
 
   }
@@ -65,7 +65,7 @@ char *ptr, buf[127+1];
     i = 0;
 
     strcpy( service_name, "5102" );
-    strncpy( node, nodes[i], 16 );
+    Strncpy( node, nodes[i], 16 );
     *mode = modes[i];
 
   }
@@ -75,7 +75,7 @@ char *ptr, buf[127+1];
     i = 0;
 
     strcpy( service_name, "5200" );
-    strncpy( node, nodes[i], 16 );
+    Strncpy( node, nodes[i], 16 );
     *mode = modes[i];
 
   }

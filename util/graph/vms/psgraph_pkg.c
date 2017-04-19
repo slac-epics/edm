@@ -327,7 +327,7 @@ void PsSetFont (
 ) {
 
   g_font_size = font_size;
-  strncpy( g_font_name, font_name, 128 );
+  Strncpy( g_font_name, font_name, 128 );
   return;
 
   fprintf( g_pf, "gsave %-f %-f scale %-d (%s) F grestore\n",
@@ -1175,7 +1175,7 @@ int stat;
 
   set_area_origin( ptr );
 
-  strncpy( ptr->attr->title, title, TITLE_MAX_CHARS );
+  Strncpy( ptr->attr->title, title, TITLE_MAX_CHARS );
   ptr->attr->title[TITLE_MAX_CHARS] = 0;
 
   return stat;
@@ -1829,7 +1829,7 @@ int stat;
 
   set_area_origin( ptr );
 
-  strncpy( ptr->attr->xformat, format, FORMAT_MAX_CHARS );
+  Strncpy( ptr->attr->xformat, format, FORMAT_MAX_CHARS );
   ptr->attr->xformat[FORMAT_MAX_CHARS] = 0;
 
   stat = psgraph_draw_x_annotation( id );
@@ -1888,7 +1888,7 @@ int stat;
 
   set_area_origin( ptr );
 
-  strncpy( ptr->attr->xlabel, label, LABEL_MAX_CHARS );
+  Strncpy( ptr->attr->xlabel, label, LABEL_MAX_CHARS );
   ptr->attr->xlabel[LABEL_MAX_CHARS] = 0;
 
   stat = psgraph_draw_x_label( id );
@@ -2554,7 +2554,7 @@ int stat;
 
   set_area_origin( ptr );
 
-  strncpy( ptr->attr->yformat, format, FORMAT_MAX_CHARS );
+  Strncpy( ptr->attr->yformat, format, FORMAT_MAX_CHARS );
   ptr->attr->yformat[FORMAT_MAX_CHARS] = 0;
 
   stat = psgraph_draw_y_annotation( id );
@@ -2676,7 +2676,7 @@ char chr[2];
   set_area_origin( ptr );
 
   ptr->attr->ylabel_orientation = GRAPH_K_VERTICAL;
-  strncpy( ptr->attr->ylabel, label, LABEL_MAX_CHARS );
+  Strncpy( ptr->attr->ylabel, label, LABEL_MAX_CHARS );
   ptr->attr->ylabel[LABEL_MAX_CHARS] = 0;
 
   stat = psgraph_draw_y_label( id );
@@ -2704,7 +2704,7 @@ char chr[2];
   set_area_origin( ptr );
 
   ptr->attr->ylabel_orientation = GRAPH_K_HORIZONTAL;
-  strncpy( ptr->attr->ylabel, label, LABEL_MAX_CHARS );
+  Strncpy( ptr->attr->ylabel, label, LABEL_MAX_CHARS );
   ptr->attr->ylabel[LABEL_MAX_CHARS] = 0;
 
   stat = psgraph_draw_y_label( id );
@@ -3706,7 +3706,7 @@ int stat, ret_stat;
 
   if ( format ) {
     if ( format[0] ) {
-      strncpy( ptr->attr->xformat, format, FORMAT_MAX_CHARS );
+      Strncpy( ptr->attr->xformat, format, FORMAT_MAX_CHARS );
       ptr->attr->xformat[FORMAT_MAX_CHARS] = 0;
     }
   }
@@ -3768,7 +3768,7 @@ int stat, ret_stat;
 
   if ( format ) {
     if ( format[0] ) {
-      strncpy( ptr->attr->yformat, format, FORMAT_MAX_CHARS );
+      Strncpy( ptr->attr->yformat, format, FORMAT_MAX_CHARS );
       ptr->attr->yformat[FORMAT_MAX_CHARS] = 0;
     }
   }

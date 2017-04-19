@@ -1420,7 +1420,7 @@ char *ptr;
       if ( gotToken ) {
 
         l = tokenLast - tokenFirst + 1;
-        strncpy( parseToken, &parseBuf[tokenFirst], l );
+        Strncpy( parseToken, &parseBuf[tokenFirst], l );
         parseToken[l] = 0;
         tokenFirst = tokenNext;
 
@@ -1443,7 +1443,7 @@ char *ptr;
       if ( gotToken ) {
 
         l = tokenLast - tokenFirst + 1;
-        strncpy( parseToken, &parseBuf[tokenFirst], l );
+        Strncpy( parseToken, &parseBuf[tokenFirst], l );
         parseToken[l] = 0;
         tokenFirst = tokenNext;
 
@@ -1491,7 +1491,7 @@ char *ptr;
       if ( gotToken ) {
 
         l = tokenLast - tokenFirst + 1;
-        strncpy( parseToken, &parseBuf[tokenFirst], l );
+        Strncpy( parseToken, &parseBuf[tokenFirst], l );
         parseToken[l] = 0;
         tokenFirst = tokenNext;
 
@@ -1503,7 +1503,7 @@ char *ptr;
 
   } while ( !gotToken );
 
-  strncpy( token, parseToken, MAX_LINE_SIZE );
+  Strncpy( token, parseToken, MAX_LINE_SIZE );
   token[MAX_LINE_SIZE] = 0;
   return SUCCESS;
 

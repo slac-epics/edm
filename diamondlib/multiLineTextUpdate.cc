@@ -158,7 +158,7 @@ void edmmultiLineTextUpdateClass::clone (const edmmultiLineTextUpdateClass *rhs,
     textColour = rhs->textColour;
     fillColour = rhs->fillColour;
     is_filled = rhs->is_filled;
-    strncpy (fontTag, rhs->fontTag, 63);
+    Strncpy (fontTag, rhs->fontTag, 63);
     fontTag[63] = 0;
     fs = actWin->fi->getXFontStruct (fontTag);
     fontAscent = rhs->fontAscent;
@@ -609,18 +609,18 @@ int edmmultiLineTextUpdateClass::genericEdit () // create Property Dialog
     ptr = actWin->obj.getNameFromClass (name);
     if (ptr)
     {
-        strncpy (title, ptr, 80);
+        Strncpy (title, ptr, 80);
         title[80] = 0;
         Strncat (title, " Properties", 80);
     }
     else
-        strncpy (title, "Unknown object Properties", 80);
+        Strncpy (title, "Unknown object Properties", 80);
 
     // Copy data member contents into edit buffers
     bufX = x; bufY = y; bufW = w; bufH = h;
-    strncpy (bufDataPvName, getRawName (data_pv_name),
+    Strncpy (bufDataPvName, getRawName (data_pv_name),
              PV_Factory::MAX_PV_NAME);
-    strncpy (bufColourPvName, getRawName (colour_pv_name),
+    Strncpy (bufColourPvName, getRawName (colour_pv_name),
              PV_Factory::MAX_PV_NAME);
     buf_displayMode          = (int)displayMode;
     buf_precision            = precision;
@@ -829,7 +829,7 @@ void edmmultiLineTextUpdateClass::edit_update (Widget w, XtPointer client,
     me->fillColour.setIndex (me->bufFillColour);
     me->is_filled       = me->bufIsFilled;
 
-    strncpy (me->fontTag, me->fm.currentFontTag (), 63);
+    Strncpy (me->fontTag, me->fm.currentFontTag (), 63);
     me->fontTag[63] = 0;
     me->actWin->fi->loadFontTag (me->fontTag);
     me->fs          = me->actWin->fi->getXFontStruct (me->fontTag);
@@ -1213,7 +1213,7 @@ bool edmmultiLineTextUpdateClass::get_current_values (char *text, size_t &len)
         printf ("edmMultiLineTextUpdateClass::get_current_values - get_char_array returns %x\n", textPtr);
 #endif
         if (textPtr)
-            strncpy (text, textPtr, MAX_TEXT_LENGTH);
+            Strncpy (text, textPtr, MAX_TEXT_LENGTH);
         else
             strcpy (text, "!! Invalid PV type !!");
         
@@ -1499,7 +1499,7 @@ bool edmmultiLineTextEntryClass::get_current_values (char *text, size_t &len)
         text[0] = '<';
         strcpy (text + 1, getExpandedName (data_pv_name));
         strcat (text, ">");
-        strncpy (old_text, text, MAX_TEXT_LENGTH);
+        Strncpy (old_text, text, MAX_TEXT_LENGTH);
     }
     result = edmmultiLineTextUpdateClass::get_current_values (text, len);
 #ifdef DEBUG
@@ -1716,7 +1716,7 @@ void edmmultiLineTextEntryClass::text_edit_callback (Widget w,
     if (strcmp (text, me->old_text))
     {
         // Text has changed - write it
-        strncpy (me->old_text, text, MAX_TEXT_LENGTH);
+        Strncpy (me->old_text, text, MAX_TEXT_LENGTH);
        
     double num;
     int hexnum;

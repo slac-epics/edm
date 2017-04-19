@@ -35,9 +35,9 @@ char *ptr, buf[127+1];
 
   if ( strstr( generic_service_name, "::" ) ) {
 
-    strncpy( buf, generic_service_name, 127 );
+    Strncpy( buf, generic_service_name, 127 );
     ptr = strtok( buf, "::" );
-    strncpy( node, ptr, 7 );
+    Strncpy( node, ptr, 7 );
     ptr = strtok( NULL, "::" );
     strcpy( service_name, ptr );
 
@@ -49,7 +49,7 @@ char *ptr, buf[127+1];
 
     strcpy( service_name, eln_node_name );
     strcat( service_name, "_IOS_MSG" );
-    strncpy( node, nodes[i], 7 );
+    Strncpy( node, nodes[i], 7 );
     *mode = modes[i];
 
   }
@@ -60,7 +60,7 @@ char *ptr, buf[127+1];
 
     strcpy( service_name, eln_node_name );
     strcat( service_name, "_CONSOLE" );
-    strncpy( node, nodes[i], 7 );
+    Strncpy( node, nodes[i], 7 );
     *mode = modes[i];
 
   }

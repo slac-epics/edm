@@ -93,7 +93,7 @@ int i;
 
   msrbto->label.setRaw( msrbto->eBuf->bufLabel );
 
-  strncpy( msrbto->fontTag, msrbto->fm.currentFontTag(), 63 );
+  Strncpy( msrbto->fontTag, msrbto->fm.currentFontTag(), 63 );
   msrbto->actWin->fi->loadFontTag( msrbto->fontTag );
   msrbto->fs = msrbto->actWin->fi->getXFontStruct( msrbto->fontTag );
 
@@ -123,8 +123,8 @@ int i;
   }
 
   msrbto->visPvExpString.setRaw( msrbto->eBuf->bufVisPvName );
-  strncpy( msrbto->minVisString, msrbto->eBuf->bufMinVisString, 39 );
-  strncpy( msrbto->maxVisString, msrbto->eBuf->bufMaxVisString, 39 );
+  Strncpy( msrbto->minVisString, msrbto->eBuf->bufMinVisString, 39 );
+  Strncpy( msrbto->maxVisString, msrbto->eBuf->bufMaxVisString, 39 );
 
   if ( msrbto->eBuf->bufVisInverted )
     msrbto->visInverted = 0;
@@ -822,7 +822,7 @@ int i;
 
   buttonPressed = 0;
 
-  strncpy( fontTag, source->fontTag, 63 );
+  Strncpy( fontTag, source->fontTag, 63 );
 
   fs = actWin->fi->getXFontStruct( fontTag );
 
@@ -869,8 +869,8 @@ int i;
   visibility = 0;
   prevVisibility = -1;
   visInverted = source->visInverted;
-  strncpy( minVisString, source->minVisString, 39 );
-  strncpy( maxVisString, source->maxVisString, 39 );
+  Strncpy( minVisString, source->minVisString, 39 );
+  Strncpy( maxVisString, source->maxVisString, 39 );
   activeMode = 0;
   eBuf = NULL;
 
@@ -1110,9 +1110,9 @@ int i;
 
   ptr = actWin->obj.getNameFromClass( "activeMultSegRampButtonClass" );
   if ( ptr )
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   else
-    strncpy( title, activeMultSegRampButtonClass_str2, 31 );
+    Strncpy( title, activeMultSegRampButtonClass_str2, 31 );
 
   Strncat( title, activeMultSegRampButtonClass_str3, 31 );
 
@@ -1129,7 +1129,7 @@ int i;
   eBuf->bufBotShadowColor = botShadowColor;
 
   if ( destPvExpString.getRaw() )
-    strncpy( eBuf->bufDestPvName, destPvExpString.getRaw(),
+    Strncpy( eBuf->bufDestPvName, destPvExpString.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufDestPvName, "" );
@@ -1137,13 +1137,13 @@ int i;
   for ( i=0; i<MAXSEGS; i++ ) {
 
     if ( finalPvExpString[i].getRaw() )
-      strncpy( eBuf->bufFinalPvName[i], finalPvExpString[i].getRaw(),
+      Strncpy( eBuf->bufFinalPvName[i], finalPvExpString[i].getRaw(),
        PV_Factory::MAX_PV_NAME );
     else
       strcpy( eBuf->bufFinalPvName[i], "" );
 
     if ( rampRatePvExpString[i].getRaw() )
-      strncpy( eBuf->bufRampRatePvName[i], rampRatePvExpString[i].getRaw(),
+      Strncpy( eBuf->bufRampRatePvName[i], rampRatePvExpString[i].getRaw(),
        PV_Factory::MAX_PV_NAME );
     else
       strcpy( eBuf->bufRampRatePvName[i], "" );
@@ -1151,7 +1151,7 @@ int i;
   }
 
   if ( rampStatePvExpString.getRaw() )
-    strncpy( eBuf->bufRampStatePvName, rampStatePvExpString.getRaw(),
+    Strncpy( eBuf->bufRampStatePvName, rampStatePvExpString.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufRampStatePvName, "" );
@@ -1159,9 +1159,9 @@ int i;
   eBuf->bufUpdateRate = updateRate;
 
   if ( label.getRaw() )
-    strncpy( eBuf->bufLabel, label.getRaw(), 39 );
+    Strncpy( eBuf->bufLabel, label.getRaw(), 39 );
   else
-    strncpy( eBuf->bufLabel, "", 39 );
+    Strncpy( eBuf->bufLabel, "", 39 );
 
   eBuf->buf3D = _3D;
   eBuf->bufInvisible = invisible;
@@ -1173,7 +1173,7 @@ int i;
   eBuf->bufEfRateMax = efRateMax;
 
   if ( visPvExpString.getRaw() )
-    strncpy( eBuf->bufVisPvName, visPvExpString.getRaw(),
+    Strncpy( eBuf->bufVisPvName, visPvExpString.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufVisPvName, "" );
@@ -1184,13 +1184,13 @@ int i;
     eBuf->bufVisInverted = 1;
 
   if ( colorPvExpString.getRaw() )
-    strncpy( eBuf->bufColorPvName, colorPvExpString.getRaw(),
+    Strncpy( eBuf->bufColorPvName, colorPvExpString.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufColorPvName, "" );
 
-  strncpy( eBuf->bufMinVisString, minVisString, 39 );
-  strncpy( eBuf->bufMaxVisString, maxVisString, 39 );
+  Strncpy( eBuf->bufMinVisString, minVisString, 39 );
+  Strncpy( eBuf->bufMaxVisString, maxVisString, 39 );
 
   ef.create( actWin->top, actWin->appCtx->ci.getColorMap(),
    &actWin->appCtx->entryFormX,
@@ -1617,9 +1617,9 @@ int blink = 0;
   if ( fs ) {
 
     if ( label.getExpanded() )
-      strncpy( string, label.getExpanded(), 39 );
+      Strncpy( string, label.getExpanded(), 39 );
     else
-      strncpy( string, "", 39 );
+      Strncpy( string, "", 39 );
 
     actWin->executeGc.addNormXClipRectangle( xR );
 
@@ -2890,7 +2890,7 @@ void activeMultSegRampButtonClass::changeDisplayParams (
     botShadowColor = _botShadowColor;
 
   if ( _flag & ACTGRF_BTNFONTTAG_MASK ) {
-    strncpy( fontTag, _btnFontTag, 63 );
+    Strncpy( fontTag, _btnFontTag, 63 );
     fontTag[63] = 0;
     actWin->fi->loadFontTag( fontTag );
     fs = actWin->fi->getXFontStruct( fontTag );
@@ -3023,13 +3023,13 @@ int ii, selector, index;
   else if ( i == 5 ) {
     int l = max;
     if ( 39 < max ) l = 39;
-    strncpy( minVisString, string, l );
+    Strncpy( minVisString, string, l );
     minVisString[l] = 0;
   }
   else if ( i == 6 ) {
     int l = max;
     if ( 39 < max ) l = 39;
-    strncpy( maxVisString, string, l );
+    Strncpy( maxVisString, string, l );
     maxVisString[l] = 0;
   }
   else if ( ( i > 6 ) && ( i < num ) ) {

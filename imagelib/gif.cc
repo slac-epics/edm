@@ -109,7 +109,7 @@ int status;
   agifo->y = agifo->bufY;
   agifo->sboxY = agifo->bufY;
 
-  strncpy( agifo->gifFileName, agifo->bufGifFileName, 127 );
+  Strncpy( agifo->gifFileName, agifo->bufGifFileName, 127 );
 
   agifo->uniformSize = agifo->bufUniformSize;
   agifo->refreshRate = agifo->bufRefreshRate;
@@ -250,7 +250,7 @@ activeGraphicClass *ago = (activeGraphicClass *) this;
   name = new char[strlen("cfcf6c8a_dbeb_11d2_8a97_00104b8742df")+1];
   strcpy( name, "cfcf6c8a_dbeb_11d2_8a97_00104b8742df" );
 
-  strncpy( gifFileName, source->gifFileName, 127 );
+  Strncpy( gifFileName, source->gifFileName, 127 );
 
   activeMode = 0;
   active = 0;
@@ -302,16 +302,16 @@ char title[32], *ptr;
 
   ptr = actWin->obj.getNameFromClass( "cfcf6c8a_dbeb_11d2_8a97_00104b8742df" );
   if ( ptr )
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   else
-    strncpy( title, activeGifClass_str2, 31 );
+    Strncpy( title, activeGifClass_str2, 31 );
 
   Strncat( title, activeGifClass_str3, 31 );
 
   bufX = x;
   bufY = y;
 
-  strncpy( bufGifFileName, gifFileName, 127 );
+  Strncpy( bufGifFileName, gifFileName, 127 );
 
   bufUniformSize = uniformSize;
   bufRefreshRate = refreshRate;
@@ -1535,7 +1535,7 @@ int l = 127;
 
   if ( i == 0 ) {
 
-    strncpy( gifFileName, string, l );
+    Strncpy( gifFileName, string, l );
     gifFileName[l] = 0;
 
     status = readGifFile();

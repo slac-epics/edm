@@ -83,7 +83,7 @@ static int legalFloat (
 char buf[127+1];
 int i, l, legal, state;
 
-  strncpy( buf, str, 127 );
+  Strncpy( buf, str, 127 );
   buf[127] = 0;
   trim( buf );
   l = strlen(buf);
@@ -507,7 +507,7 @@ bool CALC_PV_Factory::parseFile(const char *filename)
         
         if (need_name)
         {
-            strncpy( name, p, PV_Factory::MAX_PV_NAME );
+            Strncpy( name, p, PV_Factory::MAX_PV_NAME );
             name[PV_Factory::MAX_PV_NAME] = 0;
             strcpy( newArgList, "" );
             need_name = false;
@@ -517,7 +517,7 @@ bool CALC_PV_Factory::parseFile(const char *filename)
 
 	  if ( p[0] == '@' ) {
 
-            strncpy( newArgList, &p[1], PV_Factory::MAX_PV_NAME );
+            Strncpy( newArgList, &p[1], PV_Factory::MAX_PV_NAME );
             newArgList[PV_Factory::MAX_PV_NAME] = 0;
 
 	  }
@@ -705,7 +705,7 @@ ProcessVariable *CALC_PV_Factory::create(const char *PV_name)
 
           if ( p1[ii] == ',' ) {
             exp_arg_name[i] = (char *) malloc(l+1);
-            strncpy( exp_arg_name[i], start, l );
+            Strncpy( exp_arg_name[i], start, l );
             exp_arg_name[i][l] = 0;
 	    gettingFirst = 1;
 	    i++;
@@ -724,7 +724,7 @@ ProcessVariable *CALC_PV_Factory::create(const char *PV_name)
       if ( !gettingFirst ) {
 
             exp_arg_name[i] = (char *) malloc(l+1);
-            strncpy( exp_arg_name[i], start, l );
+            Strncpy( exp_arg_name[i], start, l );
             exp_arg_name[i][l] = 0;
 	    i++;
 

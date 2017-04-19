@@ -283,7 +283,7 @@ activeChoiceButtonClass *acbo = (activeChoiceButtonClass *) client;
   acbo->eraseSelectBoxCorners();
   acbo->erase();
 
-  strncpy( acbo->fontTag, acbo->fm.currentFontTag(), 63 );
+  Strncpy( acbo->fontTag, acbo->fm.currentFontTag(), 63 );
   acbo->actWin->fi->loadFontTag( acbo->fontTag );
   acbo->actWin->drawGc.setFontTag( acbo->fontTag, acbo->actWin->fi );
   acbo->actWin->fi->getTextFontList( acbo->fontTag, &acbo->fontList );
@@ -312,8 +312,8 @@ activeChoiceButtonClass *acbo = (activeChoiceButtonClass *) client;
    acbo->actWin->ci );
 
   acbo->visPvExpStr.setRaw( acbo->eBuf->bufVisPvName );
-  strncpy( acbo->minVisString, acbo->bufMinVisString, 39 );
-  strncpy( acbo->maxVisString, acbo->bufMaxVisString, 39 );
+  Strncpy( acbo->minVisString, acbo->bufMinVisString, 39 );
+  Strncpy( acbo->maxVisString, acbo->bufMaxVisString, 39 );
 
   if ( acbo->bufVisInverted )
     acbo->visInverted = 0;
@@ -461,7 +461,7 @@ activeGraphicClass *acbo = (activeGraphicClass *) this;
   name = new char[strlen("activeChoiceButtonClass")+1];
   strcpy( name, "activeChoiceButtonClass" );
 
-  strncpy( fontTag, source->fontTag, 63 );
+  Strncpy( fontTag, source->fontTag, 63 );
   fs = actWin->fi->getXFontStruct( fontTag );
   actWin->fi->getTextFontList( fontTag, &fontList );
 
@@ -501,8 +501,8 @@ activeGraphicClass *acbo = (activeGraphicClass *) this;
   visibility = 0;
   prevVisibility = -1;
   visInverted = source->visInverted;
-  strncpy( minVisString, source->minVisString, 39 );
-  strncpy( maxVisString, source->maxVisString, 39 );
+  Strncpy( minVisString, source->minVisString, 39 );
+  Strncpy( maxVisString, source->maxVisString, 39 );
 
   orientation = source->orientation;
 
@@ -894,9 +894,9 @@ char title[32], *ptr;
 
   ptr = actWin->obj.getNameFromClass( "activeChoiceButtonClass" );
   if ( ptr )
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   else
-    strncpy( title, activeChoiceButtonClass_str2, 31 );
+    Strncpy( title, activeChoiceButtonClass_str2, 31 );
 
   Strncat( title, activeChoiceButtonClass_str3, 31 );
 
@@ -905,7 +905,7 @@ char title[32], *ptr;
   bufW = w;
   bufH = h;
 
-  strncpy( bufFontTag, fontTag, 63 );
+  Strncpy( bufFontTag, fontTag, 63 );
 
   bufTopShadowColor = topShadowColor;
   bufBotShadowColor = botShadowColor;
@@ -921,19 +921,19 @@ char title[32], *ptr;
   bufInconsistentColor = inconsistentColor.pixelIndex();
 
   if ( controlPvExpStr.getRaw() )
-    strncpy( eBuf->bufControlPvName, controlPvExpStr.getRaw(),
+    Strncpy( eBuf->bufControlPvName, controlPvExpStr.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufControlPvName, "" );
 
   if ( readPvExpStr.getRaw() )
-    strncpy( eBuf->bufReadPvName, readPvExpStr.getRaw(),
+    Strncpy( eBuf->bufReadPvName, readPvExpStr.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufReadPvName, "" );
 
   if ( visPvExpStr.getRaw() )
-    strncpy( eBuf->bufVisPvName, visPvExpStr.getRaw(),
+    Strncpy( eBuf->bufVisPvName, visPvExpStr.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufVisPvName, "" );
@@ -944,13 +944,13 @@ char title[32], *ptr;
     bufVisInverted = 1;
 
   if ( colorPvExpStr.getRaw() )
-    strncpy( eBuf->bufColorPvName, colorPvExpStr.getRaw(),
+    Strncpy( eBuf->bufColorPvName, colorPvExpStr.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufColorPvName, "" );
 
-  strncpy( bufMinVisString, minVisString, 39 );
-  strncpy( bufMaxVisString, maxVisString, 39 );
+  Strncpy( bufMinVisString, minVisString, 39 );
+  Strncpy( bufMaxVisString, maxVisString, 39 );
 
   bufOrientation = orientation;
 
@@ -2357,7 +2357,7 @@ char msg[79+1];
   if ( nc ) {
 
     if ( controlPvId->get_type().type != ProcessVariable::Type::enumerated ) {
-      strncpy( msg, actWin->obj.getNameFromClass( "activeChoiceButtonClass" ),
+      Strncpy( msg, actWin->obj.getNameFromClass( "activeChoiceButtonClass" ),
        79 );
       Strncat( msg, activeChoiceButtonClass_str38, 79 );
       actWin->appCtx->postMessage( msg );
@@ -2763,13 +2763,13 @@ void activeChoiceButtonClass::replaceString (
   else if ( i == 4 ) {
     int l = max;
     if ( 39 < max ) l = 39;
-    strncpy( minVisString, string, l );
+    Strncpy( minVisString, string, l );
     minVisString[l] = 0;
   }
   else if ( i == 5 ) {
     int l = max;
     if ( 39 < max ) l = 39;
-    strncpy( maxVisString, string, l );
+    Strncpy( maxVisString, string, l );
     maxVisString[l] = 0;
   }
 

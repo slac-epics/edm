@@ -89,7 +89,7 @@ char *buf;
   }
 
   buf = XmTextGetString( pio->tf_widget );
-  strncpy( pio->entryValue, buf, PV_Factory::MAX_PV_NAME );
+  Strncpy( pio->entryValue, buf, PV_Factory::MAX_PV_NAME );
   pio->entryValue[PV_Factory::MAX_PV_NAME] = 0;
   XtFree( buf );
 
@@ -186,7 +186,7 @@ char *str = (char *) value;
 
     if ( str ) {
 
-      strncpy( pio->entryValue, str, PV_Factory::MAX_PV_NAME );
+      Strncpy( pio->entryValue, str, PV_Factory::MAX_PV_NAME );
       pio->entryValue[PV_Factory::MAX_PV_NAME] = 0;
 
       XmTextFieldSetString( pio->tf_widget, str );
@@ -455,7 +455,7 @@ pvInspectorClass *pio = (pvInspectorClass *) client;
     pio->useDim[i] = 0;
   }
 
-  strncpy( pio->fontTag, pio->fm.currentFontTag(), 63 );
+  Strncpy( pio->fontTag, pio->fm.currentFontTag(), 63 );
   pio->actWin->fi->loadFontTag( pio->fontTag );
   pio->actWin->drawGc.setFontTag( pio->fontTag, pio->actWin->fi );
   pio->actWin->fi->getTextFontList( pio->fontTag, &pio->fontList );
@@ -649,7 +649,7 @@ activeGraphicClass *pio = (activeGraphicClass *) this;
   name = new char[strlen("pvInspectorClass")+1];
   strcpy( name, "pvInspectorClass" );
 
-  strncpy( fontTag, source->fontTag, 63 );
+  Strncpy( fontTag, source->fontTag, 63 );
   fs = actWin->fi->getXFontStruct( fontTag );
   actWin->fi->getTextFontList( fontTag, &fontList );
 
@@ -1247,9 +1247,9 @@ char title[32], *ptr;
 
   ptr = actWin->obj.getNameFromClass( "pvInspectorClass" );
   if ( ptr )
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   else
-    strncpy( title, pvInspectorClass_str1, 31 );
+    Strncpy( title, pvInspectorClass_str1, 31 );
 
   Strncat( title, pvInspectorClass_str2, 31 );
 
@@ -1258,7 +1258,7 @@ char title[32], *ptr;
   buf->bufW = w;
   buf->bufH = h;
 
-  strncpy( buf->bufFontTag, fontTag, 63 );
+  Strncpy( buf->bufFontTag, fontTag, 63 );
 
   buf->bufTopShadowColor = topShadowColor;
   buf->bufBotShadowColor = botShadowColor;
@@ -1276,19 +1276,19 @@ char title[32], *ptr;
   for ( i=0; i<maxDsps; i++ ) {
 
     if ( displayFileName[i].getRaw() )
-      strncpy( buf->bufDisplayFileName[i], displayFileName[i].getRaw(), 127 );
+      Strncpy( buf->bufDisplayFileName[i], displayFileName[i].getRaw(), 127 );
     else
-      strncpy( buf->bufDisplayFileName[i], "", 127 );
+      Strncpy( buf->bufDisplayFileName[i], "", 127 );
 
     if ( displayFileExt[i].getRaw() )
-      strncpy( buf->bufDisplayFileExt[i], displayFileExt[i].getRaw(), 15 );
+      Strncpy( buf->bufDisplayFileExt[i], displayFileExt[i].getRaw(), 15 );
     else
-      strncpy( buf->bufDisplayFileExt[i], "", 15 );
+      Strncpy( buf->bufDisplayFileExt[i], "", 15 );
 
     if ( label[i].getRaw() )
-      strncpy( buf->bufLabel[i], label[i].getRaw(), 127 );
+      Strncpy( buf->bufLabel[i], label[i].getRaw(), 127 );
     else
-      strncpy( buf->bufLabel[i], "", 127 );
+      Strncpy( buf->bufLabel[i], "", 127 );
 
     buf->bufSetPostion[i] = setPostion[i];
 
@@ -1302,11 +1302,11 @@ char title[32], *ptr;
   }
 
   if ( buttonLabel.getRaw() ) {
-    strncpy( buf->bufButtonLabel, buttonLabel.getRaw(), 127 );
+    Strncpy( buf->bufButtonLabel, buttonLabel.getRaw(), 127 );
     buf->bufButtonLabel[127] = 0;
   }
   else {
-    strncpy( buf->bufButtonLabel, "", 127 );
+    Strncpy( buf->bufButtonLabel, "", 127 );
   }
 
   ef.create( actWin->top, actWin->appCtx->ci.getColorMap(),
@@ -1547,9 +1547,9 @@ XRectangle xR = { x, y, w, h };
    actWin->executeGc.normGC(), x, y, w, h );
 
   if ( buttonLabel.getExpanded() )
-    strncpy( string, buttonLabel.getExpanded(), 39 );
+    Strncpy( string, buttonLabel.getExpanded(), 39 );
   else
-    strncpy( string, "", 39 );
+    Strncpy( string, "", 39 );
 
   actWin->executeGc.setFG( actWin->ci->pix(botShadowColor) );
 
@@ -2015,7 +2015,7 @@ char prefix[127+1];
   // allow the syntax: @filename s1=v1,s2=v2,...
   // which means read symbols from file and append list
   gotSymbolsFromFile = 0;
-  strncpy( buf, symbolsExpStr[index].getExpanded(), 255 );
+  Strncpy( buf, symbolsExpStr[index].getExpanded(), 255 );
   buf[255] = 0;
   context = NULL;
   tk = strtok_r( buf, " \t\n", &context );
@@ -2061,7 +2061,7 @@ char prefix[127+1];
       // append inline list to file contents
       tk = strtok_r( NULL, "\n", &context );
       if ( tk ) {
-        strncpy( fileBuf, symbolsFromFile.getRaw(), 255 );
+        Strncpy( fileBuf, symbolsFromFile.getRaw(), 255 );
         fileBuf[255] = 0;
         if ( blank(fileBuf) ) {
           strcpy( fileBuf, "" );
@@ -2223,7 +2223,7 @@ char prefix[127+1];
 
   }
 
-  strncpy( nameWithParams, displayFileName[index].getExpanded(), 127 );
+  Strncpy( nameWithParams, displayFileName[index].getExpanded(), 127 );
   nameWithParams[127] = 0;
   if ( useRtype[index]) Strncat( nameWithParams, rtype, 127 );
   if ( useType[index] ) Strncat( nameWithParams, pvTypeName(pvType), 127 );
@@ -2477,7 +2477,7 @@ void pvInspectorClass::changeDisplayParams (
     botShadowColor = _botShadowColor;
 
   if ( _flag & ACTGRF_BTNFONTTAG_MASK ) {
-    strncpy( fontTag, _btnFontTag, 63 );
+    Strncpy( fontTag, _btnFontTag, 63 );
     fontTag[63] = 0;
     actWin->fi->loadFontTag( fontTag );
     fs = actWin->fi->getXFontStruct( fontTag );
@@ -2499,7 +2499,7 @@ activeWindowListPtr cur;
   nto = needTimeout; needTimeout = 0;
   nrto = needRtypeTimeout; needRtypeTimeout = 0;
   nc = needClose; needClose = 0;
-  strncpy( value, entryValue, PV_Factory::MAX_PV_NAME );
+  Strncpy( value, entryValue, PV_Factory::MAX_PV_NAME );
   value[PV_Factory::MAX_PV_NAME] = 0;
   actWin->remDefExeNode( aglPtr );
   actWin->appCtx->proc->unlock();

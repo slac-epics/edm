@@ -852,11 +852,11 @@ int i;
 
   ptr = actWin->obj.getNameFromClass( "activePipClass" );
   if ( ptr ) {
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
     title[31] = 0;
   }
   else {
-    strncpy( title, activePipClass_str4, 31 );
+    Strncpy( title, activePipClass_str4, 31 );
     title[31] = 0;
   }
 
@@ -873,7 +873,7 @@ int i;
   buf->bufBotShadowColor = botShadowColor.pixelIndex();
 
   if ( readPvExpStr.getRaw() ) {
-    strncpy( buf->bufReadPvName, readPvExpStr.getRaw(),
+    Strncpy( buf->bufReadPvName, readPvExpStr.getRaw(),
      PV_Factory::MAX_PV_NAME );
     buf->bufReadPvName[PV_Factory::MAX_PV_NAME] = 0;
   }
@@ -883,7 +883,7 @@ int i;
   }
 
   if ( labelPvExpStr.getRaw() ) {
-    strncpy( buf->bufLabelPvName, labelPvExpStr.getRaw(),
+    Strncpy( buf->bufLabelPvName, labelPvExpStr.getRaw(),
      PV_Factory::MAX_PV_NAME );
     buf->bufLabelPvName[PV_Factory::MAX_PV_NAME] = 0;
   }
@@ -892,7 +892,7 @@ int i;
   }
 
   if ( fileNameExpStr.getRaw() ) {
-    strncpy( buf->bufFileName, fileNameExpStr.getRaw(), 127 );
+    Strncpy( buf->bufFileName, fileNameExpStr.getRaw(), 127 );
     buf->bufFileName[127] = 0;
   }
   else {
@@ -910,27 +910,27 @@ int i;
   for ( i=0; i<maxDsps; i++ ) {
 
     if ( displayFileName[i].getRaw() ) {
-      strncpy( buf->bufDisplayFileName[i], displayFileName[i].getRaw(), 127 );
+      Strncpy( buf->bufDisplayFileName[i], displayFileName[i].getRaw(), 127 );
       buf->bufDisplayFileName[i][127] = 0;
     }
     else {
-      strncpy( buf->bufDisplayFileName[i], "", 127 );
+      Strncpy( buf->bufDisplayFileName[i], "", 127 );
     }
 
     if ( label[i].getRaw() ) {
-      strncpy( buf->bufLabel[i], label[i].getRaw(), 127 );
+      Strncpy( buf->bufLabel[i], label[i].getRaw(), 127 );
       buf->bufLabel[i][127] = 0;
     }
     else {
-      strncpy( buf->bufLabel[i], "", 127 );
+      Strncpy( buf->bufLabel[i], "", 127 );
     }
 
     if ( symbolsExpStr[i].getRaw() ) {
-      strncpy( buf->bufSymbols[i], symbolsExpStr[i].getRaw(), maxSymbolLen );
+      Strncpy( buf->bufSymbols[i], symbolsExpStr[i].getRaw(), maxSymbolLen );
       buf->bufSymbols[i][maxSymbolLen] = 0;
     }
     else {
-      strncpy( buf->bufSymbols[i], "", maxSymbolLen );
+      Strncpy( buf->bufSymbols[i], "", maxSymbolLen );
     }
 
     buf->bufPropagateMacros[i] = propagateMacros[i];
@@ -1921,7 +1921,7 @@ int gotSymbolsFromFile;
   // allow the syntax: @filename s1=v1,s2=v2,...
   // which means read symbols from file and append list
   gotSymbolsFromFile = 0;
-  strncpy( formBuf, symbolsExpStr[index].getExpanded(), maxSymbolLen );
+  Strncpy( formBuf, symbolsExpStr[index].getExpanded(), maxSymbolLen );
   formBuf[maxSymbolLen] = 0;
   formContext = NULL;
   formTk = strtok_r( formBuf, " \t\n", &formContext );
@@ -1967,7 +1967,7 @@ int gotSymbolsFromFile;
       // append inline list to file contents
       formTk = strtok_r( NULL, "\n", &formContext );
       if ( formTk ) {
-        strncpy( fileBuf, symbolsFromFile.getRaw(), maxSymbolLen );
+        Strncpy( fileBuf, symbolsFromFile.getRaw(), maxSymbolLen );
         fileBuf[maxSymbolLen] = 0;
         if ( blank(fileBuf) ) {
           strcpy( fileBuf, "" );
@@ -2190,7 +2190,7 @@ XButtonEvent be;
   ncto = needConnectTimeout; needConnectTimeout = 0;
   nmap = needMap; needMap = 0;
   nunmap = needUnmap; needUnmap = 0;
-  strncpy( v, curReadV, 39 );
+  Strncpy( v, curReadV, 39 );
   v[39] = 0;
   iv = curReadIV;
   actWin->remDefExeNode( aglPtr );
@@ -2249,7 +2249,7 @@ XButtonEvent be;
 
   if ( nu ) {
 
-    strncpy( readV, v, 39 );
+    Strncpy( readV, v, 39 );
     readV[39] = 0;
     //fprintf( stderr, "readV = [%s]\n", readV );
 
@@ -2353,7 +2353,7 @@ XButtonEvent be;
 
           //fprintf( stderr, "Open file %s\n", readV );
 
-          strncpy( curFileName, readV, 39 );
+          Strncpy( curFileName, readV, 39 );
           curFileName[39] = 0;
 
           cur = new activeWindowListType;
@@ -2393,7 +2393,7 @@ XButtonEvent be;
     }
 
     if ( !enabled ) { // copy filename to be used when enabled becomes true
-      strncpy( curFileName, readV, 39 );
+      Strncpy( curFileName, readV, 39 );
       curFileName[39] = 0;
     }
 
@@ -2525,7 +2525,7 @@ XButtonEvent be;
 
                 //fprintf( stderr, "Open file %s\n", readV );
 
-                strncpy( curFileName, displayFileName[i].getExpanded(), 127 );
+                Strncpy( curFileName, displayFileName[i].getExpanded(), 127 );
                 curFileName[127] = 0;
 
                 openEmbeddedByIndex( i );
@@ -2564,7 +2564,7 @@ XButtonEvent be;
     }
 
     if ( !enabled ) { // copy filename to be used when enabled becomes true
-      strncpy( curFileName, displayFileName[i].getExpanded(), 127 );
+      Strncpy( curFileName, displayFileName[i].getExpanded(), 127 );
       curFileName[127] = 0;
     }
 
@@ -2590,7 +2590,7 @@ XButtonEvent be;
 
     if ( enabled && fileExists ) {
 
-      strncpy( curFileName, fileNameExpStr.getExpanded(), 127 );
+      Strncpy( curFileName, fileNameExpStr.getExpanded(), 127 );
       curFileName[127] = 0;
 
       // prevent possible mutual recursion
@@ -2638,7 +2638,7 @@ XButtonEvent be;
     }
 
     if ( !enabled ) { // copy filename to be used when enabled becomes true
-      strncpy( curFileName, fileNameExpStr.getExpanded(), 127 );
+      Strncpy( curFileName, fileNameExpStr.getExpanded(), 127 );
       curFileName[127] = 0;
     }
 
@@ -2654,7 +2654,7 @@ XButtonEvent be;
 
     if ( enabled ) {
 
-      strncpy( curFileName, displayFileName[0].getExpanded(), 127 );
+      Strncpy( curFileName, displayFileName[0].getExpanded(), 127 );
       curFileName[127] = 0;
 
       // prevent possible mutual recursion
@@ -2684,7 +2684,7 @@ XButtonEvent be;
     }
 
     if ( !enabled ) { // copy filename to be used when enabled becomes true
-      strncpy( curFileName, displayFileName[0].getExpanded(), 127 );
+      Strncpy( curFileName, displayFileName[0].getExpanded(), 127 );
       curFileName[127] = 0;
     }
 

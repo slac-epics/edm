@@ -94,7 +94,7 @@ activeMpStrobeClass *mpso = (activeMpStrobeClass *) client;
 
   mpso->offLabel.setRaw( mpso->eBuf->bufOffLabel );
 
-  strncpy( mpso->fontTag, mpso->fm.currentFontTag(), 63 );
+  Strncpy( mpso->fontTag, mpso->fm.currentFontTag(), 63 );
   mpso->actWin->fi->loadFontTag( mpso->fontTag );
   mpso->fs = mpso->actWin->fi->getXFontStruct( mpso->fontTag );
 
@@ -147,8 +147,8 @@ activeMpStrobeClass *mpso = (activeMpStrobeClass *) client;
   mpso->momentaryTimerValue = (int) ( mpso->momentaryCycleTime * 1000 );
 
   mpso->visPvExpString.setRaw( mpso->eBuf->bufVisPvName );
-  strncpy( mpso->minVisString, mpso->eBuf->bufMinVisString, 39 );
-  strncpy( mpso->maxVisString, mpso->eBuf->bufMaxVisString, 39 );
+  Strncpy( mpso->minVisString, mpso->eBuf->bufMinVisString, 39 );
+  Strncpy( mpso->maxVisString, mpso->eBuf->bufMaxVisString, 39 );
 
   if ( mpso->eBuf->bufVisInverted )
     mpso->visInverted = 0;
@@ -726,7 +726,7 @@ activeGraphicClass *mpso = (activeGraphicClass *) this;
 
   buttonPressed = 0;
 
-  strncpy( fontTag, source->fontTag, 63 );
+  Strncpy( fontTag, source->fontTag, 63 );
 
   fs = actWin->fi->getXFontStruct( fontTag );
 
@@ -771,8 +771,8 @@ activeGraphicClass *mpso = (activeGraphicClass *) this;
   visibility = 0;
   prevVisibility = -1;
   visInverted = source->visInverted;
-  strncpy( minVisString, source->minVisString, 39 );
-  strncpy( maxVisString, source->maxVisString, 39 );
+  Strncpy( minVisString, source->minVisString, 39 );
+  Strncpy( maxVisString, source->maxVisString, 39 );
   activeMode = 0;
   eBuf = NULL;
   controlType = destType = destSize = readbackType = readbackSize = 0;
@@ -1065,9 +1065,9 @@ char title[32], *ptr;
 
   ptr = actWin->obj.getNameFromClass( "activeMpStrobeClass" );
   if ( ptr )
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   else
-    strncpy( title, activeMpStrobeClass_str2, 31 );
+    Strncpy( title, activeMpStrobeClass_str2, 31 );
 
   Strncat( title, activeMpStrobeClass_str3, 31 );
 
@@ -1086,25 +1086,25 @@ char title[32], *ptr;
   eBuf->bufBotShadowColor = botShadowColor;
 
   if ( controlPvExpString.getRaw() )
-    strncpy( eBuf->bufControlPvName, controlPvExpString.getRaw(),
+    Strncpy( eBuf->bufControlPvName, controlPvExpString.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufControlPvName, "" );
 
   if ( destPvExpString.getRaw() )
-    strncpy( eBuf->bufDestPvName, destPvExpString.getRaw(),
+    Strncpy( eBuf->bufDestPvName, destPvExpString.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufDestPvName, "" );
 
   if ( readbackPvExpString.getRaw() )
-    strncpy( eBuf->bufReadbackPvName, readbackPvExpString.getRaw(),
+    Strncpy( eBuf->bufReadbackPvName, readbackPvExpString.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufReadbackPvName, "" );
 
   if ( faultPvExpString.getRaw() )
-    strncpy( eBuf->bufFaultPvName, faultPvExpString.getRaw(),
+    Strncpy( eBuf->bufFaultPvName, faultPvExpString.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufFaultPvName, "" );
@@ -1114,14 +1114,14 @@ char title[32], *ptr;
   eBuf->bufMomentary = momentary;
 
   if ( onLabel.getRaw() )
-    strncpy( eBuf->bufOnLabel, onLabel.getRaw(), 39 );
+    Strncpy( eBuf->bufOnLabel, onLabel.getRaw(), 39 );
   else
-    strncpy( eBuf->bufOnLabel, "", 39 );
+    Strncpy( eBuf->bufOnLabel, "", 39 );
 
   if ( offLabel.getRaw() )
-    strncpy( eBuf->bufOffLabel, offLabel.getRaw(), 39 );
+    Strncpy( eBuf->bufOffLabel, offLabel.getRaw(), 39 );
   else
-    strncpy( eBuf->bufOffLabel, "", 39 );
+    Strncpy( eBuf->bufOffLabel, "", 39 );
 
   eBuf->bufAutoPing = autoPing;
   eBuf->buf3D = _3D;
@@ -1129,28 +1129,28 @@ char title[32], *ptr;
   eBuf->bufDisableBtn = disableBtn;
 
   if ( cycleType == MPSC_K_TOGGLE ) {
-    strncpy( eBuf->bufCycleTypeStr, activeMpStrobeClass_str25, 31 );
+    Strncpy( eBuf->bufCycleTypeStr, activeMpStrobeClass_str25, 31 );
     eBuf->bufCycleTypeStr[31] = 0;
   }
   else if ( cycleType == MPSC_K_CYCLE ) {
-    strncpy( eBuf->bufCycleTypeStr, activeMpStrobeClass_str26, 31 );
+    Strncpy( eBuf->bufCycleTypeStr, activeMpStrobeClass_str26, 31 );
     eBuf->bufCycleTypeStr[31] = 0;
   }
   else if ( cycleType == MPSC_K_TRIG ) {
-    strncpy( eBuf->bufCycleTypeStr, activeMpStrobeClass_str27, 31 );
+    Strncpy( eBuf->bufCycleTypeStr, activeMpStrobeClass_str27, 31 );
     eBuf->bufCycleTypeStr[31] = 0;
   }
   else if ( cycleType == MPSC_K_RANDOM ) {
-    strncpy( eBuf->bufCycleTypeStr, activeMpStrobeClass_str28, 31 );
+    Strncpy( eBuf->bufCycleTypeStr, activeMpStrobeClass_str28, 31 );
     eBuf->bufCycleTypeStr[31] = 0;
   }
 
   if ( indicatorType == MPSC_K_SHOW_CONTROL ) {
-    strncpy( eBuf->bufIndicatorTypeStr, activeMpStrobeClass_str43, 31 );
+    Strncpy( eBuf->bufIndicatorTypeStr, activeMpStrobeClass_str43, 31 );
     eBuf->bufIndicatorTypeStr[31] = 0;
   }
   else if ( indicatorType == MPSC_K_SHOW_DEST ) {
-    strncpy( eBuf->bufIndicatorTypeStr, activeMpStrobeClass_str44, 31 );
+    Strncpy( eBuf->bufIndicatorTypeStr, activeMpStrobeClass_str44, 31 );
     eBuf->bufIndicatorTypeStr[31] = 0;
   }
 
@@ -1159,7 +1159,7 @@ char title[32], *ptr;
   eBuf->bufSecondVal = secondVal;
 
   if ( visPvExpString.getRaw() )
-    strncpy( eBuf->bufVisPvName, visPvExpString.getRaw(),
+    Strncpy( eBuf->bufVisPvName, visPvExpString.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufVisPvName, "" );
@@ -1170,13 +1170,13 @@ char title[32], *ptr;
     eBuf->bufVisInverted = 1;
 
   if ( colorPvExpString.getRaw() )
-    strncpy( eBuf->bufColorPvName, colorPvExpString.getRaw(),
+    Strncpy( eBuf->bufColorPvName, colorPvExpString.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufColorPvName, "" );
 
-  strncpy( eBuf->bufMinVisString, minVisString, 39 );
-  strncpy( eBuf->bufMaxVisString, maxVisString, 39 );
+  Strncpy( eBuf->bufMinVisString, minVisString, 39 );
+  Strncpy( eBuf->bufMaxVisString, maxVisString, 39 );
 
   ef.create( actWin->top, actWin->appCtx->ci.getColorMap(),
    &actWin->appCtx->entryFormX,
@@ -1634,17 +1634,17 @@ int blink = 0;
     if ( (int) effectiveDestV & 1 ) {
 
       if ( onLabel.getExpanded() )
-        strncpy( string, onLabel.getExpanded(), 39 );
+        Strncpy( string, onLabel.getExpanded(), 39 );
       else
-        strncpy( string, "", 39 );
+        Strncpy( string, "", 39 );
 
     }
     else {
 
       if ( offLabel.getExpanded() )
-        strncpy( string, offLabel.getExpanded(), 39 );
+        Strncpy( string, offLabel.getExpanded(), 39 );
       else
-        strncpy( string, "", 39 );
+        Strncpy( string, "", 39 );
 
     }
 
@@ -2876,7 +2876,7 @@ void activeMpStrobeClass::changeDisplayParams (
     botShadowColor = _botShadowColor;
 
   if ( _flag & ACTGRF_BTNFONTTAG_MASK ) {
-    strncpy( fontTag, _btnFontTag, 63 );
+    Strncpy( fontTag, _btnFontTag, 63 );
     fontTag[63] = 0;
     actWin->fi->loadFontTag( fontTag );
     fs = actWin->fi->getXFontStruct( fontTag );
@@ -3005,13 +3005,13 @@ void activeMpStrobeClass::replaceString (
   else if ( i == 8 ) {
     int l = max;
     if ( 39 < max ) l = 39;
-    strncpy( minVisString, string, l );
+    Strncpy( minVisString, string, l );
     minVisString[l] = 0;
   }
   else if ( i == 9 ) {
     int l = max;
     if ( 39 < max ) l = 39;
-    strncpy( maxVisString, string, l );
+    Strncpy( maxVisString, string, l );
     maxVisString[l] = 0;
   }
 

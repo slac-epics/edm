@@ -84,7 +84,7 @@ activeSignalClass *sigo = (activeSignalClass *) client;
 
   sigo->label.setRaw( sigo->eBuf->bufLabel );
 
-  strncpy( sigo->fontTag, sigo->fm.currentFontTag(), 63 );
+  Strncpy( sigo->fontTag, sigo->fm.currentFontTag(), 63 );
   sigo->actWin->fi->loadFontTag( sigo->fontTag );
   sigo->fs = sigo->actWin->fi->getXFontStruct( sigo->fontTag );
 
@@ -123,8 +123,8 @@ activeSignalClass *sigo = (activeSignalClass *) client;
   sigo->maxDv = sigo->scaleMax = sigo->efScaleMax.value();
 
   sigo->visPvExpString.setRaw( sigo->eBuf->bufVisPvName );
-  strncpy( sigo->minVisString, sigo->eBuf->bufMinVisString, 39 );
-  strncpy( sigo->maxVisString, sigo->eBuf->bufMaxVisString, 39 );
+  Strncpy( sigo->minVisString, sigo->eBuf->bufMinVisString, 39 );
+  Strncpy( sigo->maxVisString, sigo->eBuf->bufMaxVisString, 39 );
 
   if ( sigo->eBuf->bufVisInverted )
     sigo->visInverted = 0;
@@ -472,7 +472,7 @@ activeGraphicClass *sigo = (activeGraphicClass *) this;
 
   buttonPressed = 0;
 
-  strncpy( fontTag, source->fontTag, 63 );
+  Strncpy( fontTag, source->fontTag, 63 );
 
   fs = actWin->fi->getXFontStruct( fontTag );
 
@@ -512,8 +512,8 @@ activeGraphicClass *sigo = (activeGraphicClass *) this;
   visibility = 0;
   prevVisibility = -1;
   visInverted = source->visInverted;
-  strncpy( minVisString, source->minVisString, 39 );
-  strncpy( maxVisString, source->maxVisString, 39 );
+  Strncpy( minVisString, source->minVisString, 39 );
+  Strncpy( maxVisString, source->maxVisString, 39 );
   activeMode = 0;
   eBuf = NULL;
   destPvCb = signalStatePvCb = visPvCb = colorPvCb = amplPvCb =
@@ -791,9 +791,9 @@ char title[32], *ptr;
 
   ptr = actWin->obj.getNameFromClass( "activeSignalClass" );
   if ( ptr )
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   else
-    strncpy( title, activeSignalClass_str2, 31 );
+    Strncpy( title, activeSignalClass_str2, 31 );
 
   Strncat( title, activeSignalClass_str3, 31 );
 
@@ -810,37 +810,37 @@ char title[32], *ptr;
   eBuf->bufBotShadowColor = botShadowColor;
 
   if ( destPvExpString.getRaw() )
-    strncpy( eBuf->bufDestPvName, destPvExpString.getRaw(),
+    Strncpy( eBuf->bufDestPvName, destPvExpString.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufDestPvName, "" );
 
   if ( signalStatePvExpString.getRaw() )
-    strncpy( eBuf->bufSignalStatePvName, signalStatePvExpString.getRaw(),
+    Strncpy( eBuf->bufSignalStatePvName, signalStatePvExpString.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufSignalStatePvName, "" );
 
   if ( amplPvExpString.getRaw() )
-    strncpy( eBuf->bufAmplPvName, amplPvExpString.getRaw(),
+    Strncpy( eBuf->bufAmplPvName, amplPvExpString.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufAmplPvName, "" );
 
   if ( offsetPvExpString.getRaw() )
-    strncpy( eBuf->bufOffsetPvName, offsetPvExpString.getRaw(),
+    Strncpy( eBuf->bufOffsetPvName, offsetPvExpString.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufOffsetPvName, "" );
 
   if ( freqPvExpString.getRaw() )
-    strncpy( eBuf->bufFreqPvName, freqPvExpString.getRaw(),
+    Strncpy( eBuf->bufFreqPvName, freqPvExpString.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufFreqPvName, "" );
 
   if ( phasePvExpString.getRaw() )
-    strncpy( eBuf->bufPhasePvName, phasePvExpString.getRaw(),
+    Strncpy( eBuf->bufPhasePvName, phasePvExpString.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufPhasePvName, "" );
@@ -858,9 +858,9 @@ char title[32], *ptr;
   eBuf->bufSignalType = signalType;
 
   if ( label.getRaw() )
-    strncpy( eBuf->bufLabel, label.getRaw(), 39 );
+    Strncpy( eBuf->bufLabel, label.getRaw(), 39 );
   else
-    strncpy( eBuf->bufLabel, "", 39 );
+    Strncpy( eBuf->bufLabel, "", 39 );
 
   eBuf->buf3D = _3D;
   eBuf->bufInvisible = invisible;
@@ -870,7 +870,7 @@ char title[32], *ptr;
   eBuf->bufEfScaleMax = efScaleMax;
 
   if ( visPvExpString.getRaw() )
-    strncpy( eBuf->bufVisPvName, visPvExpString.getRaw(),
+    Strncpy( eBuf->bufVisPvName, visPvExpString.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufVisPvName, "" );
@@ -881,13 +881,13 @@ char title[32], *ptr;
     eBuf->bufVisInverted = 1;
 
   if ( colorPvExpString.getRaw() )
-    strncpy( eBuf->bufColorPvName, colorPvExpString.getRaw(),
+    Strncpy( eBuf->bufColorPvName, colorPvExpString.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufColorPvName, "" );
 
-  strncpy( eBuf->bufMinVisString, minVisString, 39 );
-  strncpy( eBuf->bufMaxVisString, maxVisString, 39 );
+  Strncpy( eBuf->bufMinVisString, minVisString, 39 );
+  Strncpy( eBuf->bufMaxVisString, maxVisString, 39 );
 
   ef.create( actWin->top, actWin->appCtx->ci.getColorMap(),
    &actWin->appCtx->entryFormX,
@@ -1277,9 +1277,9 @@ int blink = 0;
   if ( fs ) {
 
     if ( label.getExpanded() )
-      strncpy( string, label.getExpanded(), 39 );
+      Strncpy( string, label.getExpanded(), 39 );
     else
-      strncpy( string, "", 39 );
+      Strncpy( string, "", 39 );
 
     actWin->executeGc.addNormXClipRectangle( xR );
 
@@ -2247,7 +2247,7 @@ void activeSignalClass::changeDisplayParams (
     botShadowColor = _botShadowColor;
 
   if ( _flag & ACTGRF_BTNFONTTAG_MASK ) {
-    strncpy( fontTag, _btnFontTag, 63 );
+    Strncpy( fontTag, _btnFontTag, 63 );
     fontTag[63] = 0;
     actWin->fi->loadFontTag( fontTag );
     fs = actWin->fi->getXFontStruct( fontTag );
@@ -2383,13 +2383,13 @@ void activeSignalClass::replaceString (
   else if ( i == 9 ) {
     int l = max;
     if ( 39 < max ) l = 39;
-    strncpy( minVisString, string, l );
+    Strncpy( minVisString, string, l );
     minVisString[l] = 0;
   }
   else if ( i == 10 ) {
     int l = max;
     if ( 39 < max ) l = 39;
-    strncpy( maxVisString, string, l );
+    Strncpy( maxVisString, string, l );
     maxVisString[l] = 0;
   }
 

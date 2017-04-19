@@ -199,17 +199,17 @@ void setBotShadow ( int color )
 
 void setFont ( char *font )
 {
-  strncpy( defFontTag, font, 127 );
+  Strncpy( defFontTag, font, 127 );
 }
 
 void setCtlFont ( char *font )
 {
-  strncpy( defCtlFontTag, font, 127 );
+  Strncpy( defCtlFontTag, font, 127 );
 }
 
 void setBtnFont ( char *font )
 {
-  strncpy( defBtnFontTag, font, 127 );
+  Strncpy( defBtnFontTag, font, 127 );
 }
 
 void setAlignment ( int alignment )
@@ -229,7 +229,7 @@ void setBtnAlignment ( int alignment )
 
 void setPvType ( char *pvType )
 {
-  strncpy( defPvType, pvType, 15 );
+  Strncpy( defPvType, pvType, 15 );
 }
 
 int isLoaded ( void )

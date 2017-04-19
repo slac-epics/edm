@@ -486,9 +486,9 @@ char strVal[255+1];
 #ifndef TRIUMF
     ptr = mslo->actWin->obj.getNameFromClass( "activeTriumfSliderClass" );
     if ( ptr )
-      strncpy( title, ptr, 31 );
+      Strncpy( title, ptr, 31 );
     else
-      strncpy( title, activeTriumfSliderClass_str54, 31 );
+      Strncpy( title, activeTriumfSliderClass_str54, 31 );
 
     Strncat( title, activeTriumfSliderClass_str55, 31 );
 #else
@@ -497,9 +497,9 @@ char strVal[255+1];
 #endif
     ptr = mslo->actWin->obj.getNameFromClass( "activeTriumfSliderClass" );
     if ( ptr )
-      strncpy( title, ptr, 31 );
+      Strncpy( title, ptr, 31 );
     else
-      strncpy( title, activeTriumfSliderClass_str54, 31 );
+      Strncpy( title, activeTriumfSliderClass_str54, 31 );
     Strncat( title, ": ", 31 );
     Strncat( title, mslo->controlPvName.getExpanded(), 31 );
 #endif
@@ -914,7 +914,7 @@ activeTriumfSliderClass *mslo = (activeTriumfSliderClass *) client;
   else
     mslo->precision = mslo->efPrecision.value();
 
-  strncpy( mslo->fontTag, mslo->fm.currentFontTag(), 63 );
+  Strncpy( mslo->fontTag, mslo->fm.currentFontTag(), 63 );
   mslo->actWin->fi->loadFontTag( mslo->fontTag );
   mslo->fs = mslo->actWin->fi->getXFontStruct( mslo->fontTag );
 
@@ -1332,7 +1332,7 @@ activeGraphicClass *mslo = (activeGraphicClass *) this;
   controlLabelName.copy( source->controlLabelName );
   savedValuePvName.copy( source->savedValuePvName );
 
-  strncpy( fontTag, source->fontTag, 63 );
+  Strncpy( fontTag, source->fontTag, 63 );
 
   fs = actWin->fi->getXFontStruct( fontTag );
 
@@ -1898,9 +1898,9 @@ char title[32], *ptr;
 
   ptr = actWin->obj.getNameFromClass( "activeTriumfSliderClass" );
   if ( ptr )
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   else
-    strncpy( title, activeTriumfSliderClass_str10, 31 );
+    Strncpy( title, activeTriumfSliderClass_str10, 31 );
 
   Strncat( title, activeTriumfSliderClass_str11, 31 );
 
@@ -1915,7 +1915,7 @@ char title[32], *ptr;
   bufTopColor = topColor;
   bufBotColor = botColor;
   bufIncrement = increment;
-  strncpy( bufFontTag, fontTag, 63 );
+  Strncpy( bufFontTag, fontTag, 63 );
 
   bufShowLimits = showLimits;
   bufShowLabel = showLabel;
@@ -1925,19 +1925,19 @@ char title[32], *ptr;
   bufOrientation = orientation;
 
   if ( controlPvName.getRaw() )
-    strncpy( eBuf->controlBufPvName, controlPvName.getRaw(),
+    Strncpy( eBuf->controlBufPvName, controlPvName.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->controlBufPvName, "" );
 
   if ( controlLabelName.getRaw() )
-    strncpy( eBuf->controlBufLabelName, controlLabelName.getRaw(),
+    Strncpy( eBuf->controlBufLabelName, controlLabelName.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->controlBufLabelName, "" );
 
   if ( savedValuePvName.getRaw() )
-    strncpy( eBuf->savedValueBufPvName, savedValuePvName.getRaw(),
+    Strncpy( eBuf->savedValueBufPvName, savedValuePvName.getRaw(),
     PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->savedValueBufPvName, "" );
@@ -3039,13 +3039,13 @@ double fvalue, mult;
 #ifndef TRIUMF
   ptr = mslo->actWin->obj.getNameFromClass( "activeTriumfSliderClass" );
   if ( ptr )
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   else
-    strncpy( title, activeTriumfSliderClass_str54, 31 );
+    Strncpy( title, activeTriumfSliderClass_str54, 31 );
 
   Strncat( title, activeTriumfSliderClass_str55, 31 );
 #else
-  strncpy( title, "Slider: ", 31 );
+  Strncpy( title, "Slider: ", 31 );
   Strncat( title, mslo->controlPvName.getExpanded(), 31 );
 #endif
   if ( e->type == Expose ) {
@@ -3447,11 +3447,11 @@ int opStat;
 
       if ( controlLabelType == MSLC_K_PV_NAME ) {
         controlLabelExists = 1;
-        strncpy( controlLabel, controlPvName.getExpanded(),
+        Strncpy( controlLabel, controlPvName.getExpanded(),
          PV_Factory::MAX_PV_NAME );
       }
       else {
-        strncpy( controlLabel, controlLabelName.getExpanded(),
+        Strncpy( controlLabel, controlLabelName.getExpanded(),
          PV_Factory::MAX_PV_NAME );
       }
 

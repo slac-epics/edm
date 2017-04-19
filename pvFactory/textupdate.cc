@@ -160,7 +160,7 @@ void edmTextupdateClass::clone(const edmTextupdateClass *rhs,
     textColor = rhs->textColor;
     fillColor = rhs->fillColor;
     is_filled = rhs->is_filled;
-    strncpy(fontTag, rhs->fontTag, 63);
+    Strncpy(fontTag, rhs->fontTag, 63);
     fontTag[63] = 0;
     fs = actWin->fi->getXFontStruct(fontTag);
     fontAscent = rhs->fontAscent;
@@ -595,17 +595,17 @@ int edmTextupdateClass::genericEdit() // create Property Dialog
     ptr = actWin->obj.getNameFromClass(name);
     if (ptr)
     {
-        strncpy(title, ptr, 80);
+        Strncpy(title, ptr, 80);
         title[80] = 0;
         Strncat(title, " Properties", 80);
     }
     else
-        strncpy(title, "Unknown object Properties", 80);
+        Strncpy(title, "Unknown object Properties", 80);
 
     // Copy data member contents into edit buffers
     bufX = x; bufY = y; bufW = w; bufH = h;
-    strncpy(bufPvName,      getRawName(pv_name), PV_Factory::MAX_PV_NAME);
-    strncpy(bufColorPvName, getRawName(color_pv_name),PV_Factory::MAX_PV_NAME);
+    Strncpy(bufPvName,      getRawName(pv_name), PV_Factory::MAX_PV_NAME);
+    Strncpy(bufColorPvName, getRawName(color_pv_name),PV_Factory::MAX_PV_NAME);
     buf_displayMode          = (int)displayMode;
     buf_precision            = precision;
     buf_line_width           = line_width;
@@ -806,7 +806,7 @@ void edmTextupdateClass::edit_update(Widget w, XtPointer client,XtPointer call)
     me->fillColor.setIndex(me->bufFillColor);
     me->is_filled       = me->bufIsFilled;
 
-    strncpy(me->fontTag, me->fm.currentFontTag(), 63);
+    Strncpy(me->fontTag, me->fm.currentFontTag(), 63);
     me->fontTag[63] = 0;
     me->actWin->fi->loadFontTag(me->fontTag);
     me->fs          = me->actWin->fi->getXFontStruct(me->fontTag);

@@ -234,7 +234,7 @@ int i, ii;
   mmuxo->eraseSelectBoxCorners();
   mmuxo->erase();
 
-  strncpy( mmuxo->fontTag, mmuxo->fm.currentFontTag(), 63 );
+  Strncpy( mmuxo->fontTag, mmuxo->fm.currentFontTag(), 63 );
   mmuxo->fontTag[63] = 0;
   mmuxo->actWin->fi->loadFontTag( mmuxo->fontTag );
   mmuxo->actWin->drawGc.setFontTag( mmuxo->fontTag, mmuxo->actWin->fi );
@@ -275,7 +275,7 @@ int i, ii;
   mmuxo->initialStateExpStr.setRaw( mmuxo->eBuf->bufInitialState );
 
   for ( i=0; i<MMUX_MAX_STATES; i++ ) {
-    strncpy( mmuxo->tag[i], mmuxo->eBuf->bufTag[i], MMUX_MAX_STRING_SIZE );
+    Strncpy( mmuxo->tag[i], mmuxo->eBuf->bufTag[i], MMUX_MAX_STRING_SIZE );
     mmuxo->tag[i][MMUX_MAX_STRING_SIZE] = 0;
     if ( strlen(mmuxo->tag[i]) == 0 ) {
       strcpy( mmuxo->tag[i], "?" );
@@ -284,9 +284,9 @@ int i, ii;
 
   for ( i=0; i<MMUX_MAX_STATES; i++ ) {
     for ( ii=0; ii<MMUX_MAX_ENTRIES; ii++ ) {
-      strncpy( mmuxo->m[i][ii], mmuxo->eBuf->bufM[i][ii], MMUX_MAX_STRING_SIZE );
+      Strncpy( mmuxo->m[i][ii], mmuxo->eBuf->bufM[i][ii], MMUX_MAX_STRING_SIZE );
       mmuxo->m[i][ii][MMUX_MAX_STRING_SIZE] = 0;
-      strncpy( mmuxo->e[i][ii], mmuxo->eBuf->bufE[i][ii], MMUX_MAX_STRING_SIZE );
+      Strncpy( mmuxo->e[i][ii], mmuxo->eBuf->bufE[i][ii], MMUX_MAX_STRING_SIZE );
       mmuxo->e[i][ii][MMUX_MAX_STRING_SIZE] = 0;
     }
   }
@@ -418,14 +418,14 @@ activeGraphicClass *mmuxo = (activeGraphicClass *) this;
   }
 
   for ( i=0; i<MMUX_MAX_STATES; i++ ) {
-    strncpy( tag[i], source->tag[i], MMUX_MAX_STRING_SIZE );
+    Strncpy( tag[i], source->tag[i], MMUX_MAX_STRING_SIZE );
     tag[i][MMUX_MAX_STRING_SIZE] = 0;
   }
   for ( i=0; i<MMUX_MAX_STATES; i++ ) {
     for ( ii=0; ii<MMUX_MAX_ENTRIES; ii++ ) {
-      strncpy( m[i][ii], source->m[i][ii], MMUX_MAX_STRING_SIZE );
+      Strncpy( m[i][ii], source->m[i][ii], MMUX_MAX_STRING_SIZE );
       m[i][ii][MMUX_MAX_STRING_SIZE] = 0;
-      strncpy( e[i][ii], source->e[i][ii], MMUX_MAX_STRING_SIZE );
+      Strncpy( e[i][ii], source->e[i][ii], MMUX_MAX_STRING_SIZE );
       e[i][ii][MMUX_MAX_STRING_SIZE] = 0;
     }
   }
@@ -434,7 +434,7 @@ activeGraphicClass *mmuxo = (activeGraphicClass *) this;
   mac = NULL;
   exp = NULL;
 
-  strncpy( fontTag, source->fontTag, 63 );
+  Strncpy( fontTag, source->fontTag, 63 );
   fontTag[63] = 0;
   fs = actWin->fi->getXFontStruct( fontTag );
   actWin->fi->getTextFontList( fontTag, &fontList );
@@ -532,7 +532,7 @@ int menuMuxClass::createInteractive (
   w = _w;
   h = _h;
 
-  strncpy( fontTag, actWin->defaultBtnFontTag, 63 );
+  Strncpy( fontTag, actWin->defaultBtnFontTag, 63 );
   fontTag[63] = 0;
   actWin->fi->loadFontTag( fontTag );
   fs = actWin->fi->getXFontStruct( fontTag );
@@ -996,10 +996,10 @@ char title[32], *ptr;
 
   ptr = actWin->obj.getNameFromClass( "menuMuxClass" );
   if ( ptr ) {
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   }
   else {
-    strncpy( title, menuMuxClass_str2, 31 );
+    Strncpy( title, menuMuxClass_str2, 31 );
   }
   title[31] = 0;
 
@@ -1020,7 +1020,7 @@ char title[32], *ptr;
   eBuf->bufBgColorMode = bgColorMode;
 
   if ( controlPvExpStr.getRaw() ) {
-    strncpy( eBuf->bufControlPvName, controlPvExpStr.getRaw(),
+    Strncpy( eBuf->bufControlPvName, controlPvExpStr.getRaw(),
      PV_Factory::MAX_PV_NAME );
   }
   else {
@@ -1029,23 +1029,23 @@ char title[32], *ptr;
   eBuf->bufControlPvName[PV_Factory::MAX_PV_NAME] = 0;
 
   for ( i=0; i<MMUX_MAX_STATES; i++ ) {
-    strncpy( eBuf->bufTag[i], tag[i], MMUX_MAX_STRING_SIZE );
+    Strncpy( eBuf->bufTag[i], tag[i], MMUX_MAX_STRING_SIZE );
     eBuf->bufTag[i][MMUX_MAX_STRING_SIZE] = 0;
   }
   for ( i=0; i<MMUX_MAX_STATES; i++ ) {
     for ( ii=0; ii<MMUX_MAX_ENTRIES; ii++ ) {
-      strncpy( eBuf->bufM[i][ii], m[i][ii], MMUX_MAX_STRING_SIZE );
+      Strncpy( eBuf->bufM[i][ii], m[i][ii], MMUX_MAX_STRING_SIZE );
       eBuf->bufM[i][ii][MMUX_MAX_STRING_SIZE] = 0;
-      strncpy( eBuf->bufE[i][ii], e[i][ii], MMUX_MAX_STRING_SIZE );
+      Strncpy( eBuf->bufE[i][ii], e[i][ii], MMUX_MAX_STRING_SIZE );
       eBuf->bufE[i][ii][MMUX_MAX_STRING_SIZE] = 0;
     }
   }
 
   if ( initialStateExpStr.getRaw() ) {
-    strncpy( eBuf->bufInitialState, initialStateExpStr.getRaw(), 15 );
+    Strncpy( eBuf->bufInitialState, initialStateExpStr.getRaw(), 15 );
   }
   else {
-    strncpy( eBuf->bufInitialState, "0", 15 );
+    Strncpy( eBuf->bufInitialState, "0", 15 );
   }
   eBuf->bufInitialState[15] = 0;
 
@@ -1392,7 +1392,7 @@ char string[MMUX_MAX_STRING_SIZE+1];
     tY = y + h/2 - fontAscent/2;
 
     if ( ( controlV >= 0 ) && ( controlV < numStates ) ) {
-      strncpy( string, tag[controlV], MMUX_MAX_STRING_SIZE );
+      Strncpy( string, tag[controlV], MMUX_MAX_STRING_SIZE );
     }
     else {
       strcpy( string, "?" );
@@ -1517,9 +1517,9 @@ int i, ii, count;
   for ( i=0; i<MMUX_MAX_ENTRIES; i++ ) {
     if ( ( strcmp( m[n][i], "" ) != 0 ) &&
          ( strcmp( e[n][i], "" ) != 0 ) ) {
-      strncpy( mac[ii], m[n][i], MMUX_MAX_STRING_SIZE );
+      Strncpy( mac[ii], m[n][i], MMUX_MAX_STRING_SIZE );
       mac[ii][MMUX_MAX_STRING_SIZE] = 0;
-      strncpy( exp[ii], e[n][i], MMUX_MAX_STRING_SIZE );
+      Strncpy( exp[ii], e[n][i], MMUX_MAX_STRING_SIZE );
       exp[ii][MMUX_MAX_STRING_SIZE] = 0;
       ii++;
     }
@@ -1594,9 +1594,9 @@ int i, ii, n, count;
   for ( i=0; i<MMUX_MAX_ENTRIES; i++ ) {
     if ( ( strcmp( m[n][i], "" ) != 0 ) &&
          ( strcmp( e[n][i], "" ) != 0 ) ) {
-      strncpy( mac[ii], m[n][i], MMUX_MAX_STRING_SIZE );
+      Strncpy( mac[ii], m[n][i], MMUX_MAX_STRING_SIZE );
       mac[ii][MMUX_MAX_STRING_SIZE] = 0;
-      strncpy( exp[ii], e[n][i], MMUX_MAX_STRING_SIZE );
+      Strncpy( exp[ii], e[n][i], MMUX_MAX_STRING_SIZE );
       exp[ii][MMUX_MAX_STRING_SIZE] = 0;
       ii++;
     }
@@ -1980,7 +1980,7 @@ int n;
     for ( i=0; i<numStates; i++ ) {
 
       stateString[i] = new char[strlen(tag[i])+1];
-      strncpy( stateString[i], tag[i], strlen(tag[i]) );
+      Strncpy( stateString[i], tag[i], strlen(tag[i]) );
       stateString[i][strlen(tag[i])] = 0;
 
       str = XmStringCreate( stateString[i], fontTag );
@@ -2226,7 +2226,7 @@ int ii, selector, index, index1, index2;
     index = i - 1;
     int l = max;
     if ( MMUX_MAX_STRING_SIZE < max ) l = MMUX_MAX_STRING_SIZE;
-    strncpy( tag[index], string, l );
+    Strncpy( tag[index], string, l );
     tag[index][l] = 0;
   }
   else if ( ( i >= n1 ) && ( i < n2 ) ) {
@@ -2237,13 +2237,13 @@ int ii, selector, index, index1, index2;
     if ( selector == 0 ) {
       int l = max;
       if ( MMUX_MAX_STRING_SIZE < max ) l = MMUX_MAX_STRING_SIZE;
-      strncpy( m[index1][index2], string, l );
+      Strncpy( m[index1][index2], string, l );
       m[index1][index2][l] = 0;
     }
     else {
       int l = max;
       if ( MMUX_MAX_STRING_SIZE < max ) l = MMUX_MAX_STRING_SIZE;
-      strncpy( e[index1][index2], string, l );
+      Strncpy( e[index1][index2], string, l );
       e[index1][index2][l] = 0;
     }
   }

@@ -297,7 +297,7 @@ int i;
   shcmdo->eraseSelectBoxCorners();
   shcmdo->erase();
 
-  strncpy( shcmdo->fontTag, shcmdo->fm.currentFontTag(), 63 );
+  Strncpy( shcmdo->fontTag, shcmdo->fm.currentFontTag(), 63 );
   shcmdo->actWin->fi->loadFontTag( shcmdo->fontTag );
   shcmdo->actWin->drawGc.setFontTag( shcmdo->fontTag, shcmdo->actWin->fi );
   shcmdo->actWin->fi->getTextFontList( shcmdo->fontTag, &shcmdo->fontList );
@@ -391,7 +391,7 @@ int i;
 
   shcmdo->lock = shcmdo->buf->bufLock;
 
-  strncpy( shcmdo->requiredHostName, shcmdo->buf->bufRequiredHostName, 15 );
+  Strncpy( shcmdo->requiredHostName, shcmdo->buf->bufRequiredHostName, 15 );
   shcmdo->requiredHostName[15] = 0;
 
   shcmdo->oneShot = shcmdo->buf->bufOneShot;
@@ -525,7 +525,7 @@ int i;
   name = new char[strlen("shellCmdClass")+1];
   strcpy( name, "shellCmdClass" );
 
-  strncpy( fontTag, source->fontTag, 63 );
+  Strncpy( fontTag, source->fontTag, 63 );
   fs = actWin->fi->getXFontStruct( fontTag );
   actWin->fi->getTextFontList( fontTag, &fontList );
 
@@ -579,7 +579,7 @@ int i;
 
   activeMode = 0;
 
-  strncpy( requiredHostName, source->requiredHostName, 15 );
+  Strncpy( requiredHostName, source->requiredHostName, 15 );
   requiredHostName[15] = 0;
 
   buf = NULL;
@@ -1255,7 +1255,7 @@ char *tk, *gotData, *context, buffer[2550+1];
           return 0;
         }
 
-        strncpy( fontTag, tk, 63 );
+        Strncpy( fontTag, tk, 63 );
 
       }
 
@@ -1327,9 +1327,9 @@ char title[32], *ptr, *envPtr, saveLock = 0;
 
   ptr = actWin->obj.getNameFromClass( "shellCmdClass" );
   if ( ptr )
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   else
-    strncpy( title, shellCmdClass_str2, 31 );
+    Strncpy( title, shellCmdClass_str2, 31 );
 
   Strncat( title, shellCmdClass_str3, 31 );
 
@@ -1338,7 +1338,7 @@ char title[32], *ptr, *envPtr, saveLock = 0;
   buf->bufW = w;
   buf->bufH = h;
 
-  strncpy( buf->bufFontTag, fontTag, 63 );
+  Strncpy( buf->bufFontTag, fontTag, 63 );
 
   buf->bufTopShadowColor = topShadowColor;
   buf->bufBotShadowColor = botShadowColor;
@@ -1349,23 +1349,23 @@ char title[32], *ptr, *envPtr, saveLock = 0;
 
   for ( i=0; i<maxCmds; i++ ) {
     if ( shellCommand[i].getRaw() )
-      strncpy( buf->bufShellCommand[i], shellCommand[i].getRaw(), 2550 );
+      Strncpy( buf->bufShellCommand[i], shellCommand[i].getRaw(), 2550 );
     else
-      strncpy( buf->bufShellCommand[i], "", 2550 );
+      Strncpy( buf->bufShellCommand[i], "", 2550 );
     if ( label[i].getRaw() )
-      strncpy( buf->bufLabel[i], label[i].getRaw(), 127 );
+      Strncpy( buf->bufLabel[i], label[i].getRaw(), 127 );
     else
-      strncpy( buf->bufLabel[i], "", 127 );
+      Strncpy( buf->bufLabel[i], "", 127 );
   }
   for ( i=numCmds; i<maxCmds; i++ ) {
-    strncpy( buf->bufShellCommand[i], "", 2550 );
-    strncpy( buf->bufLabel[i], "", 127 );
+    Strncpy( buf->bufShellCommand[i], "", 2550 );
+    Strncpy( buf->bufLabel[i], "", 127 );
   }
 
   if ( buttonLabel.getRaw() )
-    strncpy( buf->bufButtonLabel, buttonLabel.getRaw(), 127 );
+    Strncpy( buf->bufButtonLabel, buttonLabel.getRaw(), 127 );
   else
-    strncpy( buf->bufButtonLabel, "", 127 );
+    Strncpy( buf->bufButtonLabel, "", 127 );
 
   buf->bufInvisible = invisible;
 
@@ -1389,7 +1389,7 @@ char title[32], *ptr, *envPtr, saveLock = 0;
     buf->bufLock = lock;
   }
 
-  strncpy( buf->bufRequiredHostName, requiredHostName, 15 );
+  Strncpy( buf->bufRequiredHostName, requiredHostName, 15 );
   buf->bufRequiredHostName[15] = 0;
 
   buf->bufOneShot = oneShot;
@@ -1648,9 +1648,9 @@ XRectangle xR = { x, y, w, h };
    actWin->executeGc.normGC(), x, y, w, h );
 
   if ( buttonLabel.getExpanded() )
-    strncpy( string, buttonLabel.getExpanded(), 127 );
+    Strncpy( string, buttonLabel.getExpanded(), 127 );
   else
-    strncpy( string, "", 127 );
+    Strncpy( string, "", 127 );
 
   actWin->executeGc.setFG( actWin->ci->pix(botShadowColor) );
 
@@ -2208,7 +2208,7 @@ void shellCmdClass::changeDisplayParams (
     botShadowColor = _botShadowColor;
 
   if ( _flag & ACTGRF_BTNFONTTAG_MASK ) {
-    strncpy( fontTag, _btnFontTag, 63 );
+    Strncpy( fontTag, _btnFontTag, 63 );
     fontTag[63] = 0;
     actWin->fi->loadFontTag( fontTag );
     fs = actWin->fi->getXFontStruct( fontTag );
@@ -2290,7 +2290,7 @@ int ii, selector, index;
   else if ( i == 1 ) {
     int l = max;
     if ( 15 < max ) l = 15;
-    strncpy( requiredHostName, string, l );
+    Strncpy( requiredHostName, string, l );
     requiredHostName[l] = 0;
   }
   else if ( ( i > 1 ) && ( i < num ) ) {

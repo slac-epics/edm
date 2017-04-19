@@ -120,7 +120,7 @@ activeGraphicListPtr head, cur, next, sourceHead, curSource;
     strcpy( aso->cAndMask[i], "0" );
   }
 
-  strncpy( aso->symbolFileName, _aso->symbolFileName, 127 );
+  Strncpy( aso->symbolFileName, _aso->symbolFileName, 127 );
 
   aso->numStates = _aso->numStates;
   for ( i=0; i<_aso->numStates; i++ ) {
@@ -388,7 +388,7 @@ int stat, resizeStat, i, saveW, saveH, saveX, saveY;
 
 // =============================================
 
-  strncpy( aso->id, aso->bufId, 31 );
+  Strncpy( aso->id, aso->bufId, 31 );
 
   aso->x = aso->eBuf->bufX;
   aso->sboxX = aso->eBuf->bufX;
@@ -399,8 +399,8 @@ int stat, resizeStat, i, saveW, saveH, saveX, saveY;
   aso->numPvs = 0;
   for ( i=0; i<SYMBOL_K_MAX_PVS; i++ ) {
     aso->shiftCount[i] = aso->eBuf->bufShiftCount[i];
-    strncpy( aso->cXorMask[i], aso->eBuf->bufXorMask[i], 9 );
-    strncpy( aso->cAndMask[i], aso->eBuf->bufAndMask[i], 9 );
+    Strncpy( aso->cXorMask[i], aso->eBuf->bufXorMask[i], 9 );
+    Strncpy( aso->cAndMask[i], aso->eBuf->bufAndMask[i], 9 );
     aso->controlPvExpStr[i].setRaw( aso->eBuf->bufControlPvName[i] );
     if ( !blank( aso->eBuf->bufControlPvName[i] ) )
       (aso->numPvs)++;
@@ -410,7 +410,7 @@ int stat, resizeStat, i, saveW, saveH, saveX, saveY;
 
   aso->colorPvExpStr.setRaw( aso->eBuf->bufColorPvName );
 
-  strncpy( aso->symbolFileName, aso->eBuf->bufSymbolFileName, 127 );
+  Strncpy( aso->symbolFileName, aso->eBuf->bufSymbolFileName, 127 );
 
   aso->numStates = aso->ef.numItems;
 
@@ -758,13 +758,13 @@ int i;
   for ( i=0; i<SYMBOL_K_MAX_PVS; i++ ) {
     controlVals[i] = 0.0;
     controlPvExpStr[i].setRaw( source->controlPvExpStr[i].rawString );
-    strncpy( cXorMask[i], source->cXorMask[i], 9 );
-    strncpy( cAndMask[i], source->cAndMask[i], 9 );
+    Strncpy( cXorMask[i], source->cXorMask[i], 9 );
+    Strncpy( cAndMask[i], source->cAndMask[i], 9 );
     shiftCount[i] = source->shiftCount[i];
   }
   iValue = 0;
 
-  strncpy( symbolFileName, source->symbolFileName, 127 );
+  Strncpy( symbolFileName, source->symbolFileName, 127 );
 
   numStates = source->numStates;
   for ( i=0; i<numStates; i++ ) {
@@ -838,33 +838,33 @@ char title[32], *ptr;
 
   ptr = actWin->obj.getNameFromClass( "activeSymbolClass" );
   if ( ptr )
-    strncpy( title, ptr, 31 );
+    Strncpy( title, ptr, 31 );
   else
-    strncpy( title, activeSymbolClass_str9, 31 );
+    Strncpy( title, activeSymbolClass_str9, 31 );
 
   Strncat( title, activeSymbolClass_str10, 31 );
 
-  strncpy( bufId, id, 31 );
+  Strncpy( bufId, id, 31 );
 
   eBuf->bufX = x;
   eBuf->bufY = y;
 
-  strncpy( eBuf->bufSymbolFileName, symbolFileName, 127 );
+  Strncpy( eBuf->bufSymbolFileName, symbolFileName, 127 );
 
   if ( colorPvExpStr.getRaw() )
-    strncpy( eBuf->bufColorPvName, colorPvExpStr.getRaw(),
+    Strncpy( eBuf->bufColorPvName, colorPvExpStr.getRaw(),
      PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufColorPvName, "" );
 
   for ( i=0; i<SYMBOL_K_MAX_PVS; i++ ) {
     if ( controlPvExpStr[i].getRaw() )
-      strncpy( eBuf->bufControlPvName[i], controlPvExpStr[i].getRaw(),
+      Strncpy( eBuf->bufControlPvName[i], controlPvExpStr[i].getRaw(),
        PV_Factory::MAX_PV_NAME );
     else
       strcpy( eBuf->bufControlPvName[i], "" );
-    strncpy( eBuf->bufXorMask[i], cXorMask[i], 9 );
-    strncpy( eBuf->bufAndMask[i], cAndMask[i], 9 );
+    Strncpy( eBuf->bufXorMask[i], cXorMask[i], 9 );
+    Strncpy( eBuf->bufAndMask[i], cAndMask[i], 9 );
     eBuf->bufShiftCount[i] = shiftCount[i];
   }
 
@@ -4324,14 +4324,14 @@ int i;
   for ( i=0; i<SYMBOL_K_MAX_PVS; i++ ) {
     controlVals[i] = 0.0;
     controlPvExpStr[i].setRaw( ptr->aso->controlPvExpStr[i].rawString );
-    strncpy( cAndMask[i], ptr->aso->cAndMask[i], 9 );
-    strncpy( cXorMask[i], ptr->aso->cXorMask[i], 9 );
+    Strncpy( cAndMask[i], ptr->aso->cAndMask[i], 9 );
+    Strncpy( cXorMask[i], ptr->aso->cXorMask[i], 9 );
     shiftCount[i] = ptr->aso->shiftCount[i];
   }
 
   // restore remaining attributes
 
-  strncpy( symbolFileName, ptr->aso->symbolFileName, 127 );
+  Strncpy( symbolFileName, ptr->aso->symbolFileName, 127 );
 
   numStates = ptr->aso->numStates;
   for ( i=0; i<numStates; i++ ) {

@@ -108,7 +108,7 @@ static void extractPosition (
 char buf[1023+1], *tk, *ctx, *err;
 int ok;
 
-  strncpy( buf, str, 1023 );
+  Strncpy( buf, str, 1023 );
   buf[1023] = 0;
 
   ok = 1;
@@ -118,7 +118,7 @@ int ok;
 
   if ( tk ) {
 
-    strncpy( filePart, tk, max );
+    Strncpy( filePart, tk, max );
     filePart[max] = 0;
 
     tk = strtok_r( NULL, "?", &ctx );
@@ -170,7 +170,7 @@ int ok;
     *gotPosition = 1;
   }
   else {
-    strncpy( filePart, str, max );
+    Strncpy( filePart, str, max );
     filePart[max] = 0;
     *gotPosition = 0;
     *posx = 0;
@@ -190,7 +190,7 @@ char buf[1023+1], *tk, *ctx;
 
   if ( strstr( str, "=" ) ) {
 
-    strncpy( buf, str, 1023 );
+    Strncpy( buf, str, 1023 );
     buf[1023] = 0;
 
     ctx = NULL;
@@ -198,14 +198,14 @@ char buf[1023+1], *tk, *ctx;
 
     if ( tk ) {
 
-      strncpy( name, tk, maxName );
+      Strncpy( name, tk, maxName );
       name[maxName] = 0;
 
       tk = strtok_r( NULL, "= 	", &ctx ); // =, space, tab
 
       if ( tk ) {
 
-        strncpy( str, tk, max );
+        Strncpy( str, tk, max );
         str[max] = 0;
 
       }
@@ -407,7 +407,7 @@ libRecPtr head, tail, cur, prev, next;
 
   envPtr = getenv(environment_str3);
   if ( envPtr ) {
-    strncpy( prefix, envPtr, 255 );
+    Strncpy( prefix, envPtr, 255 );
     if ( prefix[strlen(prefix)-1] != '/' )
 	  Strncat( prefix, "/", 255 );
   }
@@ -415,7 +415,7 @@ libRecPtr head, tail, cur, prev, next;
     strcpy( prefix, "/etc/edm/" );
   }
 
-  strncpy( fileName, prefix, 255 );
+  Strncpy( fileName, prefix, 255 );
   Strncat( fileName, "edmObjects", 255 );
 
   f = fopen( fileName, "r" );
@@ -454,7 +454,7 @@ libRecPtr head, tail, cur, prev, next;
 
           cur = new libRecType;
 
-          strncpy( buf, line, 255 );
+          Strncpy( buf, line, 255 );
 
           comment = 0;
           tk = strtok( buf, " \t\n" );
@@ -587,28 +587,28 @@ libRecPtr head, tail, cur, prev, next;
     }
 
     if ( !stat ) {
-      strncpy( line, appContextClass_str10, 255 );
+      Strncpy( line, appContextClass_str10, 255 );
       Strncat( line, appContextClass_str11, 255 );
       fprintf( stderr, "%s\n\n", line );
     }
 
     while ( !stat ) {
 
-      strncpy( line, classNamePtr, 255 );
+      Strncpy( line, classNamePtr, 255 );
 
       if ( strlen(line) < 37 )
         index = 42;
       else
         index = strlen(line) + 5;
       Strncat( line, "                                             ", 255 );
-      strncpy( &line[index], typeNamePtr, 255-index );
+      Strncpy( &line[index], typeNamePtr, 255-index );
 
       if ( strlen(line) < 50 )
         index = 55;
       else
         index = strlen(line) + 5;
       Strncat( line, "                                                       ", 255 );
-      strncpy( &line[index], textPtr, 255-index );
+      Strncpy( &line[index], textPtr, 255-index );
 
       fprintf( stderr, "%s\n", line );
 
@@ -703,7 +703,7 @@ libRecPtr head, tail, cur, prev, next;
 
     fprintf( stderr, "\n" );
 
-    strncpy( line, fileName, 255 );
+    Strncpy( line, fileName, 255 );
     Strncat( line, "~", 255 );
 
     if ( fileExists ) {
@@ -806,7 +806,7 @@ libRecPtr head, tail, cur, prev, next;
 
     fprintf( stderr, "\n" );
 
-    strncpy( line, fileName, 255 );
+    Strncpy( line, fileName, 255 );
     Strncat( line, "~", 255 );
 
     if ( fileExists ) {
@@ -879,14 +879,14 @@ libRecPtr head, tail, cur, prev, next;
 
   envPtr = getenv(environment_str3);
   if ( envPtr ) {
-    strncpy( prefix, envPtr, 255 );
+    Strncpy( prefix, envPtr, 255 );
     if ( prefix[strlen(prefix)-1] != '/' ) Strncat( prefix, "/", 255 );
   }
   else {
     strcpy( prefix, "/etc/edm/" );
   }
 
-  strncpy( fileName, prefix, 255 );
+  Strncpy( fileName, prefix, 255 );
   Strncat( fileName, "edmPvObjects", 255 );
 
   f = fopen( fileName, "r" );
@@ -925,7 +925,7 @@ libRecPtr head, tail, cur, prev, next;
 
           cur = new libRecType;
 
-          strncpy( buf, line, 255 );
+          Strncpy( buf, line, 255 );
 
           comment = 0;
           tk = strtok( buf, " \t\n" );
@@ -1039,21 +1039,21 @@ libRecPtr head, tail, cur, prev, next;
     }
 
     if ( !stat ) {
-      strncpy( line, appContextClass_str110, 255 );
+      Strncpy( line, appContextClass_str110, 255 );
       Strncat( line, appContextClass_str111, 255 );
       fprintf( stderr, "%s\n\n", line );
     }
 
     while ( !stat ) {
 
-      strncpy( line, classNamePtr, 255 );
+      Strncpy( line, classNamePtr, 255 );
 
       if ( strlen(line) < 45 )
         index = 45;
       else
         index = strlen(line) + 5;
       Strncat( line, "                                             ", 255 );
-      strncpy( &line[index], textPtr, 255-index );
+      Strncpy( &line[index], textPtr, 255-index );
 
       fprintf( stderr, "%s\n", line );
 
@@ -1145,7 +1145,7 @@ libRecPtr head, tail, cur, prev, next;
 
     fprintf( stderr, "\n" );
 
-    strncpy( line, fileName, 255 );
+    Strncpy( line, fileName, 255 );
     Strncat( line, "~", 255 );
 
     if ( fileExists ) {
@@ -1248,7 +1248,7 @@ libRecPtr head, tail, cur, prev, next;
 
     fprintf( stderr, "\n" );
 
-    strncpy( line, fileName, 255 );
+    Strncpy( line, fileName, 255 );
     Strncat( line, "~", 255 );
 
     if ( fileExists ) {
@@ -1416,7 +1416,7 @@ appContextClass *apco = (appContextClass *) cbPtr->apco;
 
   //fprintf( stderr, "setPath_cb, item = [%s]\n", item );
 
-  strncpy( apco->curPath, item, MAX_DIR );
+  Strncpy( apco->curPath, item, MAX_DIR );
 
 }
 
@@ -1748,7 +1748,7 @@ Arg args[10];
 XmString xmStr = NULL;
 char prefix[MAX_DIR+1];
 
-  strncpy( prefix, apco->curPath, MAX_DIR );
+  Strncpy( prefix, apco->curPath, MAX_DIR );
 
   n = 0;
 
@@ -1808,7 +1808,7 @@ Arg args[10];
 XmString xmStr = NULL;
 char prefix[MAX_DIR+1];
 
-  strncpy( prefix, apco->curPath, MAX_DIR );
+  Strncpy( prefix, apco->curPath, MAX_DIR );
 
   n = 0;
 
@@ -2525,7 +2525,7 @@ char *sysMacros[] = {
   envPtr = getenv( environment_str5 );
   if ( envPtr ) {
 
-    strncpy( buf, envPtr, 255 );
+    Strncpy( buf, envPtr, 255 );
 
     if ( buf[strlen(buf)-1] != '/' ) {
       Strncat( buf, "/", 255 );
@@ -2676,7 +2676,7 @@ appContextClass::appContextClass (
   haveGroupVisInfo = 0;
 
   int defaultPos = getFilePaths();
-  strncpy( curPath, dataFilePrefix[defaultPos], MAX_DIR );
+  Strncpy( curPath, dataFilePrefix[defaultPos], MAX_DIR );
 
   buildSchemeList();
 
@@ -3059,13 +3059,13 @@ char *envPtr, *gotIt, *buf, save[MAX_DIR+1], path[MAX_DIR+1], msg[MAX_DIR+1], *t
     curLen = allocL;
     buf = new char[allocL];
 
-    strncpy( buf, envPtr, l );
+    Strncpy( buf, envPtr, l );
     buf[l] = 0;
 
     tk = strtok( buf, ":" );
     if ( tk ) {
 
-      strncpy( colorPath, tk, MAX_DIR );
+      Strncpy( colorPath, tk, MAX_DIR );
       if ( colorPath[strlen(colorPath)-1] != '/' ) {
         Strncat( colorPath, "/", MAX_DIR );
       }
@@ -3073,14 +3073,14 @@ char *envPtr, *gotIt, *buf, save[MAX_DIR+1], path[MAX_DIR+1], msg[MAX_DIR+1], *t
     }
     else {
 
-      strncpy( colorPath, "./", MAX_DIR );
+      Strncpy( colorPath, "./", MAX_DIR );
 
     }
 
   }
   else {
 
-    strncpy( colorPath, "./", MAX_DIR );
+    Strncpy( colorPath, "./", MAX_DIR );
 
   }
 
@@ -3106,7 +3106,7 @@ char *envPtr, *gotIt, *buf, save[MAX_DIR+1], path[MAX_DIR+1], msg[MAX_DIR+1], *t
     }
 
     // count number of search paths
-    strncpy( buf, envPtr, l );
+    Strncpy( buf, envPtr, l );
     buf[l] = 0;
 
     fixupHttpPart( buf );
@@ -3155,7 +3155,7 @@ char *envPtr, *gotIt, *buf, save[MAX_DIR+1], path[MAX_DIR+1], msg[MAX_DIR+1], *t
 
     dataFilePrefix = new char *[numPaths];
 
-    strncpy( buf, envPtr, l );
+    Strncpy( buf, envPtr, l );
     buf[l] = 0;
 
     fixupHttpPart( buf );
@@ -3163,7 +3163,7 @@ char *envPtr, *gotIt, *buf, save[MAX_DIR+1], path[MAX_DIR+1], msg[MAX_DIR+1], *t
     tk = strtok( buf, ":" );
     for ( i=0; i<numPaths; i++ ) {
 
-      strncpy( path, tk, MAX_DIR );
+      Strncpy( path, tk, MAX_DIR );
       if ( path[strlen(path)-1] == '/' ) path[strlen(path)-1] = 0;
 
       undoFixupHttpPart( path );
@@ -3244,7 +3244,7 @@ static int containsHttp (
 unsigned int i;
 char buf[255+1], *tk, *context;
 
-  strncpy( buf, fullName, 255 );
+  Strncpy( buf, fullName, 255 );
   buf[255] = 0;
 
   context = NULL;
@@ -3327,10 +3327,10 @@ int state, noPrefix;
   }
 
   if ( noPrefix ) {
-    strncpy( expandedName, inName, maxSize );
+    Strncpy( expandedName, inName, maxSize );
   }
   else {
-    strncpy( expandedName, dataFilePrefix[index], maxSize );
+    Strncpy( expandedName, dataFilePrefix[index], maxSize );
     Strncat( expandedName, inName, maxSize );
   }
 
@@ -3412,10 +3412,10 @@ int state, noPrefix;
   }
 
   if ( noPrefix ) {
-    strncpy( expandedName, inName, maxSize );
+    Strncpy( expandedName, inName, maxSize );
   }
   else {
-    strncpy( expandedName, dataFilePrefix[index], maxSize );
+    Strncpy( expandedName, dataFilePrefix[index], maxSize );
     Strncat( expandedName, inName, maxSize );
   }
 
@@ -3459,7 +3459,7 @@ int stat, dup, state, i;
   // open scheme list file and build tree
   envPtr = getenv(environment_str2);
   if ( envPtr ) {
-    strncpy( prefix, envPtr, MAX_DIR );
+    Strncpy( prefix, envPtr, MAX_DIR );
     if ( prefix[strlen(prefix)-1] != '/' )
 	  Strncat( prefix, "/", MAX_DIR );
   }
@@ -3467,7 +3467,7 @@ int stat, dup, state, i;
     strcpy( prefix, "/etc/edm/" );
   }
 
-  strncpy( fName, prefix, MAX_DIR );
+  Strncpy( fName, prefix, MAX_DIR );
   Strncat( fName, "schemes.list", MAX_DIR );
 
   f = fopen( fName, "r" );
@@ -3501,7 +3501,7 @@ int stat, dup, state, i;
       tk = strtok( line, " \t\n" );
       if ( tk ) {
 
-        strncpy( sName, tk, 63 );
+        Strncpy( sName, tk, 63 );
 
         tk = strtok( NULL, " \t\n" );
         if ( tk ) {
@@ -3578,12 +3578,12 @@ int stat, dup, state, i;
           break;
 	}
 
-        strncpy( oName, tk, MAX_DIR );
+        Strncpy( oName, tk, MAX_DIR );
 
         tk = strtok( NULL, " \t\n" );
         if ( tk ) {
 
-          strncpy( fName, tk, MAX_DIR );
+          Strncpy( fName, tk, MAX_DIR );
 
           cur = new schemeListType;
           if ( !cur ) {
@@ -3593,7 +3593,7 @@ int stat, dup, state, i;
             return;
           }
 
-          strncpy( buf, sName, 255 );
+          Strncpy( buf, sName, 255 );
           Strncat( buf, "-", 255 );
           Strncat( buf, oName, 255 );
 
@@ -3749,7 +3749,7 @@ char buf[255+1];
     return 0;
   }
 
-  strncpy( buf, schemeSetName, 255 );
+  Strncpy( buf, schemeSetName, 255 );
   Strncat( buf, "-", 255 );
   Strncat( buf, objType, 255 );
   Strncat( buf, "-", 255 );
@@ -3792,7 +3792,7 @@ char buf[255+1];
     return;
   }
 
-  strncpy( buf, schemeSetName, 255 );
+  Strncpy( buf, schemeSetName, 255 );
   Strncat( buf, "-", 255 );
   Strncat( buf, objType, 255 );
   Strncat( buf, "-", 255 );
@@ -3808,10 +3808,10 @@ char buf[255+1];
   }
 
   if ( cur ) {
-    strncpy( schemeFileName, cur->fileName, maxLen );
+    Strncpy( schemeFileName, cur->fileName, maxLen );
   }
   else {
-    strncpy( schemeFileName, "default", maxLen );
+    Strncpy( schemeFileName, "default", maxLen );
   }
 
 }
@@ -5083,10 +5083,10 @@ fileListPtr curFile;
         else if ( strcmp( argv[n], global_str19 ) == 0 ) {
           n++;
           if ( n >= argc ) return 2; // missing macro arg
-          strncpy( buf, argv[n], 1023 );
+          Strncpy( buf, argv[n], 1023 );
           tk = strtok( buf, "=," );
           while ( tk ) {
-            strncpy( mac, tk, 1023 );
+            Strncpy( mac, tk, 1023 );
             tk = strtok( NULL, "=," );
             if ( tk ) {
               if ( strcmp( tk, "\"\"" ) == 0 ) {
@@ -5099,7 +5099,7 @@ fileListPtr curFile;
                 strcpy( exp, "" );
 	            }
 	            else {
-                strncpy( exp, tk, 1023 );
+                Strncpy( exp, tk, 1023 );
 	            }
             }
             else {
@@ -5127,18 +5127,18 @@ fileListPtr curFile;
         else if ( strcmp( argv[n], global_str20 ) == 0 ) {
           n++;
           if ( n >= argc ) return 2;
-          strncpy( ctlPV, argv[n], 127 );
+          Strncpy( ctlPV, argv[n], 127 );
         }
         else if ( strcmp( argv[n], global_str22 ) == 0 ) {
           n++;
           if ( n >= argc ) return 2;
-          strncpy( userLib, argv[n], MAX_DIR );
+          Strncpy( userLib, argv[n], MAX_DIR );
           userLibObject.openUserLibrary( userLib );
         }
         else if ( strcmp( argv[n], global_str21 ) == 0 ) {
           n++;
           if ( n >= argc ) return 2;
-          strncpy( displayName, argv[n], 63 );
+          Strncpy( displayName, argv[n], 63 );
         }
         else if ( strcmp( argv[n], global_str73 ) == 0 ) {
           n++; // just ignore, not used here
@@ -5147,7 +5147,7 @@ fileListPtr curFile;
         else if ( strcmp( argv[n], global_str76 ) == 0 ) {
           n++;
           if ( n >= argc ) return 2;
-          strncpy( colormode, argv[n], 7 ); // index (default) or rgb
+          Strncpy( colormode, argv[n], 7 ); // index (default) or rgb
         }
         else if ( strcmp( argv[n], global_str79 ) == 0 ) { // private colormap
           privColorMap = 1;
@@ -5265,7 +5265,7 @@ XmString xmStr1;
 
   envPtr = getenv("DISPLAY");
   if ( envPtr ) {
-    strncpy( dspName, envPtr, 63 );
+    Strncpy( dspName, envPtr, 63 );
     dspName[63] = 0;
   }
   else {
@@ -5378,7 +5378,7 @@ err_return:
     for ( int i=0; i<argCount; i++ ) {
       if ( strcmp( args[i], "-display" ) == 0 ) {
         if ( i+1 < argCount ) {
-          strncpy( dspName, args[i+1], 63 );
+          Strncpy( dspName, args[i+1], 63 );
           dspName[63] = 0;
           break;
         }
@@ -5534,7 +5534,7 @@ err_return:
 
   envPtr = getenv(environment_str2); // EDMFILES
   if ( envPtr ) {
-    strncpy( prefix, envPtr, MAX_DIR );
+    Strncpy( prefix, envPtr, MAX_DIR );
     if ( prefix[strlen(prefix)-1] != '/' )
       Strncat( prefix, "/", MAX_DIR );
   }
@@ -5545,12 +5545,12 @@ err_return:
   envPtr = getenv(environment_str10); // EDMCOLORFILE
   if ( envPtr ) {
 
-    strncpy( fname, envPtr, MAX_DIR );
+    Strncpy( fname, envPtr, MAX_DIR );
 
   }
   else {
 
-    strncpy( fname, prefix, MAX_NAME );
+    Strncpy( fname, prefix, MAX_NAME );
     Strncat( fname, "colors.list", MAX_NAME );
 
   }
@@ -5592,12 +5592,12 @@ err_return:
   envPtr = getenv(environment_str11); // EDMFONTFILE
   if ( envPtr ) {
 
-    strncpy( fname, envPtr, MAX_DIR );
+    Strncpy( fname, envPtr, MAX_DIR );
 
   }
   else {
 
-    strncpy( fname, prefix, MAX_DIR );
+    Strncpy( fname, prefix, MAX_DIR );
     Strncat( fname, "fonts.list", MAX_DIR );
 
   }
@@ -5697,7 +5697,7 @@ int gotPosition, posx, posy;
   //fprintf( stderr, "list = [%s]\n", list );
 
   buf1 = NULL;
-  strncpy( tmpMsg, list, 255 );
+  Strncpy( tmpMsg, list, 255 );
   tmpMsg[255] = 0;
   tk = strtok_r( tmpMsg, "|", &buf1 );
   tk = strtok_r( NULL, "|", &buf1 );
@@ -5806,7 +5806,7 @@ int gotPosition, posx, posy;
 
           cur = new activeWindowListType;
           cur->setWinName( winNam );
-	  //strncpy( cur->winName, winNam, WINNAME_MAX );
+	  //Strncpy( cur->winName, winNam, WINNAME_MAX );
           //cur->winName[WINNAME_MAX] = 0;
           cur->requestDelete = 0;
           cur->requestActivate = 0;
@@ -5932,7 +5932,7 @@ char controlCmd[31+1];
   strcpy( controlCmd, "" );
 
   buf1 = NULL;
-  strncpy( tmpMsg, list, 255 );
+  Strncpy( tmpMsg, list, 255 );
   tmpMsg[255] = 0;
   tk = strtok_r( tmpMsg, "|", &buf1 );
   tk = strtok_r( NULL, "|", &buf1 );
@@ -5973,7 +5973,7 @@ char controlCmd[31+1];
       ) {
 
         state = GETTING_FILES;
-	strncpy( controlCmd, tk, 31 );
+	Strncpy( controlCmd, tk, 31 );
         controlCmd[31] = 0;
         tk = strtok_r( NULL, "|", &buf1 );
 	if ( !tk ) return;
@@ -6022,7 +6022,7 @@ char controlCmd[31+1];
 
         extractPosition( tk, filePart, 255, &gotPosition, &posx, &posy );
 
-        strncpy( winNam, filePart, WINNAME_MAX );
+        Strncpy( winNam, filePart, WINNAME_MAX );
         winNam[WINNAME_MAX] = 0;
 
         doOpen = 1;
