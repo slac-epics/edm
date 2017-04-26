@@ -53,11 +53,11 @@ public:
     void *context;
     LOC_ProcessVariable *pv;
     DLNode node;
+	// Helpers for Hashtable template to use the LocHashTableItem
+	static size_t LocHashTableItem::hash(const LocHashTableItem *item, size_t N)
+	{   return generic_string_hash(item->name, N); }
 };
 
-// Helpers for Hashtable template to use the LocHashTableItem
-size_t hash(const LocHashTableItem *item, size_t N)
-{   return generic_string_hash(item->name, N); }
 
 bool equals(const LocHashTableItem *lhs, const LocHashTableItem *rhs)
 {   

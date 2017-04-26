@@ -121,11 +121,11 @@ public:
     const char *name;
     LOG_ProcessVariable *pv;
     DLNode node;
+	// Helpers for Hashtable template to use the HashTableItem
+	static size_t hash(const HashTableItem *item, size_t N)
+	{   return generic_string_hash(item->name, N); }
 };
 
-// Helpers for Hashtable template to use the HashTableItem
-size_t hash(const HashTableItem *item, size_t N)
-{   return generic_string_hash(item->name, N); }
 
 bool equals(const HashTableItem *lhs, const HashTableItem *rhs)
 {   return strcmp(lhs->name, rhs->name) == 0; }

@@ -36,6 +36,10 @@ public:
     expStringClass expStr;
 private:
     char compiled[MAX_POSTFIX_SIZE+1];
+
+	// Required for Hashtable<>:
+public:
+	static size_t hash(const HashedExpression *item, size_t N);
 };
 
 class HashedCalcPvList
@@ -53,6 +57,10 @@ public:
     CALC_ProcessVariable *pv;
     char *name;
     bool needComplete;
+
+	// Required for Hashtable<>:
+public:
+	static size_t hash(const HashedCalcPvList *item, size_t N);
 };
 
 static bool processInvalid = false;

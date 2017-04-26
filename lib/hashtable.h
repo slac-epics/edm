@@ -4,7 +4,7 @@
 // Requirements for class T:
 // - must contain DLNode for DLList<T,o>
 //   (see dl_list.h for offset o to DLNode)
-// - size_t hash(const T *item, size_t N)
+// - static size_t T::hash(const T *item, size_t N)
 // - bool equals(const T *lhs, const T *rhs)
 //
 // N (size of hash table) should be prime
@@ -83,9 +83,9 @@ class Hashtable
     };
     void insert(T *item);
     iterator find(const T *item){
-                // Item that uses Hashtable has to provide
-                //  size_t hash(const T *item, size_t N);
-                size_t h = hash(item, N);
+                // class T that uses Hashtable has to provide
+                //  static size_t T::hash(const T *item, size_t N);
+                size_t h = T::hash(item, N);
                 typename DLList<T,o>::iterator i = bucket[h].begin();
                 while (i != bucket[h].end())
                 {
@@ -156,9 +156,9 @@ inline Hashtable<T,o,N>::iterator::iterator(Hashtable<T,o,N> *_hash, size_t _n,
 template <class T, size_t o, size_t N>
 inline void Hashtable<T,o,N>::insert(T *item)
 {
-    // Item that uses Hashtable has to provide
-    //  size_t hash(const T *item, size_t N);
-    size_t h = hash(item, N);
+    // class T that uses Hashtable has to provide
+    //  static size_t T::hash(const T *item, size_t N);
+    size_t h = T::hash(item, N);
     // 
     bucket[h].push_back(item);
 }
