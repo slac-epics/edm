@@ -10,21 +10,12 @@ ifdef EPICS_HOST_ARCH
   USE_CURL=NO
 
   ifeq ($(USE_CURL), YES)
-        USR_CXXFLAGS += -std=c++0x -fpermissive -Wno-narrowing -Wno-write-strings -Wno-unused-but-set-variable
-        USR_CXXFLAGS_Darwin += -DUSECURL -DSINGLE_THREADED=1 -D__epics__=1 -pedantic -Wno-long-long
-        USR_CXXFLAGS_Linux += -DUSECURL -DSINGLE_THREADED=1 -D__epics__=1 -pedantic
-	USR_CXXFLAGS_solaris += -D__solaris__ -DUSECURL -DSINGLE_THREADED=1 -D__epics__=1 -pedantic
   else
-        USR_CXXFLAGS += -std=c++0x -fpermissive -Wno-narrowing -Wno-write-strings -Wno-unused-but-set-variable
-        USR_CXXFLAGS_Darwin += -DSINGLE_THREADED=1 -D__epics__=1 -pedantic -Wno-long-long
-        USR_CXXFLAGS_Linux += -DSINGLE_THREADED=1 -D__epics__=1
-        USR_CXXFLAGS_solaris += -D__solaris__ -DSINGLE_THREADED=1 -D__epics__=1
   endif
 
   SHARED_LIBRARIES = YES
 
   # Add debugging
-  #USR_CXXFLAGS_Linux += -g -O0
 
   USR_LIBS_Darwin += Xm Xt Xp Xtst X11
   USR_SYS_LIBS_Darwin += pthread dl
@@ -91,7 +82,6 @@ ifdef EPICS_HOST_ARCH
   INC += pvBindings.h
   INC += dimDialog.h
 
-  USR_CXXFLAGS_hpux11_11_mt += -DHP_UX=1111 -DSINGLE_THREADED=1 -D__epics__=1
   USR_LIBS_hpux11_11_mt = Xm Xt X11 Xext pthread
 
   # Build Shared library

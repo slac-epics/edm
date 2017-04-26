@@ -6,20 +6,9 @@ ifdef EPICS_HOST_ARCH
 
    SHARED_LIBRARIES = YES
 
-   USR_CXXFLAGS += -std=c++0x -fpermissive -Wno-narrowing -Wno-write-strings -Wno-unused-but-set-variable
-   USR_CXXFLAGS_Linux += -DSINGLE_THREADED=1 -D__epics__=1
-   USR_CFLAGS_Linux = $(USR_CXXFLAGS_Linux)
-
-   
-   USR_CXXFLAGS_Darwin += -DSINGLE_THREADED=1 -D__epics__=1 -Wno-long-long
-   USR_CFLAGS_Darwin = $(USR_CXXFLAGS_Darwin)
-   
-   USR_CXXFLAGS_solaris += -DSINGLE_THREADED=1 -D__epics__=1
-   USR_CFLAGS_solaris = $(USR_CXXFLAGS_solaris)
    USR_LIBS_solaris += Xm Xt X11 Xmu
    USR_SYS_LIBS_solaris = pthread dl
 
-   USR_CXXFLAGS_hpux11_11_mt += -DHP_UX=1111 -DSINGLE_THREADED=1 -D__epics__=1
    USR_LIBS_hpux11_11_mt = cfcaa62e-8199-11d3-a77f-00104b8742df pthread
 
    USR_INCLUDES += -I$(MOTIF_INC) -I$(X11_INC)

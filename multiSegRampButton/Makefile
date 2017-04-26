@@ -6,23 +6,17 @@ ifdef EPICS_HOST_ARCH
    
    SHARED_LIBRARIES = YES
 
-   USR_CXXFLAGS += -std=c++0x -fpermissive -Wno-narrowing -Wno-write-strings -Wno-unused-but-set-variable
-
    USR_LIBS += 114135a4-6f6c-11d3-95bc-00104b8742df
    USR_LIBS += EdmBase cfcaa62e-8199-11d3-a77f-00104b8742df
 
-   USR_CXXFLAGS_Linux += -DSINGLE_THREADED=1 -D__epics__=1
    USR_LIBS_Linux += Xm Xt Xp Xtst X11
    USR_SYS_LIBS_Linux += pthread dl
    
-   USR_CXXFLAGS_Darwin += -DSINGLE_THREADED=1 -D__epics__=1 -Wno-long-long
    USR_LIBS_Darwin += Xm Xt Xp Xtst X11
    USR_SYS_LIBS_Darwin += pthread dl
 
-   USR_CXXFLAGS_solaris += -D__solaris__ -DSINGLE_THREADED=1 -D__epics__=1
    USR_LIBS_solaris += Xm Xt X11
 
-   USR_CXXFLAGS_hpux11_11_mt += -DHP_UX=1111 -DSINGLE_THREADED=1 -D__epics__=1
    USR_SYS_LIBS_hpux11_11_mt = pthread
 
    LIBRARY = MultSegRamp
