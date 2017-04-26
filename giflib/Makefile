@@ -1,12 +1,9 @@
 TOP = ../../..
 ifdef EPICS_HOST_ARCH
   include $(TOP)/configure/CONFIG
+  EDMTOP = $(TOP)/src/edm
+  include $(EDMTOP)/configure/CONFIG_EDM
 
-#====================================================================
-# Required by EDM on Solaris at SLAC
-#====================================================================
-#GIF_LIB=/afs/slac/package/graphics/png/libungif/4.1.0/sun4x_57/lib
-#GIF_INC=/afs/slac/package/graphics/png/libUNGIF/4.1.0/sun4x_57/include
 GIF_LIB ?= /usr/lib
 GIF_INC ?= /usr/include
 

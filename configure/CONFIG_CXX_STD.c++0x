@@ -1,0 +1,7 @@
+#
+# CONFIG_SITE.c++0x
+#
+# c++0x Configuration Information
+# Only the local epics system manager should modify this file
+
+USR_CXXFLAGS += -std=c++0x -fpermissive -Wno-write-strings -Wno-unused-but-set-variable

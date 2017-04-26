@@ -1,6 +1,8 @@
 TOP = ../../..
 ifdef EPICS_HOST_ARCH
   include $(TOP)/configure/CONFIG
+  EDMTOP = $(TOP)/src/edm
+  include $(EDMTOP)/configure/CONFIG_EDM
 
    USR_CXXFLAGS += -std=c++0x -fpermissive -Wno-narrowing -Wno-write-strings -Wno-unused-but-set-variable
    USR_CXXFLAGS_Linux += -DSINGLE_THREADED=1 -D__epics__=1

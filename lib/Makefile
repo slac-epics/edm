@@ -1,6 +1,9 @@
 TOP = ../../..
 ifdef EPICS_HOST_ARCH
   include $(TOP)/configure/CONFIG
+  EDMTOP = $(TOP)/src/edm
+  include $(EDMTOP)/configure/CONFIG_EDM
+ 
   #HOST_OPT=NO
   # If you want support accessing files via http and curl
   # then set USE_CURL=YES

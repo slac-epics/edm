@@ -1,0 +1,15 @@
+# CONFIG_EDM
+-include $(EDMTOP)/configure/CONFIG_SITE.$(EPICS_HOST_ARCH).Common
+-include $(EDMTOP)/configure/CONFIG_SITE.Common.$(T_A)
+-include $(EDMTOP)/configure/CONFIG_SITE.$(EPICS_HOST_ARCH).$(T_A)
+ifeq ($(CXX_STD),)
+-include $(EDMTOP)/configure/CONFIG_CXX_STD.c++0x
+else
+-include $(EDMTOP)/configure/CONFIG_CXX_STD.$(CXX_STD)
+endif
+
+USR_CXXFLAGS += -std=c++0x -fpermissive -Wno-narrowing -Wno-write-strings -Wno-unused-but-set-variable
+USR_CXXFLAGS_Linux        += -DSINGLE_THREADED=1 -D__epics__=1
+USR_CXXFLAGS_Darwin       += -DSINGLE_THREADED=1 -D__epics__=1 -Wno-long-long
+USR_CXXFLAGS_solaris      += -DSINGLE_THREADED=1 -D__epics__=1 -D__solaris__ 
+USR_CXXFLAGS_hpux11_11_mt += -DSINGLE_THREADED=1 -D__epics__=1 +W652 -DHP_UX=1111
