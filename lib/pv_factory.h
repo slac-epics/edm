@@ -103,26 +103,28 @@ extern PV_Factory *the_PV_Factory;
 class ProcessVariable;
 typedef void (*PVCallback)(ProcessVariable *pv, void *userarg);
 
-typedef struct
+typedef struct _PVCallbackInfo
 {
     PVCallback func;
     void    *userarg;
-    DLNode   node; // for Hashtable
+    // for Hashtable
+    DLNode   node;
+	static size_t   hash(const struct _PVCallbackInfo *item, size_t N);
 } PVCallbackInfo;
 
-size_t hash(const PVCallbackInfo *item, size_t N);
 bool equals(const PVCallbackInfo *lhs, const PVCallbackInfo *rhs);
 
 typedef Hashtable<PVCallbackInfo,offsetof(PVCallbackInfo,node),43>
             PVCallbackInfoHash;
 
-typedef struct
+typedef struct _NodeNameInfo
 {
     char *nodeName;
-    DLNode   node; // for Hashtable
+    // for Hashtable
+    DLNode   node;
+	static size_t hash(const struct _NodeNameInfo *item, size_t N);
 } NodeNameInfo;
 
-size_t hash(const NodeNameInfo *item, size_t N);
 bool equals(const NodeNameInfo *lhs, const NodeNameInfo *rhs);
 
 typedef Hashtable<NodeNameInfo,offsetof(NodeNameInfo,node),43>

@@ -222,7 +222,7 @@ int i, l, pos;
 // These two should be static, but then "friend" doesn't work,
 // so the CallBackInfo would have to be public which is
 // not what I want, either...
-size_t hash(const PVCallbackInfo *item, size_t N)
+size_t PVCallbackInfo::hash(const PVCallbackInfo *item, size_t N)
 {   return ((size_t)item->func*41 + (size_t)item->userarg*43)%N; }
 
 bool equals(const PVCallbackInfo *lhs,
@@ -232,7 +232,7 @@ bool equals(const PVCallbackInfo *lhs,
         lhs->userarg == rhs->userarg;
 }
 
-size_t hash(const NodeNameInfo *item, size_t N)
+size_t NodeNameInfo::hash(const NodeNameInfo *item, size_t N)
 {   return generic_string_hash(item->nodeName, N); }
 
 bool equals(const NodeNameInfo *lhs,

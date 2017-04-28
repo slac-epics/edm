@@ -492,9 +492,10 @@ HashedCalcPvList::~HashedCalcPvList()
 }
 
 // Required for Hashtable<>:
-size_t hash(const HashedCalcPvList *item, size_t N)
+static size_t HashedCalcPvList::hash(const HashedCalcPvList *item, size_t N)
 {
-  return generic_string_hash( (const char *) item->pv, N );
+  // return generic_string_hash( (const char *) item->pv, N );
+  return generic_string_hash( item->pv->get_name(), N );
 }
 
 int equals(const HashedCalcPvList *lhs, const HashedCalcPvList *rhs)
@@ -595,7 +596,7 @@ bool HashedExpression::calc(const double args[], double &result)
 }
 
 // Required for Hashtable<>:
-size_t hash(const HashedExpression *item, size_t N)
+static size_t HashedExpression::hash(const HashedExpression *item, size_t N)
 {
   return generic_string_hash(item->name, N);
 }
