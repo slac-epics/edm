@@ -1,0 +1,17 @@
+#
+# RELEASE_NOTES
+# SLAC
+#
+
+R1.12.105A-1.0.0	2017-04-29	Bruce Hill
+	Fix build error for 32 bit linux from 64 bit host. Prior code overwrote OP_SYS_LDFLAGS for a old solaris only issue. Made it conditional for OS_CLASS solaris.
+	ifdef'd lib/app_pkg.cc,h for NO_UNORDERED_MAP so we can build on rhel5
+	Moved SHARED_LIBRARIES and STATIC_BUILD definition to configure/CONFIG_EDM
+	Moved CXXFLAGS config to edm configure/CONFIG* files
+	Consolidating EDM configuration in new edm configure/CONFIG_EDM and CONFIG_SITE* files
+	Updated edm PV classes to support variable sized arrays over CA
+	Made hash functions for Hashtable templates be static T::hash() to compile w/ gcc 4.8.5
+	Changed all strncpy calls to Strncpy to guarantee terminated strings
+	Added new Strncpy() routine, similar to Strncat() for consistent buffer management. Always terminates the new string.
+	Bumped userLib, curPath, and colorPath arrays from 127 to MAX_DIR, currently 256. Replaced inconsistent use of hard coded 127 and 255 length values w/ MAX_DIR.
+	Fixed narrowing warnings
