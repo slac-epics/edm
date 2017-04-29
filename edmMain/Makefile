@@ -44,7 +44,9 @@ ifdef EPICS_HOST_ARCH
 #  from any object that contributes to the link-edit, must reference an eliminated section. 
 #
 #  Therefore, to build for "solaris", set OP_SYS_LDFLAGS as follows:
+ifeq ($(OS_CLASS),solaris)
    OP_SYS_LDFLAGS = -z combreloc -z lazyload 
+endif
 
    PROD_LIBS += ca Com
    
@@ -74,7 +76,7 @@ ifdef EPICS_HOST_ARCH
    edm_SRCS += main.cc
 
    include $(TOP)/configure/RULES
-   
+
 else
    ifneq ($(wildcard $(TOP)/config)x,x)
      # New Makefile.Host config file location
