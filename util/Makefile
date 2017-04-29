@@ -4,8 +4,6 @@ include $(TOP)/configure/CONFIG
 EDMTOP = $(TOP)/src/edm
 include $(EDMTOP)/configure/CONFIG_EDM
 
-SHARED_LIBRARIES = YES
-
 USR_CFLAGS += -D__osf__=1
 
 

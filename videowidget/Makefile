@@ -6,8 +6,6 @@ ifdef EPICS_HOST_ARCH
  
   #HOST_OPT=NO
   
-  SHARED_LIBRARIES = YES
-
 # System Libraries to link in:
   #TwoDProfileMonitor_SYS_LIBS_Linux =  Xpm
 

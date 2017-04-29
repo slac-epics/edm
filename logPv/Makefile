@@ -4,8 +4,6 @@ ifdef EPICS_HOST_ARCH
   EDMTOP = $(TOP)/src/edm
   include $(EDMTOP)/configure/CONFIG_EDM
 
-   SHARED_LIBRARIES = YES
-
    EdmBase_LIBS_Linux += Xm Xt Xp Xtst X11
    EdmBase_SYS_LIBS_Linux += pthread dl
 

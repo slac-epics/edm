@@ -13,8 +13,6 @@ ifdef EPICS_HOST_ARCH
   else
   endif
 
-  SHARED_LIBRARIES = YES
-
   # Add debugging
 
   USR_LIBS_Darwin += Xm Xt Xp Xtst X11

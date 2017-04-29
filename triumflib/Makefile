@@ -4,8 +4,6 @@ ifdef EPICS_HOST_ARCH
   EDMTOP = $(TOP)/src/edm
   include $(EDMTOP)/configure/CONFIG_EDM
 
-   SHARED_LIBRARIES = YES
-   
    #IMAGELIB=/usr/local
    
    EdmTriumf_LIBS += EdmBase cfcaa62e-8199-11d3-a77f-00104b8742df

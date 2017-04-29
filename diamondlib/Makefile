@@ -4,8 +4,6 @@ ifdef EPICS_HOST_ARCH
   EDMTOP = $(TOP)/src/edm
   include $(EDMTOP)/configure/CONFIG_EDM
 
-   SHARED_LIBRARIES = YES
-   
    EdmDiamond_LIBS += EdmBase cfcaa62e-8199-11d3-a77f-00104b8742df
    EdmDiamond_LIBS += 114135a4-6f6c-11d3-95bc-00104b8742df
    EdmDiamond_LIBS += Com

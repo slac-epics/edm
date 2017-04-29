@@ -5,16 +5,8 @@ ifdef EPICS_HOST_ARCH
   EDMTOP = $(TOP)/src/edm
   include $(EDMTOP)/configure/CONFIG_EDM
 
-#====================================================================
-# Required by EDM on Solaris at SLAC
-#====================================================================
-#PNG_LIB=/afs/slac/package/graphics/png/1.0.14/sun4x_57/lib
-#PNG_INC=/afs/slac/package/graphics/png/1.0.14/common/include
 PNG_LIB=/usr/lib
 PNG_INC=/usr/include
-
-   SHARED_LIBRARIES = YES
-
 
    USR_LIBS += 114135a4-6f6c-11d3-95bc-00104b8742df
    USR_LIBS += EdmBase cfcaa62e-8199-11d3-a77f-00104b8742df

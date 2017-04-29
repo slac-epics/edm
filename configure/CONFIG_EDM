@@ -13,3 +13,6 @@ USR_CXXFLAGS_Linux        += -DSINGLE_THREADED=1 -D__epics__=1
 USR_CXXFLAGS_Darwin       += -DSINGLE_THREADED=1 -D__epics__=1 -Wno-long-long
 USR_CXXFLAGS_solaris      += -DSINGLE_THREADED=1 -D__epics__=1 -D__solaris__ 
 USR_CXXFLAGS_hpux11_11_mt += -DSINGLE_THREADED=1 -D__epics__=1 +W652 -DHP_UX=1111
+  
+SHARED_LIBRARIES = YES
+STATIC_BUILD = NO
