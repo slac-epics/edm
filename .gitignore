@@ -1,2 +1,7 @@
+RELEASE_SITE
 O.*
-*.log
+db
+dbd
+include
+lib
+bin
