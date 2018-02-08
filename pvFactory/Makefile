@@ -1,7 +1,7 @@
-TOP = ../../..
+TOP = ..
 ifdef EPICS_HOST_ARCH
   include $(TOP)/configure/CONFIG
-  EDMTOP = $(TOP)/src/edm
+  EDMTOP = $(TOP)
   include $(EDMTOP)/configure/CONFIG_EDM
 
    USR_LIBS_solaris += Xm Xt X11 Xmu
@@ -39,8 +39,8 @@ ifdef EPICS_HOST_ARCH
    PV_LIBS_DEFAULT += ca Com
    PV_LIBS_Darwin += -nil-
 
-   INSTALL_INCLUDE = $(INSTALL_LOCATION)/include/edm
-   USR_INCLUDES += -I../../util -I../../lib
+   INSTALL_INCLUDE = $(INSTALL_LOCATION)/include
+   USR_INCLUDES += -I$(TOP)/util -I$(TOP)/edmlib
 
    LIB_SRCS   += textupdate.cc
    LIB_SRCS   += SciPlot.cc

@@ -1,13 +1,13 @@
-TOP = ../../..
+TOP = ..
 ifdef EPICS_HOST_ARCH
 include $(TOP)/configure/CONFIG
-EDMTOP = $(TOP)/src/edm
+EDMTOP = $(TOP)
 include $(EDMTOP)/configure/CONFIG_EDM
 
 USR_CFLAGS += -D__osf__=1
 
 
-INSTALL_INCLUDE = $(INSTALL_LOCATION)/include/edm
+INSTALL_INCLUDE = $(INSTALL_LOCATION)/include
 
 SRC_DIRS += $(EDMTOP)/util/sys
 INC += os.h

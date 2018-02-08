@@ -1,9 +1,9 @@
 # Makefile for edm top level
-TOP = ../..
+TOP = .
 ifdef EPICS_HOST_ARCH
  include $(TOP)/configure/CONFIG
  DIRS += util 
- DIRS += lib 
+ DIRS += edmlib
  DIRS += epicsPv
  DIRS += logPv
  DIRS += proxyPv
@@ -21,7 +21,7 @@ ifdef EPICS_HOST_ARCH
  DIRS += indicator
  DIRS += multiSegRampButton
  DIRS += slaclib
- include $(TOP)/configure/RULES_DIRS
+ include $(TOP)/configure/RULES_TOP
 
 else
     TOP = ../..
