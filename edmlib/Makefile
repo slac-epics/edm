@@ -1,7 +1,7 @@
-TOP = ../../..
+TOP = ..
 ifdef EPICS_HOST_ARCH
   include $(TOP)/configure/CONFIG
-  EDMTOP = $(TOP)/src/edm
+  EDMTOP = $(TOP)
   include $(EDMTOP)/configure/CONFIG_EDM
  
   #HOST_OPT=NO
@@ -30,7 +30,7 @@ ifdef EPICS_HOST_ARCH
 	USR_SYS_LIBS_solaris += curl
   endif
 
-  INSTALL_INCLUDE = $(INSTALL_LOCATION)/include/edm
+  INSTALL_INCLUDE = $(INSTALL_LOCATION)/include
 
   INC += act_grf.h
   INC += act_win.h
@@ -89,7 +89,7 @@ ifdef EPICS_HOST_ARCH
   LIB_LIBS_DEFAULT += ca Com
   LIB_LIBS_Darwin += -nil-
 
-  USR_INCLUDES += -I../../util -I../../lib
+  USR_INCLUDES += -I$(TOP)/util -I$(TOP)/edmlib
   
   USR_INCLUDES += -I$(MOTIF_INC) -I$(X11_INC)
 

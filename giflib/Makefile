@@ -1,7 +1,7 @@
-TOP = ../../..
+TOP = ..
 ifdef EPICS_HOST_ARCH
   include $(TOP)/configure/CONFIG
-  EDMTOP = $(TOP)/src/edm
+  EDMTOP = $(TOP)
   include $(EDMTOP)/configure/CONFIG_EDM
 
 GIF_LIB ?= /usr/lib
@@ -24,8 +24,8 @@ GIF_INC ?= /usr/include
 
    LIBRARY = cf322683-513e-4570-a44b-7cdd7cae0de5
 
-   INSTALL_INCLUDE = $(INSTALL_LOCATION)/include/edm
-   USR_INCLUDES += -I../../util -I../../lib
+   INSTALL_INCLUDE = $(INSTALL_LOCATION)/include
+   USR_INCLUDES += -I$(TOP)/util -I$(TOP)/edmlib
 
    USR_INCLUDES += -I$(MOTIF_INC) -I$(X11_INC)
    USR_INCLUDES_solaris += -I$(GIF_INC)

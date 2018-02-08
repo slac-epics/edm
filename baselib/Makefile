@@ -1,7 +1,7 @@
-TOP = ../../..
+TOP = ..
 ifdef EPICS_HOST_ARCH
   include $(TOP)/configure/CONFIG
-  EDMTOP = $(TOP)/src/edm
+  EDMTOP = $(TOP)
   include $(EDMTOP)/configure/CONFIG_EDM
 
    EdmBase_LIBS_Linux += Xm Xt Xp Xtst X11
@@ -21,8 +21,8 @@ ifdef EPICS_HOST_ARCH
    USR_LIBS += 114135a4-6f6c-11d3-95bc-00104b8742df
    USR_LIBS += cfcaa62e-8199-11d3-a77f-00104b8742df 
 
-   INSTALL_INCLUDE = $(INSTALL_LOCATION)/include/edm
-   USR_INCLUDES += -I../../util -I../../lib
+   INSTALL_INCLUDE = $(INSTALL_LOCATION)/include
+   USR_INCLUDES += -I$(TOP)/util -I$(TOP)/edmlib
 
    USR_INCLUDES += -I$(MOTIF_INC) -I$(X11_INC)
 
