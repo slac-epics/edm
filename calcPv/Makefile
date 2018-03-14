@@ -22,7 +22,7 @@ ifdef EPICS_HOST_ARCH
    USR_LIBS += cfcaa62e-8199-11d3-a77f-00104b8742df
    USR_LIBS += Com
 
-   INSTALL_INCLUDE = $(INSTALL_LOCATION)/include
+   INSTALL_INCLUDE = $(INSTALL_LOCATION)/include/edm
    USR_INCLUDES += -I$(TOP)/util -I$(TOP)/edmlib
 
    USR_INCLUDES += -I$(MOTIF_INC) -I$(X11_INC)

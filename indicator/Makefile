@@ -19,7 +19,7 @@ ifdef EPICS_HOST_ARCH
 
    LIBRARY = Indicator
 
-   INSTALL_INCLUDE = $(INSTALL_LOCATION)/include
+   INSTALL_INCLUDE = $(INSTALL_LOCATION)/include/edm
    USR_INCLUDES += -I$(TOP)/util -I$(TOP)/edmlib
 
    Xm_DIR =   $(MOTIF_LIB)

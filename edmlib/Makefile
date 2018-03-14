@@ -30,7 +30,7 @@ ifdef EPICS_HOST_ARCH
 	USR_SYS_LIBS_solaris += curl
   endif
 
-  INSTALL_INCLUDE = $(INSTALL_LOCATION)/include
+  INSTALL_INCLUDE = $(INSTALL_LOCATION)/include/edm
 
   INC += act_grf.h
   INC += act_win.h

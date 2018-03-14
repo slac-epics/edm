@@ -7,7 +7,7 @@ include $(EDMTOP)/configure/CONFIG_EDM
 USR_CFLAGS += -D__osf__=1
 
 
-INSTALL_INCLUDE = $(INSTALL_LOCATION)/include
+INSTALL_INCLUDE = $(INSTALL_LOCATION)/include/edm
 
 SRC_DIRS += $(EDMTOP)/util/sys
 INC += os.h

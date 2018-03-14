@@ -39,7 +39,7 @@ ifdef EPICS_HOST_ARCH
    PV_LIBS_DEFAULT += ca Com
    PV_LIBS_Darwin += -nil-
 
-   INSTALL_INCLUDE = $(INSTALL_LOCATION)/include
+   INSTALL_INCLUDE = $(INSTALL_LOCATION)/include/edm
    USR_INCLUDES += -I$(TOP)/util -I$(TOP)/edmlib
 
    LIB_SRCS   += textupdate.cc

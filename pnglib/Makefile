@@ -25,7 +25,7 @@ PNG_INC=/usr/include
 
    LIBRARY = 57d79238-2924-420b-ba67-dfbecdf03fcd
 
-   INSTALL_INCLUDE = $(INSTALL_LOCATION)/include
+   INSTALL_INCLUDE = $(INSTALL_LOCATION)/include/edm
    USR_INCLUDES += -I$(TOP)/util -I$(TOP)/edmlib
 
    USR_INCLUDES += -I$(MOTIF_INC) -I$(X11_INC)

@@ -50,7 +50,7 @@ endif
 
    PROD_LIBS += ca Com
    
-   INSTALL_INCLUDE = $(INSTALL_LOCATION)/include
+   INSTALL_INCLUDE = $(INSTALL_LOCATION)/include/edm
    USR_INCLUDES += -I$(TOP)/util -I$(TOP)/edmlib
 
    USR_INCLUDES += -I$(MOTIF_INC) -I$(X11_INC)
