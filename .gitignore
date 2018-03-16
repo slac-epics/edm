@@ -1,2 +1,6 @@
 O.*
 *.log
+bin/
+lib/
+include/
+RELEASE_SITE
