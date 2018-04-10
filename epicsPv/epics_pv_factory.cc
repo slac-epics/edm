@@ -1022,7 +1022,7 @@ void PVValueString::read_ctrlinfo(const void *buf)
     const struct dbr_sts_string *val = (const dbr_sts_string *)buf;
     status = val->status;
     severity = val->severity;
-    Strncpy(value, val->value, MAX_STRING_SIZE );
+    Strncpy(value, val->value, MAX_STRING_SIZE-1 );
 }
     
 void PVValueString::read_value(const event_handler_args args)
@@ -1033,7 +1033,7 @@ void PVValueString::read_value(const event_handler_args args)
     nano = val->stamp.nsec;
     status = val->status;
     severity = val->severity;
-    Strncpy(value, val->value, MAX_STRING_SIZE );
+    Strncpy(value, val->value, MAX_STRING_SIZE-1 );
 }
 
 // ---------------------- PVValueChar -------------------------------
