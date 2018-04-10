@@ -4,21 +4,11 @@
 #
 
 R1.12.105B-1.1.0	2018-04-10	Bruce Hill
-	2018-04-10 Bruce Hill eb5c62d Fixed Strncpy size error in epics_pv_factory.cc
-	2018-03-16 Bruce Hill 421a7f6 Fixed .versionFile soft link
-	2018-03-16 Bruce Hill a8a3ad9 Added more generated files/dirs to .gitignore
-	2018-02-08 Hugo Slepicka 9ae7ce7 Removing CROSS_COMPILER_TARGET_ARCHS. EDM is only used for the host.
-	2018-02-08 Hugo Slepicka 86f8fef Changes required to unbundle EDM.
-	2018-03-14 Bruce Hill 0b72b38 Rename lib to edmlib
-	2018-03-14 Bruce Hill afe7d69 Adding a .versionFile soft link to lib/edm.version
-	2018-03-14 Bruce Hill d635c51 Merge tag 'edm_1_12_105B' into R1.12.105B-1.branch
-	2014-11-04 Murali Shankar dae32dc Moved over mmover from custom EDM deployments for Garth.
-	2014-10-13 Murali Shankar 945de93 Added the bar widget from edm-R1-12-56-lcls1 as activeSlacBarClass to slacLib This previous version has some optimizations that were pulled out from later releases. This change seems to affect the LCLS fastBPM screens in terms of a flicker. Using double buffering in the fastEDM screen helps with the flickering but consumes way too much horsepower on the Sunrays in MCC So, Murali and Mike Z copied over the edm-R1-12-56-lcls1 version of this widget and added it as activeSlacBarClass in SLAClib
-	2014-09-16 Murali Shankar 65fda7b Add mzXyGraph to the registries as well
-	2014-09-16 Murali Shankar aaa4c5d Add mzxygraph to makefile
-	2014-09-05 Murali Shankar 0bf6539 Added a copy of xygraph from baselib with HOPR/LOPR monitors for Mike Z. The intent is to test this for a while in production and then see if we can incorporate the changes back into baselib. I have also add the original xygraph.h and xygraph.cc into this folder to faciliate 3way merges.
-	2014-08-12 Murali Shankar b4bf5a7 Ignore mousewheel events for motif sliders CATER 118737 - SLAC Local patch
-	2018-03-12 Hugo Slepicka ef6950b Imported upstream version edm-1-12-105B
+	Fixed Strncpy size error in epics_pv_factory.cc
+
+R1.12.105B-1.0.0	2018-04-10	Bruce Hill
+	Merged in edm_1_12_105B updates
+	Changes required to unbundle EDM.
 
 R1.12.105A-1.0.0	2017-04-29	Bruce Hill
 	Fix build error for 32 bit linux from 64 bit host. Prior code overwrote OP_SYS_LDFLAGS for a old solaris only issue. Made it conditional for OS_CLASS solaris.
