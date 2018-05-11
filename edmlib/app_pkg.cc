@@ -28,6 +28,9 @@
 #include <X11/Intrinsic.h>
 #include <sys/wait.h>
 
+#include <sys/time.h>
+#include <time.h>
+
 #define SMALL_SYM_ARRAY_SIZE 10
 #define SMALL_SYM_ARRAY_LEN 31
 
@@ -5266,6 +5269,7 @@ char title[31+1], *pTitle;
 int n;
 Arg args[10];
 XmString xmStr1;
+  printf("XXXXXXXXXXXXXXXXXXXXXXXXX START APPLICATION\n");
 
   primaryServer = _primaryServer;
   oneInstance = _oneInstance;
@@ -5624,9 +5628,19 @@ err_return:
   displayScheme.setAppCtx( this );
   displayScheme.loadDefault( &ci );
 
+  char buffer[30];
+  struct timeval tv;
+  time_t curtime;
+
   curFile = fileHead->flink;
   while ( curFile != fileHead ) {
 
+    gettimeofday(&tv, NULL);
+    curtime=tv.tv_sec;
+    strftime(buffer,30,"%m-%d-%Y  %T.",localtime(&curtime));
+    printf("OWI: %s%f\n",buffer,tv.tv_usec/1000.0);
+
+    printf("XXXXXXXXXXXXXXXXX While to Open File...\n");
     cur = new activeWindowListType;
     //strcpy( cur->winName, "" );
     cur->requestDelete = 0;
@@ -5674,6 +5688,11 @@ err_return:
 
   if ( !iconified ) XtMapWidget( appTop );
 
+  gettimeofday(&tv, NULL);
+  curtime=tv.tv_sec;
+  strftime(buffer,30,"%m-%d-%Y  %T.",localtime(&curtime));
+  printf("MWS: %s%f\n",buffer,tv.tv_usec/1000.0);
+
   return 1;
 
 }
@@ -5703,7 +5722,6 @@ char filePart[255+1], winNam[WINNAME_MAX+1];
 int gotPosition, posx, posy;
 
   //fprintf( stderr, "list = [%s]\n", list );
-
   buf1 = NULL;
   Strncpy( tmpMsg, list, 255 );
   tmpMsg[255] = 0;
@@ -6433,9 +6451,15 @@ char msg[MAX_DIR+1];
       if ( !usingControlPV ) deiconifyMainWindow();
     }
 
+    char buffer[30];
+    struct timeval tv;
+    time_t curtime;
+
     cur = head->flink;
     while ( cur != head ) {
       if ( cur->requestOpen ) {
+
+        printf("XXXXXXXXXXXXXXXXXX REQUEST OPEN is TRUE\n");
         cur->requestOpen = 0;
         if ( cur->requestImport ) {
           cur->requestImport = 0;
@@ -6482,6 +6506,12 @@ char msg[MAX_DIR+1];
           if ( cur->requestActivate == 1 ) cur->node.setNoRefresh();
           if ( cur->requestReactivate == 1 ) cur->node.setNoRefresh();
         }
+	printf("XXXXXXXXXXXXXXXXXXXXXXXXXXXX END OF REQUEST OPEN\n");
+
+        gettimeofday(&tv, NULL);
+        curtime=tv.tv_sec;
+        strftime(buffer,30,"%m-%d-%Y  %T.",localtime(&curtime));
+        printf("OWS: %s%f\n",buffer,tv.tv_usec/1000.0);
 
       }
       cur = cur->flink;

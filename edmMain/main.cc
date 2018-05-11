@@ -67,6 +67,9 @@
 
 #include "main.str"
 
+#include <sys/time.h>
+#include <time.h>
+
 void doCmdPut (
   char *cmd
 ) {
@@ -2134,6 +2137,17 @@ int primaryServerWantsExit;
 int numLocaleFailures = 0;
 
 int shutdownTry = 200; // aprox 10 seconds
+
+// HUGO CRAP
+char buffer[30];
+struct timeval tv;
+time_t curtime;
+
+  gettimeofday(&tv, NULL); 
+  curtime=tv.tv_sec;
+
+  strftime(buffer,30,"%m-%d-%Y  %T.",localtime(&curtime));
+  printf("MWI: %s%f\n",buffer,tv.tv_usec/1000.0);
 
   XSetErrorHandler( xErrorHandler );
   //XSetIOErrorHandler( xIoErrorHandler );
