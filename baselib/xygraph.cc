@@ -18,6 +18,7 @@
 
 #define __xygraph_cc 1
 
+#include "epicsThread.h"
 #include "xygraph.h"
 #include "math.h"
 
@@ -6275,6 +6276,21 @@ int ctl;
 
   if ( ctl ) return;
 
+  if ( xPvData[i] == NULL )
+  {
+	if ( debugMode() >= 6 )
+		printf( "xyGraphClass::genChronoVector: trace %d NULL xPvData\n", i );
+	return;
+  }
+  if ( yPvData[i] == NULL )
+  {
+	if ( debugMode() >= 6 )
+		printf( "xyGraphClass::genChronoVector: trace %d NULL yPvData\n", i );
+	return;
+  }
+
+  if ( debugMode() >= 6 ) printf( "xyGraphClass::genChronoVector: trace %d in thread %s\n", i, epicsThreadGetNameSelf() );
+
   yi = 0;
   if ( y2Scale[i] ) yi = 1;
 
@@ -6559,6 +6575,21 @@ int ctl;
   ctl = (int) traceCtl & ( 1 << i );
 
   if ( ctl ) return;
+
+  if ( xPvData[i] == NULL )
+  {
+	if ( debugMode() )
+		printf( "xyGraphClass::genXyVector: trace %d NULL xPvData\n", i );
+	return;
+  }
+  if ( yPvData[i] == NULL )
+  {
+	if ( debugMode() )
+		printf( "xyGraphClass::genXyVector: trace %d NULL yPvData\n", i );
+	return;
+  }
+
+  if ( debugMode() >= 6 ) printf( "xyGraphClass::genXyVector: trace %d in thread %s\n", i, epicsThreadGetNameSelf() );
 
   yi = 0;
   if ( y2Scale[i] ) yi = 1;
