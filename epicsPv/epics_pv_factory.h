@@ -191,7 +191,7 @@ public:
 private:
     int    value;
     size_t enums;
-    char   strs[MAX_ENUM_STATES][MAX_ENUM_STRING_SIZE];
+    char   strs[MAX_ENUM_STATES][MAX_ENUM_STRING_SIZE+1];
 };
 
 class PVValueString : public PVValue

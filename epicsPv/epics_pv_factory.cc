@@ -998,7 +998,7 @@ void PVValueEnum::read_ctrlinfo(const void *buf)
     enums = val->no_str;
     for (size_t i=0; i<enums; ++i) {
 		if ( debugMode() >= 5 ) printf( "PVValueEnum::read_ctrlinfo: %s strs[%zu] = \"%s\"\n", epv->get_name(), i, val->strs[i] );
-        Strncpy(strs[i], val->strs[i], MAX_ENUM_STRING_SIZE-1);
+        Strncpy(strs[i], val->strs[i], MAX_ENUM_STRING_SIZE);
 	}
     value = val->value;
 	if ( debugMode() >= 4 ) printf( "PVValueEnum::read_ctrlinfo: %s value = %d\n", epv->get_name(), value );
@@ -1059,7 +1059,7 @@ size_t PVValueString::get_string(char *strbuf, size_t buflen) const
     if (buflen <= len)
         len = buflen-1;
     Strncpy(strbuf, epicsStrValue, len);
-    
+ 
     return len;
 }
 
@@ -1068,7 +1068,8 @@ void PVValueString::read_ctrlinfo(const void *buf)
     const struct dbr_sts_string *val = (const dbr_sts_string *)buf;
     status = val->status;
     severity = val->severity;
-    Strncpy(epicsStrValue, val->value, MAX_STRING_SIZE-1 );
+	// Note: EPICS MAX_STRING_SIZE is buffer size, not buffer size - 1
+    Strncpy(epicsStrValue, val->value, MAX_STRING_SIZE-1 );	// EPICS MAX_STRING_SIZE
 }
     
 void PVValueString::read_value(const event_handler_args args)
@@ -1079,7 +1080,8 @@ void PVValueString::read_value(const event_handler_args args)
     nano = val->stamp.nsec;
     status = val->status;
     severity = val->severity;
-    Strncpy(epicsStrValue, val->value, MAX_STRING_SIZE-1 );
+	// Note: EPICS MAX_STRING_SIZE is buffer size, not buffer size - 1
+    Strncpy(epicsStrValue, val->value, MAX_STRING_SIZE-1 );	// EPICS MAX_STRING_SIZE
 }
 
 // ---------------------- PVValueChar -------------------------------
