@@ -552,74 +552,62 @@ char title[32], *ptr;
   eBuf->bufBgColor = bgColor.pixelIndex();
 
   if ( xMinPvExpStr.getRaw() )
-    Strncpy( eBuf->xMinBufPvName, xMinPvExpStr.getRaw(),
-     PV_Factory::MAX_PV_NAME );
+    Strncpy( eBuf->xMinBufPvName, xMinPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->xMinBufPvName, "" );
 
  if ( xMaxPvExpStr.getRaw() )
-   Strncpy( eBuf->xMaxBufPvName, xMaxPvExpStr.getRaw(),
-    PV_Factory::MAX_PV_NAME );
+   Strncpy( eBuf->xMaxBufPvName, xMaxPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->xMaxBufPvName, "" );
 
  if ( xModePvExpStr.getRaw() )
-   Strncpy( eBuf->xModeBufPvName, xModePvExpStr.getRaw(),
-    PV_Factory::MAX_PV_NAME );
+   Strncpy( eBuf->xModeBufPvName, xModePvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->xModeBufPvName, "" );
 
   if ( yMinPvExpStr.getRaw() )
-    Strncpy( eBuf->yMinBufPvName, yMinPvExpStr.getRaw(),
-     PV_Factory::MAX_PV_NAME );
+    Strncpy( eBuf->yMinBufPvName, yMinPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->yMinBufPvName, "" );
 
  if ( yMaxPvExpStr.getRaw() )
-   Strncpy( eBuf->yMaxBufPvName, yMaxPvExpStr.getRaw(),
-    PV_Factory::MAX_PV_NAME );
+   Strncpy( eBuf->yMaxBufPvName, yMaxPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->yMaxBufPvName, "" );
 
  if ( yModePvExpStr.getRaw() )
-   Strncpy( eBuf->yModeBufPvName, yModePvExpStr.getRaw(),
-    PV_Factory::MAX_PV_NAME );
+   Strncpy( eBuf->yModeBufPvName, yModePvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->yModeBufPvName, "" );
 
  if ( colorPvExpStr.getRaw() )
-   Strncpy( eBuf->colorBufPvName, colorPvExpStr.getRaw(),
-    PV_Factory::MAX_PV_NAME );
+   Strncpy( eBuf->colorBufPvName, colorPvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->colorBufPvName, "" );
 
  if ( filePvExpStr.getRaw() )
-   Strncpy( eBuf->fileBufPvName, filePvExpStr.getRaw(),
-    PV_Factory::MAX_PV_NAME );
+   Strncpy( eBuf->fileBufPvName, filePvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->fileBufPvName, "" );
 
  if ( updatePvExpStr.getRaw() )
-   Strncpy( eBuf->updateBufPvName, updatePvExpStr.getRaw(),
-    PV_Factory::MAX_PV_NAME );
+   Strncpy( eBuf->updateBufPvName, updatePvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->updateBufPvName, "" );
 
   if ( archivePvExpStr.getRaw() )
-    Strncpy( eBuf->archiveBufPvName, archivePvExpStr.getRaw(),
-     PV_Factory::MAX_PV_NAME );
+    Strncpy( eBuf->archiveBufPvName, archivePvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->archiveBufPvName, "" );
 
   if ( startTimePvExpStr.getRaw() )
-    Strncpy( eBuf->startTimeBufPvName, startTimePvExpStr.getRaw(),
-     PV_Factory::MAX_PV_NAME );
+    Strncpy( eBuf->startTimeBufPvName, startTimePvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->startTimeBufPvName, "" );
 
   if ( endTimePvExpStr.getRaw() )
-    Strncpy( eBuf->endTimeBufPvName, endTimePvExpStr.getRaw(),
-     PV_Factory::MAX_PV_NAME );
+    Strncpy( eBuf->endTimeBufPvName, endTimePvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->endTimeBufPvName, "" );
 
@@ -632,43 +620,29 @@ char title[32], *ptr;
    title, NULL, NULL, NULL );
 
   ef.addTextField( archivePlot_str4, 30, &bufX );
-
   ef.addTextField( archivePlot_str5, 30, &bufY );
   ef.addTextField( archivePlot_str6, 30, &bufW );
   ef.addTextField( archivePlot_str7, 30, &bufH );
 
   ef.addTextField( archivePlot_str19, 30, &eBuf->bufGraphId );
 
-  ef.addTextField( archivePlot_str20, 30, eBuf->archiveBufPvName,
-   PV_Factory::MAX_PV_NAME );
-  ef.addTextField( archivePlot_str21, 30, eBuf->startTimeBufPvName,
-   PV_Factory::MAX_PV_NAME );
-  ef.addTextField( archivePlot_str22, 30, eBuf->endTimeBufPvName,
-   PV_Factory::MAX_PV_NAME );
+  ef.addTextField( archivePlot_str20, 30, eBuf->archiveBufPvName,   PV_Factory::MAX_PV_NAME );
+  ef.addTextField( archivePlot_str21, 30, eBuf->startTimeBufPvName, PV_Factory::MAX_PV_NAME );
+  ef.addTextField( archivePlot_str22, 30, eBuf->endTimeBufPvName,   PV_Factory::MAX_PV_NAME );
 
-  ef.addTextField( archivePlot_str15, 30, eBuf->fileBufPvName,
-   PV_Factory::MAX_PV_NAME );
-  ef.addTextField( archivePlot_str10, 30, eBuf->xModeBufPvName,
-   PV_Factory::MAX_PV_NAME );
-  ef.addTextField( archivePlot_str8, 30, eBuf->xMinBufPvName,
-   PV_Factory::MAX_PV_NAME );
-  ef.addTextField( archivePlot_str9, 30, eBuf->xMaxBufPvName,
-   PV_Factory::MAX_PV_NAME );
-  ef.addTextField( archivePlot_str13, 30, eBuf->yModeBufPvName,
-   PV_Factory::MAX_PV_NAME );
-  ef.addTextField( archivePlot_str11, 30, eBuf->yMinBufPvName,
-   PV_Factory::MAX_PV_NAME );
-  ef.addTextField( archivePlot_str12, 30, eBuf->yMaxBufPvName,
-   PV_Factory::MAX_PV_NAME );
+  ef.addTextField( archivePlot_str15, 30, eBuf->fileBufPvName,      PV_Factory::MAX_PV_NAME );
+  ef.addTextField( archivePlot_str10, 30, eBuf->xModeBufPvName,     PV_Factory::MAX_PV_NAME );
+  ef.addTextField( archivePlot_str8,  30, eBuf->xMinBufPvName,      PV_Factory::MAX_PV_NAME );
+  ef.addTextField( archivePlot_str9,  30, eBuf->xMaxBufPvName,      PV_Factory::MAX_PV_NAME );
+  ef.addTextField( archivePlot_str13, 30, eBuf->yModeBufPvName,     PV_Factory::MAX_PV_NAME );
+  ef.addTextField( archivePlot_str11, 30, eBuf->yMinBufPvName,      PV_Factory::MAX_PV_NAME );
+  ef.addTextField( archivePlot_str12, 30, eBuf->yMaxBufPvName,      PV_Factory::MAX_PV_NAME );
 
-  ef.addTextField( archivePlot_str14, 30, eBuf->colorBufPvName,
-   PV_Factory::MAX_PV_NAME );
-  ef.addTextField( archivePlot_str16, 30, eBuf->updateBufPvName,
-   PV_Factory::MAX_PV_NAME );
-  ef.addColorButton( archivePlot_str17, actWin->ci, &eBuf->lineCb,
-   &eBuf->bufLineColor );
-  ef.addColorButton( archivePlot_str18, actWin->ci, &eBuf->bgCb,
-   &eBuf->bufBgColor );
+  ef.addTextField( archivePlot_str14, 30, eBuf->colorBufPvName,     PV_Factory::MAX_PV_NAME );
+  ef.addTextField( archivePlot_str16, 30, eBuf->updateBufPvName,    PV_Factory::MAX_PV_NAME );
+
+  ef.addColorButton( archivePlot_str17, actWin->ci, &eBuf->lineCb, &eBuf->bufLineColor );
+  ef.addColorButton( archivePlot_str18, actWin->ci, &eBuf->bgCb,   &eBuf->bufBgColor );
 
   return 1;
 

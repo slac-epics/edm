@@ -1681,34 +1681,29 @@ char title[32], *ptr;
   eBuf->bufDeactivateCallbackFlag = deactivateCallbackFlag;
 
   if ( controlPvName.getRaw() )
-    Strncpy( eBuf->controlBufPvName, controlPvName.getRaw(),
-     PV_Factory::MAX_PV_NAME );
+    Strncpy( eBuf->controlBufPvName, controlPvName.getRaw(), PV_Factory::MAX_PV_NAME );
   else
-    Strncpy( eBuf->controlBufPvName, "", 39 );
+    Strncpy( eBuf->controlBufPvName, "", PV_Factory::MAX_PV_NAME );
 
   if ( readPvName.getRaw() )
-    Strncpy( eBuf->readBufPvName, readPvName.getRaw(),
-    PV_Factory::MAX_PV_NAME );
+    Strncpy( eBuf->readBufPvName, readPvName.getRaw(), PV_Factory::MAX_PV_NAME );
   else
-    Strncpy( eBuf->readBufPvName, "", 39 );
+    Strncpy( eBuf->readBufPvName, "", PV_Factory::MAX_PV_NAME );
 
   if ( savedValuePvName.getRaw() )
-    Strncpy( eBuf->savedValueBufPvName, savedValuePvName.getRaw(),
-    PV_Factory::MAX_PV_NAME );
+    Strncpy( eBuf->savedValueBufPvName, savedValuePvName.getRaw(), PV_Factory::MAX_PV_NAME );
   else
-    Strncpy( eBuf->savedValueBufPvName, "", 39 );
+    Strncpy( eBuf->savedValueBufPvName, "", PV_Factory::MAX_PV_NAME );
 
   if ( controlLabelName.getRaw() )
-    Strncpy( eBuf->controlBufLabelName, controlLabelName.getRaw(),
-     PV_Factory::MAX_PV_NAME );
+    Strncpy( eBuf->controlBufLabelName, controlLabelName.getRaw(), PV_Factory::MAX_PV_NAME );
   else
-    Strncpy( eBuf->controlBufLabelName, "", 39 );
+    Strncpy( eBuf->controlBufLabelName, "", PV_Factory::MAX_PV_NAME );
 
   if ( readLabelName.getRaw() )
-    Strncpy( eBuf->readBufLabelName, readLabelName.getRaw(),
-     PV_Factory::MAX_PV_NAME );
+    Strncpy( eBuf->readBufLabelName, readLabelName.getRaw(), PV_Factory::MAX_PV_NAME );
   else
-    Strncpy( eBuf->readBufLabelName, "", 39 );
+    Strncpy( eBuf->readBufLabelName, "", PV_Factory::MAX_PV_NAME );
 
   if ( controlLabelType == SLC_K_LITERAL )
     strcpy( controlLabelTypeStr, activeSliderClass_str12 );
@@ -1742,18 +1737,14 @@ char title[32], *ptr;
   ef.addTextField( activeSliderClass_str21, 35, &eBuf->bufW );
   ef.addTextField( activeSliderClass_str22, 35, &eBuf->bufH );
 
-  ef.addTextField( activeSliderClass_str36, 35, eBuf->controlBufPvName,
-   PV_Factory::MAX_PV_NAME );
+  ef.addTextField( activeSliderClass_str36, 35, eBuf->controlBufPvName, PV_Factory::MAX_PV_NAME );
 
-  ef.addTextField( activeSliderClass_str42, 35, eBuf->readBufPvName,
-   PV_Factory::MAX_PV_NAME );
+  ef.addTextField( activeSliderClass_str42, 35, eBuf->readBufPvName, PV_Factory::MAX_PV_NAME );
   rdPvEntry = ef.getCurItem();
 
-  ef.addTextField( activeSliderClass_str48, 35, eBuf->savedValueBufPvName,
-   PV_Factory::MAX_PV_NAME );
+  ef.addTextField( activeSliderClass_str48, 35, eBuf->savedValueBufPvName, PV_Factory::MAX_PV_NAME );
 
-  ef.addTextField( activeSliderClass_str37, 35, eBuf->controlBufLabelName,
-   PV_Factory::MAX_PV_NAME );
+  ef.addTextField( activeSliderClass_str37, 35, eBuf->controlBufLabelName, PV_Factory::MAX_PV_NAME );
   ctlLabelEntry = ef.getCurItem();
   ef.addOption( activeSliderClass_str38, activeSliderClass_str39,
    controlLabelTypeStr, 15 );
@@ -3305,12 +3296,10 @@ char callbackName[63+1];
 
       if ( controlLabelType == SLC_K_PV_NAME ) {
         controlLabelExists = 1;
-        Strncpy( controlLabel, controlPvName.getExpanded(),
-         PV_Factory::MAX_PV_NAME );
+        Strncpy( controlLabel, controlPvName.getExpanded(), PV_Factory::MAX_PV_NAME );
       }
       else {
-        Strncpy( controlLabel, controlLabelName.getExpanded(),
-         PV_Factory::MAX_PV_NAME );
+        Strncpy( controlLabel, controlLabelName.getExpanded(), PV_Factory::MAX_PV_NAME );
       }
 
       if ( !readLabelName.getExpanded() ||
@@ -3323,12 +3312,10 @@ char callbackName[63+1];
 
       if ( readLabelType == SLC_K_PV_NAME ) {
         readLabelExists = 1;
-        Strncpy( readLabel, readPvName.getExpanded(),
-         PV_Factory::MAX_PV_NAME );
+        Strncpy( readLabel, readPvName.getExpanded(), PV_Factory::MAX_PV_NAME );
       }
       else {
-        Strncpy( readLabel, readLabelName.getExpanded(),
-         PV_Factory::MAX_PV_NAME );
+        Strncpy( readLabel, readLabelName.getExpanded(), PV_Factory::MAX_PV_NAME );
       }
 
       if ( controlExists ) {

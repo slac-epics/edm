@@ -1526,20 +1526,17 @@ char title[32], *ptr;
   bufOrientation = orientation;
 
   if ( controlPvName.getRaw() )
-    Strncpy( eBuf->controlBufPvName, controlPvName.getRaw(),
-     PV_Factory::MAX_PV_NAME );
+    Strncpy( eBuf->controlBufPvName, controlPvName.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->controlBufPvName, "" );
 
   if ( controlLabelName.getRaw() )
-    Strncpy( eBuf->controlBufLabelName, controlLabelName.getRaw(),
-     PV_Factory::MAX_PV_NAME );
+    Strncpy( eBuf->controlBufLabelName, controlLabelName.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->controlBufLabelName, "" );
 
   if ( savedValuePvName.getRaw() )
-    Strncpy( eBuf->savedValueBufPvName, savedValuePvName.getRaw(),
-    PV_Factory::MAX_PV_NAME );
+    Strncpy( eBuf->savedValueBufPvName, savedValuePvName.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->savedValueBufPvName, "" );
 
@@ -2914,12 +2911,10 @@ int opStat;
 
       if ( controlLabelType == MSLC_K_PV_NAME ) {
         controlLabelExists = 1;
-        Strncpy( controlLabel, controlPvName.getExpanded(),
-         PV_Factory::MAX_PV_NAME );
+        Strncpy( controlLabel, controlPvName.getExpanded(), PV_Factory::MAX_PV_NAME );
       }
       else {
-        Strncpy( controlLabel, controlLabelName.getExpanded(),
-         PV_Factory::MAX_PV_NAME );
+        Strncpy( controlLabel, controlLabelName.getExpanded(), PV_Factory::MAX_PV_NAME );
       }
 
     }
