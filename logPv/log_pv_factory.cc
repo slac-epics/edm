@@ -10,13 +10,9 @@
 #include<alarm.h>
 #include<cvtFast.h>
 #include"log_pv_factory.h"
+#include "sys_types.h"
 #include "epicsVersion.h"
 #include "environment.str"
-
-int sys_get_datetime_string (
-  int string_size,
-  char *string
-);
 
 static PV_Factory *log_pv_factory = new LOG_PV_Factory();
 
