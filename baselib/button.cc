@@ -1426,7 +1426,6 @@ char *tk, *gotData, *context, buf[255+1];
 
         if ( tk ) {
           Strncpy( onLabel, tk, MAX_ENUM_STRING_SIZE );
-          onLabel[MAX_ENUM_STRING_SIZE] = 0;
 	}
 	else {
           strcpy( onLabel, "" );
@@ -1440,7 +1439,6 @@ char *tk, *gotData, *context, buf[255+1];
 
         if ( tk ) {
           Strncpy( offLabel, tk, MAX_ENUM_STRING_SIZE );
-          offLabel[MAX_ENUM_STRING_SIZE] = 0;
 	}
 	else {
           strcpy( offLabel, "" );
@@ -1576,26 +1574,22 @@ char title[32], *ptr;
   Strncpy( eBuf->bufFontTag, fontTag, 63 );
 
   if ( controlPvName.getRaw() )
-    Strncpy( eBuf->controlBufPvName, controlPvName.getRaw(),
-     PV_Factory::MAX_PV_NAME );
+    Strncpy( eBuf->controlBufPvName, controlPvName.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->controlBufPvName, "" );
 
   if ( readPvName.getRaw() )
-    Strncpy( eBuf->readBufPvName, readPvName.getRaw(),
-     PV_Factory::MAX_PV_NAME );
+    Strncpy( eBuf->readBufPvName, readPvName.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->readBufPvName, "" );
 
   if ( visPvExpString.getRaw() )
-    Strncpy( eBuf->bufVisPvName, visPvExpString.getRaw(),
-     PV_Factory::MAX_PV_NAME );
+    Strncpy( eBuf->bufVisPvName, visPvExpString.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufVisPvName, "" );
 
   if ( colorPvExpString.getRaw() )
-    Strncpy( eBuf->bufColorPvName, colorPvExpString.getRaw(),
-     PV_Factory::MAX_PV_NAME );
+    Strncpy( eBuf->bufColorPvName, colorPvExpString.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->bufColorPvName, "" );
 
@@ -1775,7 +1769,7 @@ int activeButtonClass::eraseActive ( void ) {
 int activeButtonClass::draw ( void ) {
 
 int tX, tY;
-XRectangle xR = { x, y, w, h };
+XRectangle xR = { (short) x, (short) y, (short) w, (short) h };
 int blink = 0;
 
   if ( deleteRequest ) return 1;
@@ -1866,7 +1860,7 @@ int blink = 0;
 int activeButtonClass::drawActive ( void ) {
 
 int cV, rV, tX, tY;
-XRectangle xR = { x, y, w, h };
+XRectangle xR = { (short) x, (short) y, (short) w, (short) h };
 char string[MAX_ENUM_STRING_SIZE+1];
 int blink = 0;
 
@@ -1981,8 +1975,7 @@ int blink = 0;
     }
     else {
       if ( stateStringPvId && stateStringPvId->get_enum_count() > 0 ) {
-        Strncpy( string, (char *) stateStringPvId->get_enum( 0 ),
-         MAX_ENUM_STRING_SIZE );
+        Strncpy( string, (char *) stateStringPvId->get_enum( 0 ), MAX_ENUM_STRING_SIZE );
       }
       else {
         Strncpy( string, "0", MAX_ENUM_STRING_SIZE );
@@ -2050,8 +2043,7 @@ int blink = 0;
     }
     else {
       if ( stateStringPvId && stateStringPvId->get_enum_count() > 1 ) {
-        Strncpy( string, (char *) stateStringPvId->get_enum( 1 ),
-         MAX_ENUM_STRING_SIZE );
+        Strncpy( string, (char *) stateStringPvId->get_enum( 1 ), MAX_ENUM_STRING_SIZE );
       }
       else {
         Strncpy( string, "1", MAX_ENUM_STRING_SIZE );
@@ -2683,7 +2675,8 @@ int stat, index, invisColor;
 
 //short rv, cv;
 int rv, cv;
-char msg[79+1];
+const size_t msg_MAX	= 79;
+char msg[msg_MAX+1];
 
   if ( actWin->isIconified ) return;
 
@@ -2720,9 +2713,8 @@ char msg[79+1];
     }
     else if ( controlPvId->get_type().type !=
      ProcessVariable::Type::enumerated ) {
-      Strncpy( msg, actWin->obj.getNameFromClass( "activeButtonClass" ),
-       79 );
-      Strncat( msg, activeButtonClass_str51, 79 );
+      Strncpy( msg, actWin->obj.getNameFromClass( "activeButtonClass" ), msg_MAX );
+      Strncat( msg, activeButtonClass_str51, msg_MAX );
       actWin->appCtx->postMessage( msg );
       controlPvConnected = 0;
       active = 0;
@@ -2786,9 +2778,8 @@ char msg[79+1];
     }
     else if ( readPvId->get_type().type !=
      ProcessVariable::Type::enumerated ) {
-      Strncpy( msg, actWin->obj.getNameFromClass( "activeButtonClass" ),
-       79 );
-      Strncat( msg, activeButtonClass_str54, 79 );
+      Strncpy( msg, actWin->obj.getNameFromClass( "activeButtonClass" ), msg_MAX );
+      Strncat( msg, activeButtonClass_str54, msg_MAX );
       actWin->appCtx->postMessage( msg );
       readPvConnected = 0;
       active = 0;
@@ -3149,7 +3140,6 @@ void activeButtonClass::changeDisplayParams (
 
   if ( _flag & ACTGRF_BTNFONTTAG_MASK ) {
     Strncpy( fontTag, _btnFontTag, 63 );
-    fontTag[63] = 0;
     actWin->fi->loadFontTag( fontTag );
     fs = actWin->fi->getXFontStruct( fontTag );
     updateDimensions();
@@ -3264,7 +3254,6 @@ void activeButtonClass::replaceString (
     int l = max;
     if ( 39 < max ) l = 39;
     Strncpy( minVisString, string, l );
-    minVisString[l] = 0;
   }
   else if ( i == 5 ) {
     int l = max;

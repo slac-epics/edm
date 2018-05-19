@@ -11,6 +11,7 @@
 #include<cvtFast.h>
 #include "sys_types.h"
 #include"epics_pv_factory.h"
+#include "utility.h"
 #include "epicsVersion.h"
 
 static PV_Factory *epics_pv_factory = new EPICS_PV_Factory();
@@ -139,6 +140,10 @@ EPICS_ProcessVariable::EPICS_ProcessVariable(const char *_name)
         fprintf(stderr, "CA search & connect error('%s'): %s\n",
                 get_name(), ca_message(stat));
     }
+	if ( debugMode() >= 3 ) {
+    	printf( "EPICS_ProcessVariable: created this %p, PV %s\n", this, get_name() );
+		fflush( stdout );
+	}
 }
 
 EPICS_ProcessVariable::~EPICS_ProcessVariable()
@@ -146,13 +151,18 @@ EPICS_ProcessVariable::~EPICS_ProcessVariable()
     EPICS_PV_Factory::forget(this);
     if (pv_chid)
         ca_clear_channel(pv_chid);
-    //fprintf( stderr,"EPICS_ProcessVariable %s deleted\n", get_name());
+	if ( debugMode() >= 3 ) {
+    	printf( "~EPICS_ProcessVariable: deleting this %p, PV %s\n", this, get_name() );
+		fflush( stdout );
+	}
     delete value;
+	value = NULL;
 }
 
 void EPICS_ProcessVariable::processExistingPv ( void ) {
 
     // This function is not currently in use
+	if ( debugMode() ) printf( "EPICS_ProcessVariable::processExistingPv: comment says unused, but called for %s\n", get_name() );
 
     if ( value ) {
 
@@ -184,30 +194,39 @@ void EPICS_ProcessVariable::ca_connect_callback(
         }
         if (!me->value)
         {
+			const char	*	debugTypeName = "PVValueDouble as  default";
             switch (ca_field_type(arg.chid))
             {   // TODO: Implement more types?
                 case DBF_STRING:
                     me->value = new PVValueString(me);
+					debugTypeName = "PVValueString for DBF_STRING";
                     break;
                 case DBF_ENUM:
                     me->value = new PVValueEnum(me);
+					debugTypeName = "PVValueEnum for DBF_ENUM";
                     break;
                 case DBF_CHAR:
                     me->value = new PVValueChar(me);
+					debugTypeName = "PVValueChar for DBF_CHAR";
                     break;
                 case DBF_INT:
                     me->value = new PVValueShort(me);
+					debugTypeName = "PVValueShort for DBF_INT";
                     break;
                 case DBF_LONG:
                     me->value = new PVValueInt(me);
+					debugTypeName = "PVValueInt for DBF_LONG";
                     break;
                 case DBF_FLOAT:
                     me->value = new PVValueDouble(me,"float");
+					debugTypeName = "PVValueDouble for DBF_FLOAT";
                     break;
                 case DBF_DOUBLE:
+					debugTypeName = "PVValueDouble for DBF_DOUBLE";
                 default: // fallback: request as double
                     me->value = new PVValueDouble(me);
             }
+			if ( debugMode() >= 4 ) printf( "EPICS_ProcessVariable::ca_connect_callback: created %s for %s\n", debugTypeName, me->get_name() );
         }
         // CA quirk: DBR_CTRL doesn't work with arrays,
         // so get only one element:
@@ -552,10 +571,27 @@ PVValue::PVValue(EPICS_ProcessVariable *epv)
     lower_alarm_limit = DBL_MIN;
     upper_ctrl_limit = 10.0;
     lower_ctrl_limit = 0.0;
+	if ( debugMode() >= 4 ) {
+		if ( epv )
+			printf( "PVValue: Created this %p, PV %s\n", this, epv->get_name() );
+		else
+			printf( "PVValue: Created this %p, No PV\n", this );
+	}
 }
 
 PVValue::~PVValue()
-{}
+{
+	if ( debugMode() >= 4 ) {
+		if ( epv ) {
+			printf( "~PVValue: Deleting this %p, PV %s\n", this, this->epv->get_name() );
+			epv = NULL;
+		}
+		else {
+			printf( "~PVValue: Deleting this %p, No PV\n", this );
+		}
+	fflush( stdout );
+	}
+}
 
 int PVValue::get_int() const
 {   return (int) get_double(); }
@@ -960,9 +996,12 @@ void PVValueEnum::read_ctrlinfo(const void *buf)
     status = val->status;
     severity = val->severity;
     enums = val->no_str;
-    for (size_t i=0; i<enums; ++i)
-        Strncpy(strs[i], val->strs[i], MAX_ENUM_STRING_SIZE);
+    for (size_t i=0; i<enums; ++i) {
+		if ( debugMode() >= 5 ) printf( "PVValueEnum::read_ctrlinfo: %s strs[%zu] = \"%s\"\n", epv->get_name(), i, val->strs[i] );
+        Strncpy(strs[i], val->strs[i], MAX_ENUM_STRING_SIZE-1);
+	}
     value = val->value;
+	if ( debugMode() >= 4 ) printf( "PVValueEnum::read_ctrlinfo: %s value = %d\n", epv->get_name(), value );
     upper_disp_limit = enums;
     upper_ctrl_limit = enums;
 }
@@ -990,29 +1029,36 @@ static ProcessVariable::specificType str_type =
 PVValueString::PVValueString(EPICS_ProcessVariable *epv)
         : PVValue(epv)
 {
-    value[0] = '\0';
+    epicsStrValue[0] = '\0';
     specific_type = str_type;
 }
 
 const ProcessVariable::Type &PVValueString::get_type() const
-{   return string_type; }
+{  
+	return string_type;
+}
 
 short PVValueString::get_DBR() const
-{   return DBR_STRING; }
+{  
+	return DBR_STRING;
+}
 
 int PVValueString::get_int() const
-{   return atoi(value); }
+{  
+	return atoi(epicsStrValue);
+}
 
 double PVValueString::get_double() const
-{   return atof(value); }
+{  
+	return atof(epicsStrValue);
+}
 
 size_t PVValueString::get_string(char *strbuf, size_t buflen) const
 {
-    size_t len = strlen(value);
+    size_t len = strlen(epicsStrValue);
     if (buflen <= len)
         len = buflen-1;
-    Strncpy(strbuf, value, len);
-    strbuf[len] = '\0';
+    Strncpy(strbuf, epicsStrValue, len);
     
     return len;
 }
@@ -1022,7 +1068,7 @@ void PVValueString::read_ctrlinfo(const void *buf)
     const struct dbr_sts_string *val = (const dbr_sts_string *)buf;
     status = val->status;
     severity = val->severity;
-    Strncpy(value, val->value, MAX_STRING_SIZE-1 );
+    Strncpy(epicsStrValue, val->value, MAX_STRING_SIZE-1 );
 }
     
 void PVValueString::read_value(const event_handler_args args)
@@ -1033,7 +1079,7 @@ void PVValueString::read_value(const event_handler_args args)
     nano = val->stamp.nsec;
     status = val->status;
     severity = val->severity;
-    Strncpy(value, val->value, MAX_STRING_SIZE-1 );
+    Strncpy(epicsStrValue, val->value, MAX_STRING_SIZE-1 );
 }
 
 // ---------------------- PVValueChar -------------------------------

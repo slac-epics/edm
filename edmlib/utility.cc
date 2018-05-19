@@ -617,7 +617,6 @@ mode_t curMode;
     gethostname( hostName, 63 );
 
     sys_get_datetime_string( 31, time_string );
-    time_string[31] = 0;
     Strncat( time_string, " : ", 34 );
 
     envPtr = getenv( environment_str8 );
@@ -697,7 +696,6 @@ mode_t curMode;
     if ( diagFile ) {
 
       sys_get_datetime_string( 31, time_string );
-      time_string[31] = 0;
       Strncat( time_string, " : ", 34 );
       fprintf( diagFile, time_string );
       fprintf( diagFile, text );

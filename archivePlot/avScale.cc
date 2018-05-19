@@ -197,7 +197,6 @@ scaleClass *sclo = (scaleClass *) client;
   sclo->scaleId = sclo->eBuf->bufScaleId;
 
   Strncpy( sclo->fontTag, sclo->fm.currentFontTag(), 63 );
-  sclo->fontTag[63] = 0;
 
   sclo->actWin->fi->loadFontTag( sclo->fontTag );
 
@@ -476,8 +475,7 @@ char title[32], *ptr;
     strcpy( eBuf->labelBufPvName, "" );
 
  if ( updatePvExpStr.getRaw() )
-   Strncpy( eBuf->updateBufPvName, updatePvExpStr.getRaw(),
-    PV_Factory::MAX_PV_NAME );
+   Strncpy( eBuf->updateBufPvName, updatePvExpStr.getRaw(), PV_Factory::MAX_PV_NAME );
   else
     strcpy( eBuf->updateBufPvName, "" );
 

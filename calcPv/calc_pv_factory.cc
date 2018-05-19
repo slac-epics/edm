@@ -12,6 +12,7 @@
 #include<stdlib.h>
 #include<float.h>
 #include<math.h>
+#include "sys_types.h"
 #include "epicsAlarmLike.h"
 #include "environment.str"
 #include"calc_pv_factory.h"
@@ -858,8 +859,7 @@ int CALC_PV_Factory::handleProcessInvalidOptions (
 
   char *tok, *ctx, buf[255+1];
 
-  strncpy( buf, line, 255 );
-  buf[255] = 0;
+  Strncpy( buf, line, 255 );
 
   ctx = NULL;
   tok = strtok_r( buf, "= \t\n", &ctx );

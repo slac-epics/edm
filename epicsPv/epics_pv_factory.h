@@ -206,7 +206,7 @@ public:
     void read_ctrlinfo(const void *buf);
     void read_value( const event_handler_args args );
 private:
-    dbr_string_t value;
+    dbr_string_t epicsStrValue;
 };
 
 class PVValueChar : public PVValue
