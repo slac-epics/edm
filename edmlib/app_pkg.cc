@@ -7659,7 +7659,7 @@ int appContextClass::getCfgDirectory(char *pfilter, char *pmsg) {
     if ( home ) {
       const char * pattern = "/.edm/*.edmcfg";
       if ( (strlen(home) + strlen(pattern)) > MAX_DIR) {
-          snprintf(pmsg, appContextClass_str100, "HOME");  // string too long: %s
+          snprintf(pmsg, MAX_DIR+1, appContextClass_str100, "HOME");  // string too long: %s
           this->postMessage(pmsg);
           return -1;
       }
@@ -7702,6 +7702,7 @@ int appContextClass::writeConfig(char *fname) {
     cur = cur->flink;
   }
   fclose(fp);
+  return 0;
 }
 
 char *appContextClass::checkCfgName(char *fname) {
