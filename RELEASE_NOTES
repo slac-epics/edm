@@ -2,6 +2,11 @@
 # RELEASE_NOTES
 # SLAC
 #
+R1.12.105B-1.2.0	2018-04-19	Bruce Hill
+	Added more checks for valid trace data in xygraph.cc to fix crashes.
+	Fix bug in getCfgDirectory() and a compiler warning.
+	Fix errors in epics_pv_factory Strncpy and array sizes found via valgrind
+	More Strncpy cleanup and some epics_pv create/delete diagnostics
 
 R1.12.105B-1.1.0	2018-04-10	Bruce Hill
 	Fixed Strncpy size error in epics_pv_factory.cc
