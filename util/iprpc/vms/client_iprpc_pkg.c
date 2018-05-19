@@ -33,7 +33,6 @@ int ret_stat;
 
   *buf = (IPRPC_BUF *) priv_buf;
 
-norm_return:
   return IPRPC_SUCCESS;
 
 err_return:
@@ -55,7 +54,6 @@ int ret_stat;
     goto err_return;
   }
 
-norm_return:
   return IPRPC_SUCCESS;
 
 err_return:
@@ -104,7 +102,6 @@ SYS_TIME_TYPE timeout;
 
   *handle = (IPRPC_HANDLE) priv_handle;
 
-norm_return:
   return IPRPC_SUCCESS;
 
 err_return:
@@ -148,7 +145,6 @@ int stat, ret_stat;
 
   *handle = NULL;
 
-norm_return:
   return IPRPC_SUCCESS;
 
 err_return:
@@ -162,7 +158,7 @@ int client_iprpc_get_connect_type(
 ) {
 
 PRIV_IPRPC_HANDLE_PTR priv_handle;
-int stat, ret_stat;
+int ret_stat;
 
   priv_handle = (PRIV_IPRPC_HANDLE_PTR) handle;
   if ( !priv_handle ) {
@@ -172,7 +168,6 @@ int stat, ret_stat;
 
   *mode = priv_handle->connect_type;
 
-norm_return:
   return IPRPC_SUCCESS;
 
 err_return:
@@ -203,7 +198,6 @@ SYS_TIME_TYPE timeout;
 
   priv_handle->timeout = timeout;
 
-norm_return:
   return IPRPC_SUCCESS;
 
 err_return:
@@ -219,7 +213,7 @@ int client_iprpc_connect (
 
 int mode, stat, ret_stat;
 PRIV_IPRPC_HANDLE_PTR priv_handle;
-char node[31+1];
+char node[IPNIS_MAX_SERVICE_NAME+1];
 char service_name[IPNIS_MAX_SERVICE_NAME+1];
 int num_connect_fails = 0;
 
@@ -227,16 +221,15 @@ int num_connect_fails = 0;
 
   do {
 
-    stat = ipnis_get_service( num_connect_fails, generic_service_name,
-     service_name, node, &mode );
+    stat = ipnis_get_service( num_connect_fails, generic_service_name, service_name, node, IPNIS_MAX_SERVICE_NAME, &mode );
     if ( stat != IPNIS_SUCCESS ) {
       ret_stat = stat;
       goto err_return;
     }
 
-    stat = ipncl_connect( node, service_name, client_data,
-     priv_handle->data_port );
-    if ( stat != IPNCL_SUCCESS ) num_connect_fails++;
+    stat = ipncl_connect( node, service_name, client_data, priv_handle->data_port );
+    if ( stat != IPNCL_SUCCESS )
+		num_connect_fails++;
 
   } while ( ( stat != IPNCL_SUCCESS ) && ( num_connect_fails < 2 ) );
 
@@ -248,7 +241,6 @@ int num_connect_fails = 0;
   priv_handle->connect_state = IPRPC_K_CONNECTED;
   priv_handle->connect_type = mode;
 
-norm_return:
   return IPRPC_SUCCESS;
 
 err_return:
@@ -274,7 +266,6 @@ PRIV_IPRPC_HANDLE_PTR priv_handle;
   priv_handle->connect_state = IPRPC_K_UNCONNECTED;
   priv_handle->connect_type = 0;
 
-norm_return:
   return IPRPC_SUCCESS;
 
 err_return:
@@ -379,7 +370,6 @@ PRIV_IPRPC_BUF_PTR priv_buf;
   priv_buf->cur_index++;
   priv_buf->cur_ofs = new_ofs + buf_size;
 
-norm_return:
   return IPRPC_SUCCESS;
 
 err_return:
@@ -449,7 +439,6 @@ char *data;
     }
   }
 
-norm_return:
   return IPRPC_SUCCESS;
 
 err_return:

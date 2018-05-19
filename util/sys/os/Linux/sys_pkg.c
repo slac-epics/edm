@@ -223,7 +223,7 @@ char *value;
   value = getenv( "USER" );
 
   if ( value )
-    Strncpy( name, value, max_chars );
+    Strncpy( name, value, max_chars - 1 );
   else
     strcpy( name, "" );
 
@@ -251,8 +251,7 @@ SYS_TIME_TYPE tim;
 int stat;
 
   stat = sys_get_time( &tim );
-  Strncpy( string, ctime( &tim.cal_time ), string_size );
-  string[strlen(string)-1] = 0;
+  Strncpy( string, ctime( &tim.cal_time ), string_size - 1 );
 
   return 1;
 
@@ -437,8 +436,7 @@ int sys_cvt_time_to_string (
 ) {
 
 
-  Strncpy( string, ctime( &tim->cal_time ), string_size );
-  string[strlen(string)-1] = 0;
+  Strncpy( string, ctime( &tim->cal_time ), string_size - 1 );
 
   return 1;
 

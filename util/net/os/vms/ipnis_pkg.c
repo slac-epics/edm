@@ -1,18 +1,21 @@
 #include stdlib
+#include string
 #include descrip
 #include ssdef
 #include lnmdef
 #include syidef
 
+#include sys_types
 #include ipnis_priv
 #include iprpc
 
 
 int ipnis_get_service (
   int num_connect_fails,
-  char *generic_service_name,
+  const char *generic_service_name,
   char *service_name,
-  char *node,
+  char *node_name,
+  size_t maxName,
   int *mode
 ) {
 
@@ -34,28 +37,26 @@ char *ptr, buf[127+1];
 
     Strncpy( buf, generic_service_name, 127 );
     ptr = strtok( buf, "::" );
-    Strncpy( node, ptr, 16 );
+    Strncpy( node_name, ptr, maxName );
     ptr = strtok( NULL, "::" );
-    strcpy( service_name, ptr );
+    Strncpy( service_name, ptr, maxName );
 
   }
-  else if ( strncmp( generic_service_name,
-    "IOSCNR", strlen("IOSCNR") ) == 0 ) {
+  else if ( strncmp( generic_service_name, "IOSCNR", strlen("IOSCNR") ) == 0 ) {
 
     i = 0;
 
-    strcpy( service_name, "5100" );
-    Strncpy( node, nodes[i], 16 );
+    Strncpy( service_name, "5100", maxName );
+    Strncpy( node_name, nodes[i], maxName );
     *mode = modes[i];
 
   }
-  else if ( strncmp( generic_service_name,
-    "REM_CONSOLE", strlen("REM_CONSOLE") ) == 0 ) {
+  else if ( strncmp( generic_service_name, "REM_CONSOLE", strlen("REM_CONSOLE") ) == 0 ) {
 
     i = 0;
 
-    strcpy( service_name, "5101" );
-    Strncpy( node, nodes[i], 16 );
+    Strncpy( service_name, "5101", maxName );
+    Strncpy( node_name, nodes[i], maxName );
     *mode = modes[i];
 
   }
@@ -64,8 +65,8 @@ char *ptr, buf[127+1];
 
     i = 0;
 
-    strcpy( service_name, "5102" );
-    Strncpy( node, nodes[i], 16 );
+    Strncpy( service_name, "5102", maxName );
+    Strncpy( node_name, nodes[i], maxName );
     *mode = modes[i];
 
   }
@@ -74,8 +75,8 @@ char *ptr, buf[127+1];
 
     i = 0;
 
-    strcpy( service_name, "5200" );
-    Strncpy( node, nodes[i], 16 );
+    Strncpy( service_name, "5200", maxName );
+    Strncpy( node_name, nodes[i], maxName );
     *mode = modes[i];
 
   }
@@ -86,13 +87,12 @@ char *ptr, buf[127+1];
 
   }
 
-norm_return:
   return IPNIS_SUCCESS;
 
 err_return:
 
   strcpy( service_name, "" );
-  strcpy( node, "" );
+  strcpy( node_name, "" );
   *mode = 0;
 
   return ret_stat;

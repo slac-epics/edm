@@ -226,7 +226,7 @@ int client_iprpc_connect (
 
 int mode, stat, ret_stat;
 PRIV_IPRPC_HANDLE_PTR priv_handle;
-char node[31+1];
+char node[IPNIS_MAX_SERVICE_NAME+1];
 char service_name[IPNIS_MAX_SERVICE_NAME+1];
 int num_connect_fails = 0;
 
@@ -234,16 +234,15 @@ int num_connect_fails = 0;
 
   do {
 
-    stat = ipnis_get_service( num_connect_fails, generic_service_name,
-     service_name, node, &mode );
+    stat = ipnis_get_service( num_connect_fails, generic_service_name, service_name, node, IPNIS_MAX_SERVICE_NAME, &mode );
     if ( stat != IPNIS_SUCCESS ) {
       ret_stat = stat;
       goto err_return;
     }
 
-    stat = ipncl_connect( node, service_name, client_data,
-     priv_handle->data_port );
-    if ( !( stat & 1 ) ) num_connect_fails++;
+    stat = ipncl_connect( node, service_name, client_data, priv_handle->data_port );
+    if ( !( stat & 1 ) )
+		num_connect_fails++;
 
   } while ( ( stat & 1 ) && ( num_connect_fails < 2 ) );
 

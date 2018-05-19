@@ -16,16 +16,17 @@ int rpc_connect (
   char *client_data
 ) {
 
-int mode, stat, ret_stat, num;
-PRIV_RPC_HANDLE_PTR priv_handle;
-char node[31+1], service[31+1];
+  int mode, stat, ret_stat, num;
+  PRIV_RPC_HANDLE_PTR priv_handle;
+  char node[IPNIS_MAX_SERVICE_NAME+1];
+  char service_name[IPNIS_MAX_SERVICE_NAME+1];
 
   priv_handle = (PRIV_RPC_HANDLE_PTR) handle;
 
   num = 0;
-  stat = nis_get_service( num, generic_service, service, node, &mode );
+  stat = nis_get_service( num, generic_service, service_name, node, IPNIS_MAX_SERVICE_NAME, &mode );
 
-  stat = ipncl_connect( node, service, client_data, priv_handle->data_port );
+  stat = ipncl_connect( node, service_name, client_data, priv_handle->data_port );
   if ( stat != IPNCL_SUCCESS ) {
      ret_stat = stat;
      goto err_return;

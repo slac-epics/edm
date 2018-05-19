@@ -5,9 +5,10 @@
 
 int ipnis_get_service (
   int num_connect_fails,
-  char *generic_service_name,
+  const char *generic_service_name,
   char *service_name,
-  char *node,
+  char *node_name,
+  size_t maxName,
   int *mode
 );
 
