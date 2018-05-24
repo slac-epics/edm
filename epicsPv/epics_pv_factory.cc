@@ -1068,8 +1068,7 @@ void PVValueString::read_ctrlinfo(const void *buf)
     const struct dbr_sts_string *val = (const dbr_sts_string *)buf;
     status = val->status;
     severity = val->severity;
-	// Note: EPICS MAX_STRING_SIZE is buffer size, not buffer size - 1
-    Strncpy(epicsStrValue, val->value, MAX_STRING_SIZE-1 );	// EPICS MAX_STRING_SIZE
+    Strncpy(epicsStrValue, val->value, sizeof(val->value)-1 );
 }
     
 void PVValueString::read_value(const event_handler_args args)
@@ -1080,8 +1079,7 @@ void PVValueString::read_value(const event_handler_args args)
     nano = val->stamp.nsec;
     status = val->status;
     severity = val->severity;
-	// Note: EPICS MAX_STRING_SIZE is buffer size, not buffer size - 1
-    Strncpy(epicsStrValue, val->value, MAX_STRING_SIZE-1 );	// EPICS MAX_STRING_SIZE
+    Strncpy(epicsStrValue, val->value, sizeof(val->value)-1 );
 }
 
 // ---------------------- PVValueChar -------------------------------
