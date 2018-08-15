@@ -6301,6 +6301,8 @@ int ctl;
 
     // There are two views of pv types, Type and specificType; this uses
     // specificType
+	if ( !yPvData[i] )
+		return;
     switch ( yPvType[i] ) {
     case ProcessVariable::specificType::flt:
       dyValue = (double) ( (float *) yPvData[i] )[ii];
