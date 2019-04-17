@@ -3235,7 +3235,12 @@ int ctl;
     break;
 
   case XYGC_K_TRACE_CHRONOLOGICAL:
-
+	if ( xyo->yPvData[i] == NULL )
+	{	
+		// if ( debugMode() >= 6 )
+			printf( "yValueWithTimeUpdate: trace %d NULL yPvData\n", i );
+		break;
+	}
     if ( xyo->forceVector[i] || ( xyo->yPvCount[i] > 1 ) ) { // vector
 
       for ( ii=0; ii<xyo->yPvCount[i]; ii++ ) {
@@ -9049,7 +9054,8 @@ int xyGraphClass::getButtonActionRequest (
 
 }
 
-void xyGraphClass::executeDeferred ( void ) {
+void xyGraphClass::executeDeferred ( void )
+{
 
 int i, ii, nc, ni, nu, nvu, nru, nr, ne, nd, ntcc, ntu, nrstc, nrst, ntrgc,
  tmpC, ntrg, nxrescl, nbs, nbrescl, nnl, nol, nasu, nnc, nni, nasc,
