@@ -2,6 +2,10 @@
 # RELEASE_NOTES
 # SLAC
 #
+R1.12.105B-1.3.0        2022-10-13      Jesse Bellister
+        Do not include NaN values when plotting data in x-y graphs.
+        This fix is from John Sinclair and will fix an issue where a display can become unresponsive if a large number of NaN values are plotted.
+
 R1.12.105B-1.2.0	2018-04-19	Bruce Hill
 	Added more checks for valid trace data in xygraph.cc to fix crashes.
 	Fix bug in getCfgDirectory() and a compiler warning.
