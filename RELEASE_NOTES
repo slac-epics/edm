@@ -2,6 +2,12 @@
 # RELEASE_NOTES
 # SLAC
 #
+R1.12.105B-1.4.0        2024-09-10      Jeremy Lorelli
+    Add support for Rocky 9/RHEL9
+    Fixed build against giflib >= 5
+    Removed link against ungif, as it was not needed
+    Add missing errlog.h include
+
 R1.12.105B-1.3.0        2022-10-13      Jesse Bellister
         Do not include NaN values when plotting data in x-y graphs.
         This fix is from John Sinclair and will fix an issue where a display can become unresponsive if a large number of NaN values are plotted.
