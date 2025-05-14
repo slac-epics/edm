@@ -4,16 +4,16 @@ ifdef EPICS_HOST_ARCH
   EDMTOP = $(TOP)
   include $(EDMTOP)/configure/CONFIG_EDM
 
-   EdmBase_LIBS_Linux += Xm Xt Xp Xtst X11
+   EdmBase_LIBS_Linux += Xm Xt Xtst X11
    EdmBase_SYS_LIBS_Linux += pthread dl
 
-   EdmBase_LIBS_Darwin += Xm Xt Xp Xtst X11
+   EdmBase_LIBS_Darwin += Xm Xt Xtst X11
    EdmBase_SYS_LIBS_Darwin += pthread dl
 
    EdmBase_SYS_LIBS_solaris += Xm Xt Xmu X11 Xext
    EdmBase_SYS_LIBS_solaris += pthread dl rt 
 
-   USR_LIBS_hpux11_11_mt = Xm Xt Xp Xtst X11
+   USR_LIBS_hpux11_11_mt = Xm Xt Xtst X11
    USR_SYS_LIBS_hpux11_11_mt = pthread
 
    LIBRARY = Proxy
@@ -36,7 +36,6 @@ ifdef EPICS_HOST_ARCH
 
    # ELW added following two lines for
    # Red Hat 7.0 LINUX
-   Xp_DIR =   $(X11_LIB)
    Xext_DIR = $(X11_LIB)
    #
    XlibGUI_DIR = $(X11_LIB)
